@@ -847,3 +847,31 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   justify-self: end;
   align-self: start;
 }
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: start;
+}
+
+.left-header-image {
+  grid-column: 1;
+  justify-self: start;
+  align-self: start;
+
+  width: 140px;
+  max-width: 140px;
+  height: auto;
+  object-fit: contain;
+}
+
+.brand-row {
+  grid-column: 2;
+  justify-self: center;
+  text-align: center;
+}
+
+.company-logo {
+  grid-column: 3;
+  justify-self: end;
+  align-self: start;
+}
