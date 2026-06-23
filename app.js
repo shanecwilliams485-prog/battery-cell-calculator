@@ -30,7 +30,7 @@ const fields = [
   ['variableCurrentSimulationEnabled', 'checkbox'], ['simulationTimeStepMinutes', 'number']
 ];
 
-function fmt(value, decimals = 2) {
+function fmt(value, decimals = 1) {
   if (!Number.isFinite(value)) value = 0;
   return value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
