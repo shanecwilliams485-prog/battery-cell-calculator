@@ -38,8 +38,7 @@ body {
   margin-bottom: 22px;
 }
 .brand-row { display: flex; align-items: center; gap: 18px; }
-.app-logo {
-  display: none;
+.app-logo { width: clamp(66px, 6vw, 102px); height: clamp(66px, 6vw, 102px); object-fit: contain; filter: drop-shadow(0 10px 20px rgba(63, 232, 117, .12)); }
 }
 .company-logo { grid-column: 2; justify-self: center; width: min(34vw, 440px); max-height: 170px; object-fit: contain; opacity: .98; filter: drop-shadow(0 0 28px rgba(63, 232, 117, .26)); }
 h1, h2, h3, p { margin-top: 0; }
