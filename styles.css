@@ -27,7 +27,7 @@ body {
 .app-shell { width: min(100% - 36px, 1720px); min-height: 100vh; margin: 0 auto; padding: 24px 0 42px; }
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 34vw) minmax(0, 1fr);
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 24px;
   align-items: center;
   padding: clamp(18px, 2.2vw, 34px);
@@ -38,8 +38,6 @@ body {
   margin-bottom: 22px;
 }
 .brand-row { display: flex; align-items: center; gap: 18px; }
-.app-logo { width: clamp(66px, 6vw, 102px); height: clamp(66px, 6vw, 102px); object-fit: contain; filter: drop-shadow(0 10px 20px rgba(63, 232, 117, .12)); }
-}
 .company-logo { grid-column: 3; justify-self: end; align-self: start; width: 120px !important; max-width: 120px !important; max-height: none !important; object-fit: contain !important; opacity: .98; filter: drop-shadow(0 0 28px rgba(63, 232, 117, .26)); }
 h1, h2, h3, p { margin-top: 0; }
 h1 { margin-bottom: 8px; font-size: clamp(2rem, 5vw, 4.6rem); line-height: .95; letter-spacing: -0.06em; }
