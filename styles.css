@@ -830,4 +830,20 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   .loading-screen .bolt-right-two { right: 25% !important; top: 3% !important; }
   .loading-screen .bolt-top { top: -2% !important; }
 }
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: start;
+}
 
+.brand-row {
+  grid-column: 2;
+  justify-self: center;
+  text-align: center;
+}
+
+.company-logo {
+  grid-column: 3;
+  justify-self: end;
+  align-self: start;
+}
