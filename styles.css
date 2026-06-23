@@ -875,3 +875,20 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   justify-self: end;
   align-self: start;
 }
+.loading-logo {
+  width: min(420px, 80vw) !important;
+  height: auto !important;
+  object-fit: contain !important;
+  animation: loadingLogoSpin 9s linear infinite;
+  filter: drop-shadow(0 0 34px rgba(63, 232, 117, 0.35));
+}
+
+@keyframes loadingLogoSpin {
+  from {
+    transform: rotate(-10deg) rotateY(0deg);
+  }
+
+  to {
+    transform: rotate(-10deg) rotateY(360deg);
+  }
+}
