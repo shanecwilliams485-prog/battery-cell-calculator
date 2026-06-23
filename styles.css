@@ -40,7 +40,7 @@ body {
 .brand-row { display: flex; align-items: center; gap: 18px; }
 .app-logo { width: clamp(66px, 6vw, 102px); height: clamp(66px, 6vw, 102px); object-fit: contain; filter: drop-shadow(0 10px 20px rgba(63, 232, 117, .12)); }
 }
-.company-logo { grid-column: 2; justify-self: center; width: min(34vw, 440px); max-height: 170px; object-fit: contain; opacity: .98; filter: drop-shadow(0 0 28px rgba(63, 232, 117, .26)); }
+.company-logo { grid-column: 1; justify-self: end; width: min(17vw, 220px); max-height: 85px; object-fit: contain; opacity: .98; filter: drop-shadow(0 0 28px rgba(63, 232, 117, .26)); }
 h1, h2, h3, p { margin-top: 0; }
 h1 { margin-bottom: 8px; font-size: clamp(2rem, 5vw, 4.6rem); line-height: .95; letter-spacing: -0.06em; }
 h2 { margin-bottom: 0; font-size: clamp(1.6rem, 3vw, 2.6rem); letter-spacing: -0.04em; }
