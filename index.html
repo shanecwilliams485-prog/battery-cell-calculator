@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101511">
+  <title>Battery Cell Calculator</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css?v=green-bolts-party-popper">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="brand-row">
+        <img src="assets/app-logo.png" alt="Battery Cell Calculator app logo" class="app-logo">
+        <div>
+          <p class="eyebrow">Web app version</p>
+          <h1>Battery Cell Calculator</h1>
+          <p>Enter cell data and pack layout to calculate battery pack results.</p>
+        </div>
+      </div>
+      <img src="assets/company-logo.png" alt="Company logo" class="company-logo">
+    </header>
+
+    <main>
+      <section id="calculatorPage" class="page calculator-page">
+        <form id="calculatorForm" class="panel inputs-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Calculator</p>
+              <h2>Inputs</h2>
+            </div>
+            <button class="ghost-button" id="resetBtn" type="button">Reset</button>
+          </div>
+
+          <div class="calculator-grid">
+            <section class="card">
+              <h3>Cell Data</h3>
+              <div class="form-grid">
+                <label>Nominal voltage <span>V</span><input id="nominalVoltage" type="number" step="0.01" inputmode="decimal"></label>
+                <label>Max voltage <span>V</span><input id="maxVoltage" type="number" step="0.01" inputmode="decimal"></label>
+                <label>Min voltage <span>V</span><input id="minVoltage" type="number" step="0.01" inputmode="decimal"></label>
+                <label>Capacity <span>Ah</span><input id="capacityAh" type="number" step="0.01" inputmode="decimal"></label>
+                <label>Max discharge <span>A</span><input id="maxDischargeCurrentA" type="number" step="0.1" inputmode="decimal"></label>
+                <label>Continuous discharge <span>A</span><input id="continuousDischargeCurrentA" type="number" step="0.1" inputmode="decimal"></label>
+                <label>Max charge <span>A</span><input id="maxChargeCurrentA" type="number" step="0.1" inputmode="decimal"></label>
+                <label>Cell weight <span>g</span><input id="cellWeightG" type="number" step="0.1" inputmode="decimal"></label>
+              </div>
+            </section>
+
+            <section class="card">
+              <h3>Pack Layout</h3>
+              <div class="form-grid">
+                <label>Series count <input id="seriesCount" type="number" step="1" min="1" inputmode="numeric"></label>
+                <label>Parallel count <input id="parallelCount" type="number" step="1" min="1" inputmode="numeric"></label>
+                <label>Usable factor <input id="usableEnergyFactor" type="number" step="0.01" inputmode="decimal"></label>
+                <label>Optional load <span>kW</span><input id="assumedLoadKW" type="number" step="0.01" inputmode="decimal"></label>
+              </div>
+            </section>
+
+            <section class="card simulation-input-card">
+              <h3>Variable Discharge Simulation</h3>
+              <label class="toggle-row"><input id="variableCurrentSimulationEnabled" type="checkbox"> Use variable discharge simulation</label>
+              <div id="simulationOptions" class="form-grid single">
+                <label>Simulation time step <span>min</span><input id="simulationTimeStepMinutes" type="number" step="0.1" min="0.5" inputmode="decimal"></label>
+              </div>
+              <p class="muted">Uses a realistic mixed driving map: stops at lights around 4–8 A, longer town/road cruising, five-minute highway sections around 80–140 A, and only a few short full-throttle pulls.</p>
+            </section>
+          </div>
+
+          <div class="calculate-area">
+            <button class="calculate-button" type="submit">⚡ Calculate Results</button>
+            <p class="safety-note">Use this as a calculator only. Always verify pack design, BMS limits, fusing, wiring, thermal behaviour, and cell manufacturer specifications</p>
+          </div>
+        </form>
+      </section>
+
+      <section id="resultsPage" class="page results-page" hidden>
+        <section id="results" class="panel results-panel">
+          <div class="section-heading results-heading">
+            <div>
+              <p class="eyebrow">Calculated output</p>
+              <h2>Battery Pack Results</h2>
+            </div>
+            <button class="ghost-button back-button" id="backBtn" type="button">← Back to calculator</button>
+          </div>
+
+          <div id="resultCards" class="result-grid"></div>
+
+          <div class="results-layout">
+            <section class="card">
+              <h3>Detailed Results</h3>
+              <div id="detailedResults"></div>
+            </section>
+
+            <section class="card">
+              <h3>Usable Energy VS SOH</h3>
+              <div id="sohRows"></div>
+            </section>
+
+            <section class="card">
+              <h3>Runtime Estimate</h3>
+              <div id="runtimeRows"></div>
+            </section>
+
+            <section id="simulationSection" class="card graph-card" hidden>
+              <div class="section-heading compact">
+                <div>
+                  <h3 id="profileTitle">Variable Discharge Simulation</h3>
+                  <p class="muted">Animated browser version of the current graph from the SwiftUI app.</p>
+                </div>
+                <button class="ghost-button" id="animateBtn" type="button">Replay graph</button>
+              </div>
+              <canvas id="currentChart" aria-label="Variable discharge simulation graph"></canvas>
+              <p id="chartStats" class="chart-stats">Live discharge data</p>
+              <div id="driverLive" class="driver-live" aria-live="polite">
+                <div class="driver-dial">
+                  <span>Time</span>
+                  <strong id="liveTimeValue">0.0 min</strong>
+                </div>
+                <div class="driver-dial current">
+                  <span>Current</span>
+                  <strong id="liveCurrentValue">0 A</strong>
+                </div>
+                <div class="driver-dial style">
+                  <span>Driving style</span>
+                  <strong id="liveDriveStyleValue">Ready</strong>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="loadingScreen" class="loading-screen" hidden aria-live="polite" aria-label="Loading results">
+    <div class="battery-stage" aria-hidden="true">
+      <span class="energy-bolt bolt-left-one"></span>
+      <span class="energy-bolt bolt-left-two"></span>
+      <span class="energy-bolt bolt-right-one"></span>
+      <span class="energy-bolt bolt-right-two"></span>
+      <span class="energy-bolt bolt-top"></span>
+      <div class="battery-character">
+        <div class="battery-cap"></div>
+        <div class="battery-body">
+          <div class="battery-shine"></div>
+          <div class="battery-plus">+</div>
+          <div class="battery-face">
+            <span class="eye eye-left"></span>
+            <span class="eye eye-right"></span>
+            <span class="mouth"></span>
+          </div>
+          <div class="energy-core"></div>
+        </div>
+        <div class="battery-base"></div>
+      </div>
+    </div>
+    <p>Charging the results…</p>
+  </div>
+
+  <script src="app.js?v=green-bolts-party-popper"></script>
+</body>
+</html>
