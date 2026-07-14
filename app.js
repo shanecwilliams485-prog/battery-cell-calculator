@@ -305,15 +305,15 @@ function renderResults(results) {
   ].join('');
   
   document.getElementById("moduleResultConfig").textContent =
-  result.moduleConfig;
+  results.moduleConfig;
   document.getElementById("moduleResultVoltage").textContent =
-    `${fmt(result.moduleNominalVoltageV, 1)} V`;
+    `${fmt(results.moduleNominalVoltageV, 1)} V`;
   document.getElementById("moduleResultCapacity").textContent =
-    `${fmt(result.moduleCapacityAh, 1)} Ah`;
+    `${fmt(results.moduleCapacityAh, 1)} Ah`;
   document.getElementById("moduleResultEnergy").textContent =
-    `${fmt(result.moduleEnergyKWh, 2)} kWh`;
+    `${fmt(results.moduleEnergyKWh, 2)} kWh`;
   document.getElementById("moduleResultCells").textContent =
-  `${fmt(result.moduleCellCount, 0)} cells`;
+  `${fmt(results.moduleCellCount, 0)} cells`;
   document.getElementById('sohRows').innerHTML = results.sohRows.map(row => `<div class="soh-row"><div><span>${row.percentage}% SOH</span><strong>${fmt(row.usableEnergyKWh, 2)} kWh</strong></div><progress value="${row.percentage}" max="100"></progress></div>`).join('');
   let runtime = valueRow('Spreadsheet runtime', `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`);
   runtime += results.runtimeAtAssumedLoadMinutes !== null ? valueRow('At optional load', `${fmt(results.runtimeAtAssumedLoadMinutes, 1)} min`) : `<p class="muted">Enter an optional load in kW to estimate runtime for a specific motor, inverter, or device load.</p>`;
