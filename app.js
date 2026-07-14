@@ -434,15 +434,31 @@ function showResultsPage() {
 }
 function handleCalculate(event) {
   event?.preventDefault();
-  const inputs = getInputs();
-  saveInputs(inputs);
-  lastResults = calculate(inputs);
-  showLoading();
-  window.setTimeout(() => {
-    showResultsPage();
-    renderResults(lastResults);
+
+  try {
+    const inputs = getInputs();
+    saveInputs(inputs);
+    lastResults = calculate(inputs);
+
+    showLoading();
+
+    window.setTimeout(() => {
+      try {
+        showResultsPage();
+        renderResults(lastResults);
+        hideLoading();
+      } catch (error) {
+        hideLoading();
+        alert("Results error: " + error.message);
+        console.error(error);
+      }
+    }, 6500);
+
+  } catch (error) {
     hideLoading();
-  }, 6500);
+    alert("Calculator error: " + error.message);
+    console.error(error);
+  }
 }
 function resetAll() {
   localStorage.removeItem(STORAGE_KEY);
