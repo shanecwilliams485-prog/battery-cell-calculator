@@ -950,3 +950,6 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
     overflow-x: hidden;
   }
 }
+.runtime-estimate-card {
+  grid-column: 1 / -1;
+}
