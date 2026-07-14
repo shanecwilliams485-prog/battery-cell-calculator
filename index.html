@@ -59,9 +59,17 @@
             <section class="card">
               <h3>Pack Layout</h3>
               <div class="form-grid">
-                <label>Series count <input id="seriesCount" type="number" step="1" min="1" inputmode="numeric"></label>
-                <label>Parallel count <input id="parallelCount" type="number" step="1" min="1" inputmode="numeric"></label>
-                <label>Usable factor <input id="usableEnergyFactor" type="number" step="0.01" inputmode="decimal"></label>
+              <label>Series count <input id="seriesCount" type="number" step="1" min="1" inputmode="numeric"></label>
+              <label>Parallel count <input id="parallelCount" type="number" step="1" min="1" inputmode="numeric"></label>
+
+              <label>
+                Module configuration
+                <select id="moduleConfiguration">
+                  <option value="">Auto select</option>
+                </select>
+              </label>
+
+              <label>Usable factor <input id="usableEnergyFactor" type="number" step="0.01" inputmode="decimal"></label>
                 <label>Optional load <span>kW</span><input id="assumedLoadKW" type="number" step="1" inputmode="decimal"></label>
               </div>
             </section>
