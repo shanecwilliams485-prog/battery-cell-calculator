@@ -9,6 +9,7 @@ const DEFAULT_INPUTS = {
   cellWeightG: 70.0,
   seriesCount: 96,
   parallelCount: 24,
+  moduleConfiguration: "",
   usableEnergyFactor: 0.88,
   assumedLoadKW: 0.0,
   variableCurrentSimulationEnabled: true,
@@ -66,6 +67,43 @@ function setInputs(inputs) {
     else el.value = inputs[name];
   }
   toggleSimulationOptions();
+}
+
+function updateModuleConfigurationOptions() {
+  const select = document.getElementById("moduleConfiguration");
+  if (!select) return;
+
+  const series = Math.max(1, Math.round(clampNumber(document.getElementById("seriesCount")?.value, DEFAULT_INPUTS.seriesCount)));
+  const parallel = Math.max(1, Math.round(clampNumber(document.getElementById("parallelCount")?.value, DEFAULT_INPUTS.parallelCount)));
+  const currentValue = select.value;
+
+  const options = [];
+
+  for (let moduleCount = 1; moduleCount <= series; moduleCount++) {
+    if (series % moduleCount === 0) {
+      const moduleSeries = series / moduleCount;
+      const moduleParallel = parallel;
+      const cellsPerModule = moduleSeries * moduleParallel;
+
+      options.push({
+        value: `${moduleSeries}S${moduleParallel}P`,
+        label: `${moduleCount} module${moduleCount === 1 ? "" : "s"} of ${moduleSeries}S${moduleParallel}P (${cellsPerModule} cells each)`
+      });
+    }
+  }
+
+  select.innerHTML = options
+    .map(option => `<option value="${option.value}">${option.label}</option>`)
+    .join("");
+
+  if (options.some(option => option.value === currentValue)) {
+    select.value = currentValue;
+  } else {
+    const preferred = options.find(option => option.value.startsWith("12S"));
+    select.value = preferred ? preferred.value : options[0]?.value || "";
+  }
+
+  saveInputs(getInputs());
 }
 function calculate(input) {
   const series = Math.max(input.seriesCount, 0);
@@ -469,14 +507,21 @@ function resetAll() {
 }
 function init() {
   setInputs(loadInputs());
+  updateModuleConfigurationOptions();
   document.getElementById('calculatorForm').addEventListener('submit', handleCalculate);
   document.getElementById('resetBtn').addEventListener('click', resetAll);
   document.getElementById('backBtn').addEventListener('click', showCalculatorPage);
   document.getElementById('variableCurrentSimulationEnabled').addEventListener('change', toggleSimulationOptions);
   document.getElementById('animateBtn').addEventListener('click', animateChart);
-  for (const [name] of fields) {
-    document.getElementById(name)?.addEventListener('input', () => saveInputs(getInputs()));
-  }
+for (const [name] of fields) {
+  document.getElementById(name)?.addEventListener('input', () => {
+    if (name === "seriesCount" || name === "parallelCount") {
+      updateModuleConfigurationOptions();
+    } else {
+      saveInputs(getInputs());
+    }
+  });
+}
   document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
   hideLoading();
