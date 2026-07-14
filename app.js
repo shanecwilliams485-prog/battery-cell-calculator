@@ -304,16 +304,18 @@ function renderResults(results) {
     valueRow('Charge C rating', `${fmt(results.maxChargeCRating, 0)} C`)
   ].join('');
   
-  document.getElementById("moduleResultConfig").textContent =
-  results.moduleConfig;
-  document.getElementById("moduleResultVoltage").textContent =
-    `${fmt(results.moduleNominalVoltageV, 1)} V`;
-  document.getElementById("moduleResultCapacity").textContent =
-    `${fmt(results.moduleCapacityAh, 1)} Ah`;
-  document.getElementById("moduleResultEnergy").textContent =
-    `${fmt(results.moduleEnergyKWh, 2)} kWh`;
-  document.getElementById("moduleResultCells").textContent =
-  `${fmt(results.moduleCellCount, 0)} cells`;
+  const moduleConfigEl = document.getElementById("moduleResultConfig");
+  const moduleVoltageEl = document.getElementById("moduleResultVoltage");
+  const moduleCapacityEl = document.getElementById("moduleResultCapacity");
+  const moduleEnergyEl = document.getElementById("moduleResultEnergy");
+  const moduleCellsEl = document.getElementById("moduleResultCells");
+
+  if (moduleConfigEl) moduleConfigEl.textContent = results.moduleConfig;
+  if (moduleVoltageEl) moduleVoltageEl.textContent = `${fmt(results.moduleNominalVoltageV, 1)} V`;
+  if (moduleCapacityEl) moduleCapacityEl.textContent = `${fmt(results.moduleCapacityAh, 1)} Ah`;
+  if (moduleEnergyEl) moduleEnergyEl.textContent = `${fmt(results.moduleEnergyKWh, 2)} kWh`;
+  if (moduleCellsEl) moduleCellsEl.textContent = `${fmt(results.moduleCellCount, 0)} cells`;
+  
   document.getElementById('sohRows').innerHTML = results.sohRows.map(row => `<div class="soh-row"><div><span>${row.percentage}% SOH</span><strong>${fmt(row.usableEnergyKWh, 2)} kWh</strong></div><progress value="${row.percentage}" max="100"></progress></div>`).join('');
   let runtime = valueRow('Spreadsheet runtime', `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`);
   runtime += results.runtimeAtAssumedLoadMinutes !== null ? valueRow('At optional load', `${fmt(results.runtimeAtAssumedLoadMinutes, 1)} min`) : `<p class="muted">Enter an optional load in kW to estimate runtime for a specific motor, inverter, or device load.</p>`;
