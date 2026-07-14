@@ -26,7 +26,7 @@ const CHART_ANIMATION_DELAY_MS = 135; // Increase this value to make the variabl
 const fields = [
   ['nominalVoltage', 'number'], ['maxVoltage', 'number'], ['minVoltage', 'number'], ['capacityAh', 'number'],
   ['maxDischargeCurrentA', 'number'], ['continuousDischargeCurrentA', 'number'], ['maxChargeCurrentA', 'number'], ['cellWeightG', 'number'],
-  ['seriesCount', 'int'], ['parallelCount', 'int'], ['usableEnergyFactor', 'number'], ['assumedLoadKW', 'number'],
+  ['seriesCount', 'int'], ['parallelCount', 'int'], ['moduleConfiguration', 'text'], ['usableEnergyFactor', 'number'], ['assumedLoadKW', 'number'],
   ['variableCurrentSimulationEnabled', 'checkbox'], ['simulationTimeStepMinutes', 'number']
 ];
 
@@ -49,9 +49,9 @@ function getInputs() {
   const data = {};
   for (const [name, type] of fields) {
     const el = inputEls[name] || document.getElementById(name);
-    if (!el) continue;
     if (type === 'checkbox') data[name] = el.checked;
     else if (type === 'int') data[name] = Math.max(0, Math.round(clampNumber(el.value, DEFAULT_INPUTS[name])));
+    else if (type === 'text') data[name] = el.value;
     else data[name] = clampNumber(el.value, DEFAULT_INPUTS[name]);
   }
   return data;
@@ -62,6 +62,7 @@ function setInputs(inputs) {
     inputEls[name] = el;
     if (!el) continue;
     if (type === 'checkbox') el.checked = !!inputs[name];
+    else if (type === 'text') el.value = inputs[name] || "";
     else el.value = inputs[name];
   }
   toggleSimulationOptions();
