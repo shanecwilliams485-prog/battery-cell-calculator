@@ -75,6 +75,11 @@ function calculate(input) {
   const maxVoltageV = input.maxVoltage * series;
   const minVoltageV = input.minVoltage * series;
   const numberOfCells = Math.max(input.seriesCount, 0) * Math.max(input.parallelCount, 0);
+  const moduleConfig = `${series}S${parallel}P`;
+  const moduleNominalVoltageV = input.nominalVoltage * series;
+  const moduleCapacityAh = input.capacityAh * parallel;
+  const moduleEnergyKWh = moduleNominalVoltageV * moduleCapacityAh / 1000;
+  const moduleCellCount = series * parallel;
   const totalCellWeightKG = (input.cellWeightG * series * parallel) / 1000.0;
   const maxDischargeCurrentA = input.maxDischargeCurrentA * parallel;
   const continuousDischargeCurrentA = input.continuousDischargeCurrentA * parallel;
