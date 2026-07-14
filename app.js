@@ -303,18 +303,15 @@ function renderResults(results) {
     valueRow('Discharge C rating', `${fmt(results.maxDischargeCRating, 0)} C`),
     valueRow('Charge C rating', `${fmt(results.maxChargeCRating, 0)} C`)
   ].join('');
+  
   document.getElementById("moduleResultConfig").textContent =
   result.moduleConfig;
-
   document.getElementById("moduleResultVoltage").textContent =
     `${fmt(result.moduleNominalVoltageV, 1)} V`;
-
   document.getElementById("moduleResultCapacity").textContent =
     `${fmt(result.moduleCapacityAh, 1)} Ah`;
-
   document.getElementById("moduleResultEnergy").textContent =
     `${fmt(result.moduleEnergyKWh, 2)} kWh`;
-
   document.getElementById("moduleResultCells").textContent =
   `${fmt(result.moduleCellCount, 0)} cells`;
   document.getElementById('sohRows').innerHTML = results.sohRows.map(row => `<div class="soh-row"><div><span>${row.percentage}% SOH</span><strong>${fmt(row.usableEnergyKWh, 2)} kWh</strong></div><progress value="${row.percentage}" max="100"></progress></div>`).join('');
