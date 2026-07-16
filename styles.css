@@ -927,8 +927,8 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
     grid-column: 1 !important;
     justify-self: center !important;
     align-self: start !important;
-    width: 180px !important;
-    max-width: 180px !important;
+    width: 350px !important;
+    max-width: 350px !important;
     height: auto !important;
     margin: 0 auto 12px auto !important;
   }
