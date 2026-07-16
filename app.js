@@ -502,7 +502,7 @@ function handleCalculate(event) {
         alert("Results error: " + error.message);
         console.error(error);
       }
-    }, 6500);
+    }, 2500);
 
   } catch (error) {
     hideLoading();
