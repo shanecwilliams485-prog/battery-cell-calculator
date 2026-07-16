@@ -487,7 +487,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   .hero { grid-template-columns: 1fr; padding: 18px; }
   .brand-row { align-items: flex-start; }
   .app-logo { width: 64px; height: 64px; }
-  .company-logo { grid-column: 1; grid-row: 1; width: min(78vw, 330px); max-height: 140px; margin: 0 auto 10px; }
+  .company-logo { grid-column: 1; grid-row: 1; width: min(78vw, 500px); max-height: none; margin: 0 auto 10px; }
   .calculator-grid, .results-layout, .calculate-area, .form-grid, .result-grid, .sim-preview-list { grid-template-columns: 1fr; }
   .panel { padding: 14px; border-radius: 22px; }
   .card { padding: 15px; }
