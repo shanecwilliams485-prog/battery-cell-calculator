@@ -47,15 +47,20 @@ function loadInputs() {
 }
 function saveInputs(inputs) { localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs)); }
 function getInputs() {
-  const data = {};
-  for (const [name, type] of fields) {
+    const data = {};
+    for (const [name, type] of fields) {
     const el = inputEls[name] || document.getElementById(name);
+    if (!el) {
+      data[name] = DEFAULT_INPUTS[name];
+      continue;
+    }
     if (type === 'checkbox') data[name] = el.checked;
     else if (type === 'int') data[name] = Math.max(0, Math.round(clampNumber(el.value, DEFAULT_INPUTS[name])));
     else if (type === 'text') data[name] = el.value;
     else data[name] = clampNumber(el.value, DEFAULT_INPUTS[name]);
   }
   return data;
+}
 }
 function setInputs(inputs) {
   for (const [name, type] of fields) {
