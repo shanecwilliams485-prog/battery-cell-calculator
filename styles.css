@@ -502,7 +502,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 }
 
 .simulation-left-inputs #simulationOptions {
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .simulation-side-inputs label:first-child {
@@ -512,7 +512,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 .simulation-top-row .toggle-row {
   align-self: start;
   min-height: 48px;
-  transform: translateY(-4px);
+  transform: translateY(-10px);
 }
 
 .simulation-input-card #simulationOptions {
