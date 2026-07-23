@@ -484,14 +484,29 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 .simulation-top-row {
   display: grid;
   grid-template-columns: 280px 220px;
-  gap: 75px;
+  grid-template-areas:
+    "left right"
+    "note note";
+  gap: 18px 75px;
   align-items: start;
   justify-content: start;
   margin-bottom: 14px;
 }
 
-.simulation-left-inputs #simulationOptions {
-  margin-top: 18px;
+.simulation-left-inputs {
+  grid-area: left;
+}
+
+.simulation-side-inputs {
+  grid-area: right;
+}
+
+.simulation-note {
+  grid-area: note;
+  max-width: 900px;
+  margin: 8px auto 0;
+  text-align: center;
+  line-height: 1.45;
 }
 
 .simulation-left-inputs,
@@ -540,8 +555,19 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   .calculator-grid, .results-layout, .calculate-area, .form-grid, .result-grid, .sim-preview-list { grid-template-columns: 1fr; }
   .simulation-top-row {
     grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "left"
+      "note"
+      "right";
     width: 100%;
     max-width: 100%;
+    gap: 14px !important;
+  }
+
+  .simulation-note {
+    max-width: 100%;
+    margin: 4px 0 12px;
+    text-align: center;
   }
 
   .simulation-top-row label,
