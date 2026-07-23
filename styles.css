@@ -495,19 +495,22 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   grid-template-columns: 1fr;
   gap: 14px;
 }
+
+.simulation-bottom-row {
+  display: grid;
+  grid-template-columns: 160px 220px;
+  gap: 14px;
+  align-items: end;
+}
+
 .simulation-top-row .toggle-row {
   align-self: start;
-  min-height: 48px;
+  min-height: 31px;
 }
 
 .simulation-input-card #simulationOptions {
-  width: 260px;
+  width: 100%;
   max-width: 100%;
-}
-
-.simulation-input-card #simulationTimeStepMinutes {
-  width: 120px;
-  max-width: 120px;
 }
 
 @media (max-width: 1180px) {
