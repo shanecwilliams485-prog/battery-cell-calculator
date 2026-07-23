@@ -483,37 +483,15 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 
 .simulation-top-row {
   display: grid;
-  grid-template-columns: 280px minmax(260px, 300px) 220px;
-  grid-template-areas:
-    "left note right"
-    ". timestep-label timestep-input right";
-  gap: 14px 30px;
+  grid-template-columns: 280px minmax(260px, 340px) 220px;
+  gap: 30px;
   align-items: start;
   justify-content: start;
   margin-bottom: 14px;
 }
 
-.simulation-left-inputs {
-  grid-area: left;
-}
-
-.simulation-side-inputs {
-  grid-area: right;
-}
-
-.simulation-note {
-  grid-area: note;
-  max-width: 900px;
-  margin: 8px 0 0;
-  text-align: left;
-  line-height: 1.45;
-}
-
-#simulationOptions {
-  grid-area: timestep;
-}
-
 .simulation-left-inputs,
+.simulation-middle-inputs,
 .simulation-side-inputs {
   display: grid;
   grid-template-columns: 1fr;
@@ -526,6 +504,26 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   transform: translateY(-10px);
 }
 
+.simulation-note {
+  max-width: 340px;
+  margin: 0;
+  text-align: left;
+  line-height: 1.45;
+}
+
+.simulation-time-step-label {
+  margin-top: 82px;
+}
+
+.simulation-time-step-label label {
+  display: grid;
+  gap: 7px;
+}
+
+.simulation-time-step-input {
+  margin-top: 8px;
+}
+
 .simulation-input-card #simulationOptions {
   width: 100%;
   max-width: 100%;
@@ -536,22 +534,8 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   max-width: 100%;
 }
 
-#simulationOptions label {
-  display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
-  column-gap: 14px;
-  row-gap: 4px;
-  align-items: center;
-}
-
-#simulationOptions label span {
-  grid-column: 1;
-  grid-row: 2;
-}
-
-#simulationOptions label input {
-  grid-column: 2;
-  grid-row: 1 / span 2;
+.simulation-side-inputs label:first-child {
+  transform: translateY(0);
 }
 
 @media (max-width: 1180px) {
