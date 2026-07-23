@@ -483,11 +483,17 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 
 .simulation-top-row {
   display: grid;
-  grid-template-columns: auto 220px 220px;
+  grid-template-columns: auto 220px;
   gap: 14px;
-  align-items: end;
+  align-items: start;
   justify-content: start;
   margin-bottom: 14px;
+}
+
+.simulation-side-inputs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
 }
 .simulation-top-row .toggle-row {
   align-self: end;
