@@ -504,7 +504,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   grid-area: note;
   max-width: 900px;
   margin: 8px auto 0;
-  text-align: center;
+  text-align: left;
   line-height: 1.45;
 }
 
