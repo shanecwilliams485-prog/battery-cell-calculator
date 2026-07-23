@@ -491,7 +491,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 }
 
 .simulation-left-inputs #simulationOptions {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .simulation-left-inputs,
