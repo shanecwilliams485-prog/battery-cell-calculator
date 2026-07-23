@@ -476,8 +476,21 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   to { transform: translateX(2%) scale(1.06); }
 }
 [hidden] { display: none !important; }
+
 .simulation-input-card {
   grid-column: 1 / -1;
+}
+
+.simulation-top-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) minmax(160px, 220px) auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.simulation-top-row .toggle-row {
+  align-self: end;
+  min-height: 48px;
 }
 
 .simulation-input-card #simulationOptions {
@@ -503,6 +516,9 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   .app-logo { width: 64px; height: 64px; }
   .company-logo { grid-column: 1; grid-row: 1; width: min(78vw, 480px); max-height: none; margin: 0 auto 10px; }
   .calculator-grid, .results-layout, .calculate-area, .form-grid, .result-grid, .sim-preview-list { grid-template-columns: 1fr; }
+  .simulation-top-row {
+  grid-template-columns: 1fr;
+}
   .panel { padding: 14px; border-radius: 22px; }
   .card { padding: 15px; }
   .results-heading { align-items: flex-start; flex-direction: column; }
