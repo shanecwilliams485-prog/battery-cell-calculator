@@ -1030,3 +1030,14 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
     width: 100% !important;
   }
 }
+.simulation-left-inputs #simulationOptions {
+  margin-top: 11px !important;
+}
+
+.simulation-side-inputs label:first-child {
+  transform: translateY(20px) !important;
+}
+
+.simulation-top-row .toggle-row {
+  transform: translateY(-8px) !important;
+}
