@@ -504,6 +504,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 .simulation-top-row .toggle-row {
   align-self: start;
   min-height: 48px;
+  transform: translateY(-4px);
 }
 
 .simulation-input-card #simulationOptions {
