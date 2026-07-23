@@ -521,7 +521,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 }
 
 .simulation-time-step-input {
-  margin-top: 38px;
+  margin-top: 37px;
 }
 
 .simulation-input-card #simulationOptions {
