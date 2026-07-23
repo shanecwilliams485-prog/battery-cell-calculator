@@ -501,6 +501,10 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   gap: 14px;
 }
 
+.simulation-left-inputs #simulationOptions {
+  margin-top: 10px;
+}
+
 .simulation-side-inputs label:first-child {
   transform: translateY(11px);
 }
