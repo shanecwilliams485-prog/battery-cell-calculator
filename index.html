@@ -83,19 +83,19 @@
       <input id="assumedLoadKW" type="number" step="1" inputmode="decimal">
     </label>
 
-    <label>
-      Usable factor
-      <input id="usableEnergyFactor" type="number" step="0.01" inputmode="decimal">
-    </label>
+    <div id="simulationOptions" class="simulation-bottom-row">
+      <label>
+        Simulation time step <span>min</span>
+        <input id="simulationTimeStepMinutes" type="number" step="0.5" min="0.5" inputmode="decimal">
+      </label>
+
+      <label>
+        Usable factor
+        <input id="usableEnergyFactor" type="number" step="0.01" inputmode="decimal">
+      </label>
+    </div>
   </div>
 </div>
-
-  <div id="simulationOptions" class="form-grid single">
-    <label>
-      Simulation time step <span>min</span>
-      <input id="simulationTimeStepMinutes" type="number" step="0.5" min="0.5" inputmode="decimal">
-    </label>
-  </div>
 
   <p class="muted">
     Uses a realistic mixed driving map: stops at lights around 4–8 A, longer town/road cruising, five-minute highway sections around 80–140 A, and only a few short full-throttle pulls.
