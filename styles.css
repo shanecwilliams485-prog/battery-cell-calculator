@@ -517,8 +517,31 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   .company-logo { grid-column: 1; grid-row: 1; width: min(78vw, 480px); max-height: none; margin: 0 auto 10px; }
   .calculator-grid, .results-layout, .calculate-area, .form-grid, .result-grid, .sim-preview-list { grid-template-columns: 1fr; }
   .simulation-top-row {
-  grid-template-columns: 1fr;
-}
+    grid-template-columns: 1fr !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .simulation-top-row label,
+  .simulation-top-row .toggle-row {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .simulation-input-card #simulationOptions {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .simulation-input-card #simulationOptions label {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .simulation-input-card #simulationTimeStepMinutes {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
   .panel { padding: 14px; border-radius: 22px; }
   .card { padding: 15px; }
   .results-heading { align-items: flex-start; flex-direction: column; }
@@ -984,3 +1007,4 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
     grid-column: 1 / -1 !important;
     width: 100% !important;
   }
+}
