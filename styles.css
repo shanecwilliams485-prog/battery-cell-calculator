@@ -483,32 +483,31 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 
 .simulation-top-row {
   display: grid;
-  grid-template-columns: auto 220px;
+  grid-template-columns: 260px 220px;
   gap: 14px;
   align-items: start;
   justify-content: start;
   margin-bottom: 14px;
 }
 
+.simulation-left-inputs,
 .simulation-side-inputs {
   display: grid;
   grid-template-columns: 1fr;
   gap: 14px;
 }
 
-.simulation-bottom-row {
-  display: grid;
-  grid-template-columns: 160px 220px;
-  gap: 14px;
-  align-items: end;
-}
-
 .simulation-top-row .toggle-row {
   align-self: start;
-  min-height: 31px;
+  min-height: 48px;
 }
 
 .simulation-input-card #simulationOptions {
+  width: 100%;
+  max-width: 100%;
+}
+
+.simulation-input-card #simulationTimeStepMinutes {
   width: 100%;
   max-width: 100%;
 }
