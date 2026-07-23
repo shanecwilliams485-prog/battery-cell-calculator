@@ -72,10 +72,19 @@
   <h3>Discharge and SOH Simulations</h3>
 
 <div class="simulation-top-row">
-  <label class="toggle-row">
-    <input id="variableCurrentSimulationEnabled" type="checkbox">
-    Use variable discharge simulation
-  </label>
+  <div class="simulation-left-inputs">
+    <label class="toggle-row">
+      <input id="variableCurrentSimulationEnabled" type="checkbox">
+      Use variable discharge simulation
+    </label>
+
+    <div id="simulationOptions">
+      <label>
+        Simulation time step <span>min</span>
+        <input id="simulationTimeStepMinutes" type="number" step="0.5" min="0.5" inputmode="decimal">
+      </label>
+    </div>
+  </div>
 
   <div class="simulation-side-inputs">
     <label>
@@ -83,17 +92,10 @@
       <input id="assumedLoadKW" type="number" step="1" inputmode="decimal">
     </label>
 
-    <div id="simulationOptions" class="simulation-bottom-row">
-      <label>
-        Simulation time step <span>min</span>
-        <input id="simulationTimeStepMinutes" type="number" step="0.5" min="0.5" inputmode="decimal">
-      </label>
-
-      <label>
-        Usable factor
-        <input id="usableEnergyFactor" type="number" step="0.01" inputmode="decimal">
-      </label>
-    </div>
+    <label>
+      Usable factor
+      <input id="usableEnergyFactor" type="number" step="0.01" inputmode="decimal">
+    </label>
   </div>
 </div>
 
