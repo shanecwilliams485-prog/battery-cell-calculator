@@ -487,7 +487,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   grid-template-areas:
     "left note right"
     ". timestep right";
-  gap: 30px;
+  gap: 14px 30px;
   align-items: start;
   justify-content: start;
   margin-bottom: 14px;
@@ -504,9 +504,13 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 .simulation-note {
   grid-area: note;
   max-width: 900px;
-  margin: 8px auto 0;
+  margin: 8px 0 0;
   text-align: left;
   line-height: 1.45;
+}
+
+#simulationOptions {
+  grid-area: timestep;
 }
 
 .simulation-left-inputs,
