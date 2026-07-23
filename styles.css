@@ -490,6 +490,10 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   margin-bottom: 14px;
 }
 
+.simulation-left-inputs #simulationOptions {
+  margin-top: 10px;
+}
+
 .simulation-left-inputs,
 .simulation-side-inputs {
   display: grid;
