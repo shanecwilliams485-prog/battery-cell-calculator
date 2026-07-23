@@ -68,16 +68,37 @@
               </div>
             </section>
 
-            <section class="card simulation-input-card full width">
-              <h3>Discharge and SOH Simulations</h3>
-              <label class="toggle-row"><input id="variableCurrentSimulationEnabled" type="checkbox"> Use variable discharge simulation</label>
-              <div id="simulationOptions" class="form-grid single">
-                <label>Simulation time step <span>min</span><input id="simulationTimeStepMinutes" type="number" step="0.5" min="0.5" inputmode="decimal"></label>
-              <p class="muted">Uses a realistic mixed driving map: stops at lights around 4–8 A, longer town/road cruising, five-minute highway sections around 80–140 A, and only a few short full-throttle pulls.</p>
-                <label>Optional load <span>kW</span><input id="assumedLoadKW" type="number" step="1" inputmode="decimal"></label>
-                <label>Usable factor <input id="usableEnergyFactor" type="number" step="0.01" inputmode="decimal"></label>
-              </div>
-          </div>
+     <section class="card simulation-input-card">
+  <h3>Discharge and SOH Simulations</h3>
+
+  <div class="simulation-top-row">
+    <label class="toggle-row">
+      <input id="variableCurrentSimulationEnabled" type="checkbox">
+      Use variable discharge simulation
+    </label>
+
+    <label>
+      Usable factor
+      <input id="usableEnergyFactor" type="number" step="0.01" inputmode="decimal">
+    </label>
+
+    <label>
+      Optional load <span>kW</span>
+      <input id="assumedLoadKW" type="number" step="1" inputmode="decimal">
+    </label>
+  </div>
+
+  <div id="simulationOptions" class="form-grid single">
+    <label>
+      Simulation time step <span>min</span>
+      <input id="simulationTimeStepMinutes" type="number" step="0.5" min="0.5" inputmode="decimal">
+    </label>
+  </div>
+
+  <p class="muted">
+    Uses a realistic mixed driving map: stops at lights around 4–8 A, longer town/road cruising, five-minute highway sections around 80–140 A, and only a few short full-throttle pulls.
+  </p>
+</section>
 
           <div class="calculate-area">
             <button class="calculate-button" type="submit">⚡ Calculate Results</button>
