@@ -479,6 +479,17 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 .simulation-input-card {
   grid-column: 1 / -1;
 }
+
+.simulation-input-card #simulationOptions {
+  width: 260px;
+  max-width: 100%;
+}
+
+.simulation-input-card #simulationTimeStepMinutes {
+  width: 120px;
+  max-width: 120px;
+}
+
 @media (max-width: 1180px) {
   .calculator-grid, .results-layout { grid-template-columns: 1fr 1fr; }
   .simulation-input-card, .graph-card { grid-column: 1 / -1; }
@@ -957,11 +968,3 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
     grid-column: 1 / -1 !important;
     width: 100% !important;
   }
-.simulation-input-card {
-  grid-column: 1 / -1;
-}
-
-  .simulation-input-card #simulationTimeStepMinutes {
-  width: 120px;
-  max-width: 120px;
-}
