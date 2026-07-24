@@ -178,8 +178,6 @@ function updateSecondModuleConfigurationOptions() {
   }
 }
 
-  saveInputs(getInputs());
-}
 function calculate(input) {
   const series = Math.max(input.seriesCount, 0);
   const parallel = Math.max(input.parallelCount, 0);
