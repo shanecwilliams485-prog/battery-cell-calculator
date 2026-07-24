@@ -133,15 +133,16 @@ input[type="checkbox"] {
 .module-config-row {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 160px minmax(0, 1fr);
   gap: 18px;
   align-items: end;
 }
 
 .second-module-toggle {
+  grid-column: 1 / -1;
+  width: fit-content;
   min-height: 47px;
   white-space: nowrap;
-  padding-bottom: 1px;
 }
 
 #secondModuleConfigurationWrap {
