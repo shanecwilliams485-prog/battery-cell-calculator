@@ -726,33 +726,51 @@ function resetAll() {
 function init() {
   setInputs(loadInputs());
   updateModuleConfigurationOptions();
+
   document.getElementById('calculatorForm').addEventListener('submit', handleCalculate);
   document.getElementById('resetBtn').addEventListener('click', resetAll);
   document.getElementById('backBtn').addEventListener('click', showCalculatorPage);
   document.getElementById('variableCurrentSimulationEnabled').addEventListener('change', toggleSimulationOptions);
   document.getElementById('animateBtn').addEventListener('click', animateChart);
-for (const [name] of fields) {
-  document.getElementById(name)?.addEventListener('input', () => {
-   if (name === "seriesCount" || name === "parallelCount" || name === "moduleCount1" || name === "useSecondModuleConfiguration") {
-  updateModuleConfigurationOptions();
-} else if (name === "moduleConfiguration" || name === "moduleCount2") {
-  updateSecondModuleConfigurationOptions();
-  saveInputs(getInputs());
-} else {
-  saveInputs(getInputs());
-}
-  });
 
-  document.getElementById(name)?.addEventListener('change', () => {
-    if (name === "seriesCount" || name === "parallelCount" || name === "moduleCount1" || name === "useSecondModuleConfiguration") {
-  updateModuleConfigurationOptions();
-} else if (name === "moduleConfiguration" || name === "moduleCount2") {
-  updateSecondModuleConfigurationOptions();
+  for (const [name] of fields) {
+    document.getElementById(name)?.addEventListener('input', () => {
+      if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
+        updateModuleConfigurationOptions();
+      } else if (name === "moduleConfiguration") {
+        updateModuleCount1FromConfiguration();
+      } else if (name === "secondModuleConfiguration") {
+        updateSecondModuleConfigurationOptions();
+        saveInputs(getInputs());
+      } else if (name === "moduleCount1" || name === "moduleCount2") {
+        updateSecondModuleConfigurationOptions(name);
+        saveInputs(getInputs());
+      } else {
+        saveInputs(getInputs());
+      }
+    });
+
+    document.getElementById(name)?.addEventListener('change', () => {
+      if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
+        updateModuleConfigurationOptions();
+      } else if (name === "moduleConfiguration") {
+        updateModuleCount1FromConfiguration();
+      } else if (name === "secondModuleConfiguration") {
+        updateSecondModuleConfigurationOptions();
+      } else if (name === "moduleCount1" || name === "moduleCount2") {
+        updateSecondModuleConfigurationOptions(name);
+      }
+
+      saveInputs(getInputs());
+    });
+  }
+
+  document.getElementById('calculatorPage').hidden = false;
+  document.getElementById('resultsPage').hidden = true;
+  hideLoading();
 }
 
-    saveInputs(getInputs());
-  });
-}
+document.addEventListener('DOMContentLoaded', init);
   document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
   hideLoading();
