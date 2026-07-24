@@ -650,6 +650,32 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   transform: translateY(0);
 }
 
+.results-layout {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.results-layout > .card {
+  height: 100%;
+}
+
+.detailed-results-card,
+.module-results-card,
+.second-module-results-card {
+  grid-column: span 2;
+}
+
+.soh-card,
+.runtime-estimate-card {
+  grid-column: span 3;
+}
+
+.graph-card {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 1180px) {
   .calculator-grid, .results-layout { grid-template-columns: 1fr 1fr; }
   .simulation-input-card, .graph-card { grid-column: 1 / -1; }
