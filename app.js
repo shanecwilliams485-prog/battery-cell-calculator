@@ -131,10 +131,6 @@ function updateModuleConfigurationOptions() {
   updateSecondModuleConfigurationOptions();
   saveInputs(getInputs());
 }
-function updateModuleConfigurationOptions() {
-  ...
-}
-
 function buildCompatibleSecondModuleOptions(totalSeries, parallel, firstModuleSeries) {
   const options = [];
 
