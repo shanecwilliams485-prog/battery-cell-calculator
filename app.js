@@ -218,38 +218,6 @@ function updateModuleConfigurationOptions() {
   updateSecondModuleConfigurationOptions();
   saveInputs(getInputs());
 }
-function updateModuleConfigurationOptions() {
-  const moduleConfig1Select = document.getElementById("moduleConfiguration");
-  const moduleCount1Select = document.getElementById("moduleCount1");
-  const secondEnabled = document.getElementById("useSecondModuleConfiguration")?.checked || false;
-
-  if (!moduleConfig1Select || !moduleCount1Select) return;
-
-  const { series, parallel } = getSeriesAndParallel();
-
-  const currentConfig1 = moduleConfig1Select.value;
-  const currentCount1 = moduleCount1Select.value;
-
-  const config1Options = secondEnabled
-    ? buildMixedModuleConfigurationOptions(series, parallel)
-    : buildSingleModuleConfigurationOptions(series, parallel);
-
-  const selectedConfig1 = setSelectOptions(moduleConfig1Select, config1Options, currentConfig1);
-  const config1 = parseModuleConfigurationValue(selectedConfig1);
-
-  if (!secondEnabled && config1) {
-    const automaticCount1 = series / config1.series;
-
-    setSelectOptions(moduleCount1Select, [countOption(automaticCount1)], String(automaticCount1));
-  }
-
-  if (secondEnabled) {
-    setSelectOptions(moduleCount1Select, [{ value: "", label: "Select config 2 first" }], "");
-  }
-
-  updateSecondModuleConfigurationOptions();
-  saveInputs(getInputs());
-}
 
 function updateModuleCount1FromConfiguration() {
   const moduleConfig1Select = document.getElementById("moduleConfiguration");
