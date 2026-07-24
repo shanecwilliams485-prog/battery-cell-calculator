@@ -129,7 +129,9 @@ input[type="checkbox"] {
   height: 22px;
   accent-color: var(--green);
 }
+
 .module-config-row {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 18px;
