@@ -133,7 +133,7 @@ input[type="checkbox"] {
 .module-config-row {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 160px;
   gap: 18px;
   align-items: end;
 }
