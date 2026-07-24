@@ -131,7 +131,37 @@ function updateModuleConfigurationOptions() {
   updateSecondModuleConfigurationOptions();
   saveInputs(getInputs());
 }
+function updateModuleConfigurationOptions() {
+  ...
+}
 
+function buildCompatibleSecondModuleOptions(totalSeries, parallel, firstModuleSeries) {
+  const options = [];
+
+  for (let secondModuleSeries = 1; secondModuleSeries <= totalSeries; secondModuleSeries++) {
+    if (secondModuleSeries === firstModuleSeries) continue;
+
+    for (let firstModuleCount = 1; firstModuleCount <= totalSeries; firstModuleCount++) {
+      const usedByFirstModules = firstModuleSeries * firstModuleCount;
+      const remainingSeries = totalSeries - usedByFirstModules;
+
+      if (remainingSeries <= 0) break;
+
+      if (remainingSeries % secondModuleSeries === 0) {
+        const secondModuleCount = remainingSeries / secondModuleSeries;
+
+        options.push({
+          value: `${secondModuleSeries}S${parallel}P`,
+          label: `${secondModuleCount} module${secondModuleCount === 1 ? "" : "s"} of ${secondModuleSeries}S${parallel}P`
+        });
+
+        break;
+      }
+    }
+  }
+
+  return options;
+}
 function updateSecondModuleConfigurationOptions() {
   const checkbox = document.getElementById("useSecondModuleConfiguration");
   const wrap = document.getElementById("secondModuleConfigurationWrap");
@@ -158,18 +188,16 @@ function updateSecondModuleConfigurationOptions() {
     return;
   }
 
-  const remainingSeries = series - firstConfig.series;
+const options = buildCompatibleSecondModuleOptions(series, parallel, firstConfig.series);
 
-  if (remainingSeries <= 0) {
-    secondSelect.innerHTML = `<option value="">No remaining series available</option>`;
-    return;
-  }
+if (!options.length) {
+  secondSelect.innerHTML = `<option value="">No compatible second configuration</option>`;
+  return;
+}
 
-  const options = buildModuleConfigurationOptions(remainingSeries, parallel);
-
-  secondSelect.innerHTML = options
-    .map(option => `<option value="${option.value}">${option.label}</option>`)
-    .join("");
+secondSelect.innerHTML = options
+  .map(option => `<option value="${option.value}">${option.label}</option>`)
+  .join("");
 
   if (options.some(option => option.value === currentValue)) {
     secondSelect.value = currentValue;
