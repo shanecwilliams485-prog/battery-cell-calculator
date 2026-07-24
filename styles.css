@@ -499,7 +499,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 }
 
 .simulation-side-inputs {
-  margin-left: 35px;
+  margin-left: 75px;
 }
 
 .simulation-top-row .toggle-row {
