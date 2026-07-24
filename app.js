@@ -323,36 +323,118 @@ function updateSecondModuleConfigurationOptions(changedCount = "") {
 function calculate(input) {
   const series = Math.max(input.seriesCount, 0);
   const parallel = Math.max(input.parallelCount, 0);
+
   const packEnergyKWh = (input.nominalVoltage * series * input.capacityAh * parallel) / 1000.0;
   const packCapacityAh = input.capacityAh * parallel;
   const nominalVoltageV = input.nominalVoltage * series;
   const maxVoltageV = input.maxVoltage * series;
   const minVoltageV = input.minVoltage * series;
   const numberOfCells = Math.max(input.seriesCount, 0) * Math.max(input.parallelCount, 0);
-  const moduleMatch = String(input.moduleConfiguration || "").match(/^(\d+)S(\d+)P$/);
-  const moduleSeries = moduleMatch ? Number(moduleMatch[1]) : series;
-  const moduleParallel = moduleMatch ? Number(moduleMatch[2]) : parallel;
-  const moduleConfig = `${moduleSeries}S${moduleParallel}P`;
-  const moduleNominalVoltageV = input.nominalVoltage * moduleSeries;
-  const moduleCapacityAh = input.capacityAh * moduleParallel;
+
+  const module1Match = String(input.moduleConfiguration || "").match(/^(\d+)S(\d+)P$/);
+  const module1Series = module1Match ? Number(module1Match[1]) : series;
+  const module1Parallel = module1Match ? Number(module1Match[2]) : parallel;
+  const module1Config = `${module1Series}S${module1Parallel}P`;
+
+  let moduleCount1 = Math.max(0, Math.round(input.moduleCount1 || 0));
+
+  if (!input.useSecondModuleConfiguration && module1Series > 0) {
+    moduleCount1 = series / module1Series;
+  }
+
+  const moduleNominalVoltageV = input.nominalVoltage * module1Series;
+  const moduleCapacityAh = input.capacityAh * module1Parallel;
   const moduleEnergyKWh = moduleNominalVoltageV * moduleCapacityAh / 1000;
-  const moduleCellCount = moduleSeries * moduleParallel;
+  const moduleCellCount = module1Series * module1Parallel;
+
+  const module2Match = String(input.secondModuleConfiguration || "").match(/^(\d+)S(\d+)P$/);
+  const hasSecondModule = !!input.useSecondModuleConfiguration && !!module2Match;
+
+  const module2Series = hasSecondModule ? Number(module2Match[1]) : 0;
+  const module2Parallel = hasSecondModule ? Number(module2Match[2]) : 0;
+  const module2Config = hasSecondModule ? `${module2Series}S${module2Parallel}P` : "";
+  const moduleCount2 = hasSecondModule ? Math.max(0, Math.round(input.moduleCount2 || 0)) : 0;
+
+  const module2NominalVoltageV = input.nominalVoltage * module2Series;
+  const module2CapacityAh = input.capacityAh * module2Parallel;
+  const module2EnergyKWh = module2NominalVoltageV * module2CapacityAh / 1000;
+  const module2CellCount = module2Series * module2Parallel;
+
+  const totalModuleSeries =
+    moduleCount1 * module1Series +
+    moduleCount2 * module2Series;
+
   const totalCellWeightKG = (input.cellWeightG * series * parallel) / 1000.0;
   const maxDischargeCurrentA = input.maxDischargeCurrentA * parallel;
   const continuousDischargeCurrentA = input.continuousDischargeCurrentA * parallel;
   const maxChargeCurrentA = input.maxChargeCurrentA * parallel;
+
   const maxDischargePowerKW = (input.nominalVoltage * series * input.maxDischargeCurrentA * parallel) / 1000.0;
   const continuousDischargePowerKW = (input.nominalVoltage * series * input.continuousDischargeCurrentA * parallel) / 1000.0;
   const maxChargePowerKW = (input.nominalVoltage * series * input.maxChargeCurrentA * parallel) / 1000.0;
+
   const maxDischargeCRating = input.capacityAh === 0 ? 0 : input.maxDischargeCurrentA / input.capacityAh;
   const maxChargeCRating = input.capacityAh === 0 ? 0 : input.maxChargeCurrentA / input.capacityAh;
+
   const usableEnergyKWh = packEnergyKWh * input.usableEnergyFactor;
   const usableBatteryWhSpreadsheet = input.nominalVoltage * series * input.capacityAh * parallel * input.usableEnergyFactor;
   const runtimeAtContinuousDischargeMinutes = maxVoltageV <= 0 ? 0 : usableBatteryWhSpreadsheet / maxVoltageV;
   const runtimeAtAssumedLoadMinutes = input.assumedLoadKW > 0 ? usableEnergyKWh / input.assumedLoadKW * 60.0 : null;
-  const variableSimulation = input.variableCurrentSimulationEnabled ? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input.simulationTimeStepMinutes, maxDischargeCurrentA) : null;
-  const sohRows = [100, 95, 90, 85, 80].map(percentage => ({ percentage, usableEnergyKWh: usableEnergyKWh * percentage / 100.0 }));
-  return { packEnergyKWh, packCapacityAh, maxDischargeCurrentA, maxDischargePowerKW, continuousDischargeCurrentA, continuousDischargePowerKW, maxChargeCurrentA, maxChargePowerKW, maxVoltageV, minVoltageV, nominalVoltageV, numberOfCells, totalCellWeightKG, maxDischargeCRating, maxChargeCRating, usableEnergyKWh, runtimeAtContinuousDischargeMinutes, runtimeAtAssumedLoadMinutes, moduleConfig, moduleNominalVoltageV, moduleCapacityAh, moduleEnergyKWh, moduleCellCount, variableSimulationEnabled: input.variableCurrentSimulationEnabled, variableAverageCurrentA: variableSimulation?.averageCurrentA ?? null, variableAveragePowerKW: variableSimulation?.averagePowerKW ?? null, variableRuntimeMinutes: variableSimulation?.runtimeMinutes ?? null, variableZeroSOCMinute: variableSimulation?.zeroSOCMinute ?? null, variableProfileSampleNumber: variableSimulation?.profileSampleNumber ?? null, variableSimulationRows: variableSimulation?.rows ?? [], sohRows };
+
+  const variableSimulation = input.variableCurrentSimulationEnabled
+    ? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input.simulationTimeStepMinutes, maxDischargeCurrentA)
+    : null;
+
+  const sohRows = [100, 95, 90, 85, 80].map(percentage => ({
+    percentage,
+    usableEnergyKWh: usableEnergyKWh * percentage / 100.0
+  }));
+
+  return {
+    packEnergyKWh,
+    packCapacityAh,
+    maxDischargeCurrentA,
+    maxDischargePowerKW,
+    continuousDischargeCurrentA,
+    continuousDischargePowerKW,
+    maxChargeCurrentA,
+    maxChargePowerKW,
+    maxVoltageV,
+    minVoltageV,
+    nominalVoltageV,
+    numberOfCells,
+    totalCellWeightKG,
+    maxDischargeCRating,
+    maxChargeCRating,
+    usableEnergyKWh,
+    runtimeAtContinuousDischargeMinutes,
+    runtimeAtAssumedLoadMinutes,
+
+    moduleConfig: module1Config,
+    moduleCount1,
+    moduleNominalVoltageV,
+    moduleCapacityAh,
+    moduleEnergyKWh,
+    moduleCellCount,
+
+    hasSecondModule,
+    module2Config,
+    moduleCount2,
+    module2NominalVoltageV,
+    module2CapacityAh,
+    module2EnergyKWh,
+    module2CellCount,
+    totalModuleSeries,
+
+    variableSimulationEnabled: input.variableCurrentSimulationEnabled,
+    variableAverageCurrentA: variableSimulation?.averageCurrentA ?? null,
+    variableAveragePowerKW: variableSimulation?.averagePowerKW ?? null,
+    variableRuntimeMinutes: variableSimulation?.runtimeMinutes ?? null,
+    variableZeroSOCMinute: variableSimulation?.zeroSOCMinute ?? null,
+    variableProfileSampleNumber: variableSimulation?.profileSampleNumber ?? null,
+    variableSimulationRows: variableSimulation?.rows ?? [],
+    sohRows
+  };
 }
 function seededNoise(seed) {
   const x = Math.sin(seed * 12.9898) * 43758.5453;
