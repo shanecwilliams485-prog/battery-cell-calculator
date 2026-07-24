@@ -643,17 +643,46 @@ function renderResults(results) {
     valueRow('Charge C rating', `${fmt(results.maxChargeCRating, 0)} C`)
   ].join('');
   
-  const moduleConfigEl = document.getElementById("moduleResultConfig");
-  const moduleVoltageEl = document.getElementById("moduleResultVoltage");
-  const moduleCapacityEl = document.getElementById("moduleResultCapacity");
-  const moduleEnergyEl = document.getElementById("moduleResultEnergy");
-  const moduleCellsEl = document.getElementById("moduleResultCells");
+const moduleConfigEl = document.getElementById("moduleResultConfig");
+const moduleVoltageEl = document.getElementById("moduleResultVoltage");
+const moduleCapacityEl = document.getElementById("moduleResultCapacity");
+const moduleEnergyEl = document.getElementById("moduleResultEnergy");
+const moduleCellsEl = document.getElementById("moduleResultCells");
 
-  if (moduleConfigEl) moduleConfigEl.textContent = results.moduleConfig;
-  if (moduleVoltageEl) moduleVoltageEl.textContent = `${fmt(results.moduleNominalVoltageV, 1)} V`;
-  if (moduleCapacityEl) moduleCapacityEl.textContent = `${fmt(results.moduleCapacityAh, 1)} Ah`;
-  if (moduleEnergyEl) moduleEnergyEl.textContent = `${fmt(results.moduleEnergyKWh, 2)} kWh`;
-  if (moduleCellsEl) moduleCellsEl.textContent = `${fmt(results.moduleCellCount, 0)} cells`;
+if (moduleConfigEl) {
+  moduleConfigEl.textContent = results.moduleCount1
+    ? `${fmt(results.moduleCount1, 0)} module${results.moduleCount1 === 1 ? "" : "s"} of ${results.moduleConfig}`
+    : results.moduleConfig;
+}
+
+if (moduleVoltageEl) moduleVoltageEl.textContent = `${fmt(results.moduleNominalVoltageV, 1)} V`;
+if (moduleCapacityEl) moduleCapacityEl.textContent = `${fmt(results.moduleCapacityAh, 1)} Ah`;
+if (moduleEnergyEl) moduleEnergyEl.textContent = `${fmt(results.moduleEnergyKWh, 2)} kWh`;
+if (moduleCellsEl) moduleCellsEl.textContent = `${fmt(results.moduleCellCount, 0)} cells`;
+
+const secondModuleResultsEl = document.getElementById("secondModuleResults");
+const secondModuleConfigEl = document.getElementById("secondModuleResultConfig");
+const secondModuleVoltageEl = document.getElementById("secondModuleResultVoltage");
+const secondModuleCapacityEl = document.getElementById("secondModuleResultCapacity");
+const secondModuleEnergyEl = document.getElementById("secondModuleResultEnergy");
+const secondModuleCellsEl = document.getElementById("secondModuleResultCells");
+
+if (secondModuleResultsEl) {
+  secondModuleResultsEl.hidden = !results.hasSecondModule;
+}
+
+if (results.hasSecondModule) {
+  if (secondModuleConfigEl) {
+    secondModuleConfigEl.textContent = results.moduleCount2
+      ? `${fmt(results.moduleCount2, 0)} module${results.moduleCount2 === 1 ? "" : "s"} of ${results.module2Config}`
+      : results.module2Config;
+  }
+
+  if (secondModuleVoltageEl) secondModuleVoltageEl.textContent = `${fmt(results.module2NominalVoltageV, 1)} V`;
+  if (secondModuleCapacityEl) secondModuleCapacityEl.textContent = `${fmt(results.module2CapacityAh, 1)} Ah`;
+  if (secondModuleEnergyEl) secondModuleEnergyEl.textContent = `${fmt(results.module2EnergyKWh, 2)} kWh`;
+  if (secondModuleCellsEl) secondModuleCellsEl.textContent = `${fmt(results.module2CellCount, 0)} cells`;
+}
   
   document.getElementById('sohRows').innerHTML = results.sohRows.map(row => `<div class="soh-row"><div><span>${row.percentage}% SOH</span><strong>${fmt(row.usableEnergyKWh, 2)} kWh</strong></div><progress value="${row.percentage}" max="100"></progress></div>`).join('');
   let runtime = valueRow('Spreadsheet runtime', `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`);
