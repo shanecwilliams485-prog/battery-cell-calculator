@@ -95,7 +95,7 @@ function updateModuleConfigurationOptions() {
 
       options.push({
         value: `${moduleSeries}S${moduleParallel}P`,
-        label: `${moduleCount} module${moduleCount === 1 ? "" : "s"} of ${moduleSeries}S${moduleParallel}P (${cellsPerModule} cells each)`
+        label: `${moduleCount} module${moduleCount === 1 ? "" : "s"} of ${moduleSeries}S${moduleParallel}P`
       });
     }
   }
