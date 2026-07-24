@@ -167,9 +167,109 @@
           <div id="resultCards" class="result-grid"></div>
 
           <div class="results-layout">
-            <section class="card">
-              <h3>Detailed Results</h3>
-              <div id="detailedResults"></div>
+  <section class="card detailed-results-card">
+    <h3>Detailed Results</h3>
+    <div id="detailedResults"></div>
+  </section>
+
+  <section class="card module-results-card">
+    <h3>Module 1</h3>
+
+    <div class="value-row">
+      <span>Module configuration</span>
+      <strong id="moduleResultConfig">—</strong>
+    </div>
+
+    <div class="value-row">
+      <span>Module nominal voltage</span>
+      <strong id="moduleResultVoltage">—</strong>
+    </div>
+
+    <div class="value-row">
+      <span>Module capacity</span>
+      <strong id="moduleResultCapacity">—</strong>
+    </div>
+
+    <div class="value-row">
+      <span>Module energy</span>
+      <strong id="moduleResultEnergy">—</strong>
+    </div>
+
+    <div class="value-row">
+      <span>Cells per module</span>
+      <strong id="moduleResultCells">—</strong>
+    </div>
+  </section>
+
+  <section id="secondModuleResults" class="card second-module-results-card" hidden>
+    <h3>Module 2</h3>
+
+    <div class="value-row">
+      <span>Module configuration</span>
+      <strong id="secondModuleResultConfig">—</strong>
+    </div>
+
+    <div class="value-row">
+      <span>Module nominal voltage</span>
+      <strong id="secondModuleResultVoltage">—</strong>
+    </div>
+
+    <div class="value-row">
+      <span>Module capacity</span>
+      <strong id="secondModuleResultCapacity">—</strong>
+    </div>
+
+    <div class="value-row">
+      <span>Module energy</span>
+      <strong id="secondModuleResultEnergy">—</strong>
+    </div>
+
+    <div class="value-row">
+      <span>Cells per module</span>
+      <strong id="secondModuleResultCells">—</strong>
+    </div>
+  </section>
+
+  <section class="card soh-card">
+    <h3>Usable Energy VS SOH</h3>
+    <div id="sohRows"></div>
+  </section>
+
+  <section class="card runtime-estimate-card">
+    <h3>Runtime Estimate</h3>
+    <div id="runtimeRows"></div>
+  </section>
+
+  <section id="simulationSection" class="card graph-card" hidden>
+    <div class="section-heading compact">
+      <div>
+        <h3 id="profileTitle">Variable Discharge Simulation</h3>
+        <p class="muted">Animated browser version of the current graph from the SwiftUI app.</p>
+      </div>
+      <button class="ghost-button" id="animateBtn" type="button">Replay graph</button>
+    </div>
+
+    <canvas id="currentChart" aria-label="Variable discharge simulation graph"></canvas>
+    <p id="chartStats" class="chart-stats">Live discharge data</p>
+
+    <div id="driverLive" class="driver-live" aria-live="polite">
+      <div class="driver-dial">
+        <span>Time</span>
+        <strong id="liveTimeValue">0.0 min</strong>
+      </div>
+
+      <div class="driver-dial current">
+        <span>Current</span>
+        <strong id="liveCurrentValue">0 A</strong>
+      </div>
+
+      <div class="driver-dial style">
+        <span>Driving style</span>
+        <strong id="liveDriveStyleValue">Ready</strong>
+      </div>
+    </div>
+  </section>
+</div>
             </section>
             
 <section class="card module-results-card">
