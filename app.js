@@ -278,7 +278,6 @@ function updateModuleCount1FromConfiguration() {
 }
 
 function updateSecondModuleConfigurationOptions(changedCount = "") {
-function updateSecondModuleConfigurationOptions(changedCount = "") {
   const checkbox = document.getElementById("useSecondModuleConfiguration");
   const wrap = document.getElementById("secondModuleConfigurationWrap");
   const moduleConfig1Select = document.getElementById("moduleConfiguration");
