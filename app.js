@@ -30,7 +30,7 @@ const CHART_ANIMATION_DELAY_MS = 135; // Increase this value to make the variabl
 
 const fields = [
   ['nominalVoltage', 'number'], ['maxVoltage', 'number'], ['minVoltage', 'number'], ['capacityAh', 'number'],
-  ['maxDischargeCurrentA', 'number'], ['continuousDischargeCurrentA', 'number'], ['maxChargeCurrentA', 'number'], ['cellWeightG', 'number']
+  ['maxDischargeCurrentA', 'number'], ['continuousDischargeCurrentA', 'number'], ['maxChargeCurrentA', 'number'], ['cellWeightG', 'number'],
   ['seriesCount', 'int'], ['parallelCount', 'int'], ['moduleCount1', 'int'], ['moduleConfiguration', 'text'], ['useSecondModuleConfiguration', 'checkbox'], ['moduleCount2', 'int'], ['secondModuleConfiguration', 'text'], ['usableEnergyFactor', 'number'], ['assumedLoadKW', 'number'],
   ['variableCurrentSimulationEnabled', 'checkbox'], ['simulationTimeStepMinutes', 'number']
 ];
