@@ -58,12 +58,26 @@
               <label>Series count <input id="seriesCount" type="number" step="1" min="1" inputmode="numeric"></label>
               <label>Parallel count <input id="parallelCount" type="number" step="1" min="1" inputmode="numeric"></label>
 
-              <label>
-                Module configuration
-                <select id="moduleConfiguration">
-                  <option value="">Auto select</option>
-                </select>
-              </label>
+           <div class="module-config-row">
+  <label>
+    Module configuration
+    <select id="moduleConfiguration">
+      <option value="">Auto select</option>
+    </select>
+  </label>
+
+  <label class="toggle-row second-module-toggle">
+    Use second module configuration
+    <input id="useSecondModuleConfiguration" type="checkbox">
+  </label>
+</div>
+
+<label id="secondModuleConfigurationWrap" hidden>
+  Second module configuration
+  <select id="secondModuleConfiguration">
+    <option value="">Select second module configuration</option>
+  </select>
+</label>
 
               </div>
             </section>
