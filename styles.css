@@ -681,6 +681,15 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   .simulation-input-card, .graph-card { grid-column: 1 / -1; }
   .result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sim-preview-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .detailed-results-card,
+  .module-results-card,
+  .second-module-results-card,
+  .soh-card,
+  .runtime-estimate-card,
+  .graph-card {
+    grid-column: 1 / -1;
+  }
 }
 @media (max-width: 760px) {
   .app-shell { width: min(100% - 18px, 1180px); padding-top: 10px; }
