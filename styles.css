@@ -163,7 +163,27 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--green); 
 .result-card span { display: block; font-size: 1.3rem; margin-bottom: 10px; }
 .result-card small { display: block; color: var(--muted); margin-bottom: 5px; }
 .result-card strong { display: block; font-size: 1.3rem; letter-spacing: -.03em; }
-.results-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, .8fr) minmax(320px, .8fr); gap: 16px; align-items: start; }
+.results-layout {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.detailed-results-card,
+.module-results-card,
+.second-module-results-card {
+  grid-column: span 2;
+}
+
+.soh-card,
+.runtime-estimate-card {
+  grid-column: span 3;
+}
+
+.graph-card {
+  grid-column: 1 / -1;
+}
 .results-layout .card { margin-bottom: 0; }
 .graph-card { grid-column: 1 / -1; }
 .value-row { display: flex; justify-content: space-between; gap: 18px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--line); }
