@@ -9,8 +9,10 @@ const DEFAULT_INPUTS = {
   cellWeightG: 70.0,
   seriesCount: 96,
   parallelCount: 24,
+  moduleCount1: 0,
   moduleConfiguration: "",
   useSecondModuleConfiguration: false,
+  moduleCount2: 0,
   secondModuleConfiguration: "",
   usableEnergyFactor: 0.88,
   assumedLoadKW: 0.0,
@@ -28,8 +30,8 @@ const CHART_ANIMATION_DELAY_MS = 135; // Increase this value to make the variabl
 
 const fields = [
   ['nominalVoltage', 'number'], ['maxVoltage', 'number'], ['minVoltage', 'number'], ['capacityAh', 'number'],
-  ['maxDischargeCurrentA', 'number'], ['continuousDischargeCurrentA', 'number'], ['maxChargeCurrentA', 'number'], ['cellWeightG', 'number'],
-  ['seriesCount', 'int'], ['parallelCount', 'int'], ['moduleConfiguration', 'text'], ['useSecondModuleConfiguration', 'checkbox'], ['secondModuleConfiguration', 'text'], ['usableEnergyFactor', 'number'], ['assumedLoadKW', 'number'],
+  ['maxDischargeCurrentA', 'number'], ['continuousDischargeCurrentA', 'number'], ['maxChargeCurrentA', 'number'], ['cellWeightG', 'number'],moduleCount1: 0,
+  ['seriesCount', 'int'], ['parallelCount', 'int'], ['moduleCount1', 'int'], ['moduleConfiguration', 'text'], ['useSecondModuleConfiguration', 'checkbox'], ['moduleCount2', 'int'], ['secondModuleConfiguration', 'text'], ['usableEnergyFactor', 'number'], ['assumedLoadKW', 'number'],
   ['variableCurrentSimulationEnabled', 'checkbox'], ['simulationTimeStepMinutes', 'number']
 ];
 
@@ -89,117 +91,164 @@ function parseModuleConfigurationValue(value) {
   };
 }
 
-function buildModuleConfigurationOptions(totalSeries, parallel) {
-  const options = [];
-
-  for (let moduleCount = 1; moduleCount <= totalSeries; moduleCount++) {
-    if (totalSeries % moduleCount === 0) {
-      const moduleSeries = totalSeries / moduleCount;
-      const moduleParallel = parallel;
-
-      options.push({
-        value: `${moduleSeries}S${moduleParallel}P`,
-        label: `${moduleCount} module${moduleCount === 1 ? "" : "s"} of ${moduleSeries}S${moduleParallel}P`
-      });
-    }
-  }
-
-  return options;
+function makeModuleValue(series, parallel) {
+  return `${series}S${parallel}P`;
 }
 
-function updateModuleConfigurationOptions() {
-  const select = document.getElementById("moduleConfiguration");
-  if (!select) return;
+function makeModuleLabel(series, parallel) {
+  return `${series}S${parallel}P`;
+}
 
-  const series = Math.max(1, Math.round(clampNumber(document.getElementById("seriesCount")?.value, DEFAULT_INPUTS.seriesCount)));
-  const parallel = Math.max(1, Math.round(clampNumber(document.getElementById("parallelCount")?.value, DEFAULT_INPUTS.parallelCount)));
-  const currentValue = select.value;
-
-  const options = buildModuleConfigurationOptions(series, parallel);
+function setSelectOptions(select, options, preferredValue = "") {
+  if (!select) return "";
 
   select.innerHTML = options
     .map(option => `<option value="${option.value}">${option.label}</option>`)
     .join("");
 
-  if (options.some(option => option.value === currentValue)) {
-    select.value = currentValue;
+  if (options.some(option => String(option.value) === String(preferredValue))) {
+    select.value = preferredValue;
   } else {
-    const preferred = options.find(option => option.value.startsWith("12S"));
-    select.value = preferred ? preferred.value : options[0]?.value || "";
+    select.value = options[0]?.value || "";
   }
 
-  updateSecondModuleConfigurationOptions();
-  saveInputs(getInputs());
+  return select.value;
 }
-function buildCompatibleSecondModuleOptions(totalSeries, parallel, firstModuleSeries) {
-  const options = [];
 
-  for (let secondModuleSeries = 1; secondModuleSeries <= totalSeries; secondModuleSeries++) {
-    if (secondModuleSeries === firstModuleSeries) continue;
+function getSeriesAndParallel() {
+  const series = Math.max(1, Math.round(clampNumber(document.getElementById("seriesCount")?.value, DEFAULT_INPUTS.seriesCount)));
+  const parallel = Math.max(1, Math.round(clampNumber(document.getElementById("parallelCount")?.value, DEFAULT_INPUTS.parallelCount)));
 
-    for (let firstModuleCount = 1; firstModuleCount <= totalSeries; firstModuleCount++) {
-      const usedByFirstModules = firstModuleSeries * firstModuleCount;
-      const remainingSeries = totalSeries - usedByFirstModules;
+  return { series, parallel };
+}
 
-      if (remainingSeries <= 0) break;
+function updateModuleConfigurationOptions() {
+  const moduleCount1Select = document.getElementById("moduleCount1");
+  const moduleConfig1Select = document.getElementById("moduleConfiguration");
+  const secondEnabled = document.getElementById("useSecondModuleConfiguration")?.checked || false;
 
-      if (remainingSeries % secondModuleSeries === 0) {
-        const secondModuleCount = remainingSeries / secondModuleSeries;
+  if (!moduleCount1Select || !moduleConfig1Select) return;
 
-        options.push({
-          value: `${secondModuleSeries}S${parallel}P`,
-          label: `${secondModuleCount} module${secondModuleCount === 1 ? "" : "s"} of ${secondModuleSeries}S${parallel}P`
+  const { series, parallel } = getSeriesAndParallel();
+
+  const currentCount1 = moduleCount1Select.value;
+  const currentConfig1 = moduleConfig1Select.value;
+
+  let count1Options = [];
+
+  if (secondEnabled) {
+    for (let count = 1; count < series; count++) {
+      count1Options.push({
+        value: String(count),
+        label: `${count} module${count === 1 ? "" : "s"}`
+      });
+    }
+  } else {
+    for (let count = 1; count <= series; count++) {
+      if (series % count === 0) {
+        count1Options.push({
+          value: String(count),
+          label: `${count} module${count === 1 ? "" : "s"}`
         });
-
-        break;
       }
     }
   }
 
-  return options;
+  const selectedCount1 = Number(setSelectOptions(moduleCount1Select, count1Options, currentCount1));
+
+  let config1Options = [];
+
+  if (secondEnabled) {
+    const maxModuleSeries = Math.floor((series - 1) / Math.max(selectedCount1, 1));
+
+    for (let moduleSeries = 1; moduleSeries <= maxModuleSeries; moduleSeries++) {
+      config1Options.push({
+        value: makeModuleValue(moduleSeries, parallel),
+        label: makeModuleLabel(moduleSeries, parallel)
+      });
+    }
+  } else {
+    const moduleSeries = series / Math.max(selectedCount1, 1);
+
+    if (Number.isInteger(moduleSeries)) {
+      config1Options.push({
+        value: makeModuleValue(moduleSeries, parallel),
+        label: makeModuleLabel(moduleSeries, parallel)
+      });
+    }
+  }
+
+  setSelectOptions(moduleConfig1Select, config1Options, currentConfig1);
+
+  updateSecondModuleConfigurationOptions();
+  saveInputs(getInputs());
 }
+
 function updateSecondModuleConfigurationOptions() {
   const checkbox = document.getElementById("useSecondModuleConfiguration");
   const wrap = document.getElementById("secondModuleConfigurationWrap");
-  const secondSelect = document.getElementById("secondModuleConfiguration");
-  const firstSelect = document.getElementById("moduleConfiguration");
+  const moduleCount1Select = document.getElementById("moduleCount1");
+  const moduleConfig1Select = document.getElementById("moduleConfiguration");
+  const moduleCount2Select = document.getElementById("moduleCount2");
+  const moduleConfig2Select = document.getElementById("secondModuleConfiguration");
 
-  if (!checkbox || !wrap || !secondSelect || !firstSelect) return;
+  if (!checkbox || !wrap || !moduleCount1Select || !moduleConfig1Select || !moduleCount2Select || !moduleConfig2Select) return;
 
   const enabled = checkbox.checked;
   wrap.hidden = !enabled;
 
   if (!enabled) {
-    secondSelect.value = "";
+    moduleCount2Select.value = "";
+    moduleConfig2Select.value = "";
     return;
   }
 
-  const series = Math.max(1, Math.round(clampNumber(document.getElementById("seriesCount")?.value, DEFAULT_INPUTS.seriesCount)));
-  const parallel = Math.max(1, Math.round(clampNumber(document.getElementById("parallelCount")?.value, DEFAULT_INPUTS.parallelCount)));
-  const firstConfig = parseModuleConfigurationValue(firstSelect.value);
-  const currentValue = secondSelect.value;
+  const { series, parallel } = getSeriesAndParallel();
+
+  const moduleCount1 = Math.max(1, Math.round(clampNumber(moduleCount1Select.value, 1)));
+  const firstConfig = parseModuleConfigurationValue(moduleConfig1Select.value);
 
   if (!firstConfig) {
-    secondSelect.innerHTML = `<option value="">Select first module configuration</option>`;
+    setSelectOptions(moduleCount2Select, [{ value: "", label: "Select count" }], "");
+    setSelectOptions(moduleConfig2Select, [{ value: "", label: "Select configuration" }], "");
     return;
   }
 
-const options = buildCompatibleSecondModuleOptions(series, parallel, firstConfig.series);
+  const usedByFirstModules = moduleCount1 * firstConfig.series;
+  const remainingSeries = series - usedByFirstModules;
 
-if (!options.length) {
-  secondSelect.innerHTML = `<option value="">No compatible second configuration</option>`;
-  return;
-}
-
-secondSelect.innerHTML = options
-  .map(option => `<option value="${option.value}">${option.label}</option>`)
-  .join("");
-
-  if (options.some(option => option.value === currentValue)) {
-    secondSelect.value = currentValue;
-  } else {
-    secondSelect.value = options[0]?.value || "";
+  if (remainingSeries <= 0) {
+    setSelectOptions(moduleCount2Select, [{ value: "", label: "No series remaining" }], "");
+    setSelectOptions(moduleConfig2Select, [{ value: "", label: "No configuration available" }], "");
+    return;
   }
+
+  const currentCount2 = moduleCount2Select.value;
+  const currentConfig2 = moduleConfig2Select.value;
+
+  const count2Options = [];
+
+  for (let count = 1; count <= remainingSeries; count++) {
+    if (remainingSeries % count === 0) {
+      count2Options.push({
+        value: String(count),
+        label: `${count} module${count === 1 ? "" : "s"}`
+      });
+    }
+  }
+
+  const selectedCount2 = Number(setSelectOptions(moduleCount2Select, count2Options, currentCount2));
+
+  const moduleSeries2 = remainingSeries / Math.max(selectedCount2, 1);
+
+  const config2Options = Number.isInteger(moduleSeries2)
+    ? [{
+        value: makeModuleValue(moduleSeries2, parallel),
+        label: makeModuleLabel(moduleSeries2, parallel)
+      }]
+    : [{ value: "", label: "No configuration available" }];
+
+  setSelectOptions(moduleConfig2Select, config2Options, currentConfig2);
 }
 
 function calculate(input) {
@@ -615,20 +664,22 @@ function init() {
   document.getElementById('animateBtn').addEventListener('click', animateChart);
 for (const [name] of fields) {
   document.getElementById(name)?.addEventListener('input', () => {
-    if (name === "seriesCount" || name === "parallelCount") {
-      updateModuleConfigurationOptions();
-    } else if (name === "moduleConfiguration" || name === "useSecondModuleConfiguration") {
-      updateSecondModuleConfigurationOptions();
-      saveInputs(getInputs());
-    } else {
-      saveInputs(getInputs());
-    }
+   if (name === "seriesCount" || name === "parallelCount" || name === "moduleCount1" || name === "useSecondModuleConfiguration") {
+  updateModuleConfigurationOptions();
+} else if (name === "moduleConfiguration" || name === "moduleCount2") {
+  updateSecondModuleConfigurationOptions();
+  saveInputs(getInputs());
+} else {
+  saveInputs(getInputs());
+}
   });
 
   document.getElementById(name)?.addEventListener('change', () => {
-    if (name === "moduleConfiguration" || name === "useSecondModuleConfiguration") {
-      updateSecondModuleConfigurationOptions();
-    }
+    if (name === "seriesCount" || name === "parallelCount" || name === "moduleCount1" || name === "useSecondModuleConfiguration") {
+  updateModuleConfigurationOptions();
+} else if (name === "moduleConfiguration" || name === "moduleCount2") {
+  updateSecondModuleConfigurationOptions();
+}
 
     saveInputs(getInputs());
   });
