@@ -663,6 +663,14 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   .app-logo { width: 64px; height: 64px; }
   .company-logo { grid-column: 1; grid-row: 1; width: min(78vw, 480px); max-height: none; margin: 0 auto 10px; }
   .calculator-grid, .results-layout, .calculate-area, .form-grid, .result-grid, .sim-preview-list { grid-template-columns: 1fr; }
+  .detailed-results-card,
+.module-results-card,
+.second-module-results-card,
+.soh-card,
+.runtime-estimate-card,
+.graph-card {
+  grid-column: 1 / -1;
+}
   .simulation-top-row {
     grid-template-columns: 1fr !important;
     grid-template-areas:
