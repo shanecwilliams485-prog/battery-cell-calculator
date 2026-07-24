@@ -58,9 +58,78 @@ main { display: block; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .form-grid.single { grid-template-columns: 1fr; margin-top: 14px; }
 label { display: grid; gap: 7px; color: #dbe9de; font-weight: 700; font-size: .94rem; }
+
 label span { color: var(--muted); font-weight: 600; }
-input[type="number"] { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 13px 14px; background: rgba(255,255,255,.055); color: var(--text); font: inherit; font-weight: 750; outline: none; }
-input[type="number"]:focus { border-color: rgba(63, 232, 117, .9); box-shadow: 0 0 0 4px rgba(63, 232, 117, .13); }
+
+input[type="number"] {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px 14px;
+  background: rgba(255,255,255,.055);
+  color: var(--text);
+  font: inherit;
+  font-weight: 750;
+  outline: none;
+}
+
+input[type="number"]:focus {
+  border-color: rgba(63, 232, 117, .9);
+  box-shadow: 0 0 0 4px rgba(63, 232, 117, .13);
+}
+
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px 38px 13px 14px;
+  background: rgba(255,255,255,.055);
+  color: var(--text);
+  font: inherit;
+  font-weight: 750;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+select:focus {
+  border-color: rgba(63, 232, 117, .9);
+  box-shadow: 0 0 0 4px rgba(63, 232, 117, .13);
+}
+
+select option {
+  background: #101511;
+  color: #ffffff;
+  font: inherit;
+}
+
+label:has(select) {
+  position: relative;
+}
+
+label:has(select)::after {
+  content: "⌄";
+  position: absolute;
+  right: 14px;
+  bottom: 13px;
+  pointer-events: none;
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.toggle-row {
+  display: flex;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 12px;
+}
+
+input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--green);
+}
+
 .toggle-row { display: flex; grid-template-columns: none; align-items: center; gap: 12px; }
 input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--green); }
 .calculate-area { display: grid; grid-template-columns: minmax(260px, 420px) minmax(320px, 1fr); gap: 16px; align-items: stretch; margin-top: 18px; }
