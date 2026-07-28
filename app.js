@@ -1178,10 +1178,11 @@ if (vehicleRangeSection && vehicleRangeRows) {
     vehicleRangeSection.hidden = false;
 
     vehicleRangeRows.innerHTML =
-      valueRow('Estimated range', `${fmt(results.vehicleRangeMiles, 1)} miles`)
-      + valueRow('Average simulated speed', `${fmt(results.variableAverageSpeedMph, 1)} mph`)
-      + valueRow('Consumption', `${fmt(results.vehicleConsumptionKWhPer100Miles, 1)} kWh / 100 miles`)
-      + valueRow('Efficiency', `${fmt(results.vehicleConsumptionMilesPerKWh, 2)} miles / kWh`);
+  valueRow('Estimated range', `${fmt(results.vehicleRangeMiles, 1)} miles`)
+  + valueRow('Average simulated speed', `${fmt(results.variableAverageSpeedMph, 1)} mph`)
+  + valueRow('Consumption', `${fmt(results.vehicleConsumptionKWhPer100Miles, 1)} kWh / 100 miles`)
+  + valueRow('Efficiency', `${fmt(results.vehicleConsumptionMilesPerKWh, 2)} miles / kWh`)
+  + `<p class="muted range-note">Range estimate is based on the simulated 30-minute drive cycle and usable pack energy.</p>`;
   } else {
     vehicleRangeSection.hidden = true;
     vehicleRangeRows.innerHTML = "";
