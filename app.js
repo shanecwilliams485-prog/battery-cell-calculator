@@ -1101,10 +1101,10 @@ function valueRow(label, value) { return `<div class="value-row"><span>${label}<
 function renderResults(results) {
   document.getElementById('results').hidden = false;
   document.getElementById('resultCards').innerHTML = `
-    <article class="result-card"><span>⚡</span><small>Energy</small><strong>${fmt(results.packEnergyKWh, 2)} kWh</strong></article>
-    <article class="result-card"><span>🧭</span><small>Nominal Voltage</small><strong>${fmt(results.nominalVoltageV, 1)} V</strong></article>
-    <article class="result-card"><span>🔋</span><small>Capacity</small><strong>${fmt(results.packCapacityAh, 1)} Ah</strong></article>
-    <article class="result-card"><span>▦</span><small>Cells</small><strong>${results.numberOfCells}</strong></article>`;
+  <article class="result-card"><span>⚡</span><small>Pack energy</small><strong>${fmt(results.packEnergyKWh, 2)} kWh</strong></article>
+  <article class="result-card"><span>🔋</span><small>Usable energy</small><strong>${fmt(results.usableEnergyKWh, 2)} kWh</strong></article>
+  <article class="result-card"><span>🧭</span><small>Nominal voltage</small><strong>${fmt(results.nominalVoltageV, 1)} V</strong></article>
+  <article class="result-card"><span>▦</span><small>Cells</small><strong>${results.numberOfCells}</strong></article>`;
   document.getElementById('detailedResults').innerHTML = [
     valueRow('Max discharge', `${fmt(results.maxDischargeCurrentA, 1)} A / ${fmt(results.maxDischargePowerKW, 2)} kW`),
     valueRow('Continuous discharge', `${fmt(results.continuousDischargeCurrentA, 1)} A / ${fmt(results.continuousDischargePowerKW, 2)} kW`),
