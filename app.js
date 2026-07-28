@@ -926,8 +926,7 @@ if (results.hasSecondModule) {
   
 document.getElementById('sohRows').innerHTML = results.sohRows.map(row => `<div class="soh-row"><div><span>${row.percentage}% SOH</span><strong>${fmt(row.usableEnergyKWh, 2)} kWh</strong></div><progress value="${row.percentage}" max="100"></progress></div>`).join('');
 
-let runtime = valueRow('Spreadsheet runtime', `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`);
-
+let runtime = valueRow('Pack linear discharge runtime', `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`);
 if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null) {
   runtime += '<hr>'
     + valueRow('Vehicle average power', `${fmt(results.variableAveragePowerKW, 2)} kW`)
