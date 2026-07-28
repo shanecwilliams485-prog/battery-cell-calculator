@@ -935,6 +935,7 @@ return {
   averagePowerKW,
   averageSpeedMph,
   simulatedDistanceMiles,
+  simulatedEnergyUsedKWh,
   runtimeMinutes,
   zeroSOCMinute: runtimeMinutes,
   profileSampleNumber: driveCycleRunId,
