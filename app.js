@@ -1055,6 +1055,7 @@ function toggleSimulationOptions() {
 
   if (simulationOptions) simulationOptions.hidden = !enabled;
   if (vehicleSimulationInputs) vehicleSimulationInputs.hidden = !enabled;
+  toggleAdvancedVehicleRealismOptions();
 }
 function showLoading() {
   const loading = document.getElementById('loadingScreen');
