@@ -15,9 +15,15 @@ const DEFAULT_INPUTS = {
   moduleCount2: 0,
   secondModuleConfiguration: "",
   usableEnergyFactor: 0.88,
-  assumedLoadKW: 0.0,
   variableCurrentSimulationEnabled: true,
-  simulationTimeStepMinutes: 0.5
+  driveCycle: 'mixed',
+  vehicleMassKg: 1300,
+  dragCoefficient: 0.34,
+  frontalAreaM2: 2.1,
+  rollingResistanceCoefficient: 0.013,
+  drivetrainEfficiencyPercent: 90,
+  assumedLoadKW: 1.0,
+  simulationTimeStepMinutes: 10,
 };
 
 const STORAGE_KEY = 'batteryCellCalculator.inputs.v1';
