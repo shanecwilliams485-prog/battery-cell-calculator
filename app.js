@@ -489,14 +489,35 @@ function calculate(input) {
     module2CellCount,
     totalModuleSeries,
 
-    variableSimulationEnabled: input.variableCurrentSimulationEnabled,
-    variableAverageCurrentA: variableSimulation?.averageCurrentA ?? null,
-    variableAveragePowerKW: variableSimulation?.averagePowerKW ?? null,
-    variableRuntimeMinutes: variableSimulation?.runtimeMinutes ?? null,
-    variableZeroSOCMinute: variableSimulation?.zeroSOCMinute ?? null,
-    variableProfileSampleNumber: variableSimulation?.profileSampleNumber ?? null,
-    variableSimulationRows: variableSimulation?.rows ?? [],
-    sohRows
+   variableSimulationEnabled: input.variableCurrentSimulationEnabled,
+advancedVehicleRealismEnabled: input.advancedVehicleRealismEnabled,
+
+driveCycle: input.driveCycle,
+vehicleMassKg: input.vehicleMassKg,
+dragCoefficient: input.dragCoefficient,
+frontalAreaM2: input.frontalAreaM2,
+rollingResistanceCoefficient: input.rollingResistanceCoefficient,
+drivetrainEfficiencyPercent: input.drivetrainEfficiencyPercent,
+assumedLoadKW: input.assumedLoadKW,
+
+regenEnabled: input.regenEnabled,
+maxRegenCurrentA: input.maxRegenCurrentA,
+regenEfficiencyPercent: input.regenEfficiencyPercent,
+regenDisableAboveSocPercent: input.regenDisableAboveSocPercent,
+batteryTemperatureC: input.batteryTemperatureC,
+roadGradientProfile: input.roadGradientProfile,
+auxiliaryLoadProfile: input.auxiliaryLoadProfile,
+tyreRoadProfile: input.tyreRoadProfile,
+driverAggression: input.driverAggression,
+payloadKg: input.payloadKg,
+
+variableAverageCurrentA: variableSimulation?.averageCurrentA ?? null,
+variableAveragePowerKW: variableSimulation?.averagePowerKW ?? null,
+variableRuntimeMinutes: variableSimulation?.runtimeMinutes ?? null,
+variableZeroSOCMinute: variableSimulation?.zeroSOCMinute ?? null,
+variableProfileSampleNumber: variableSimulation?.profileSampleNumber ?? null,
+variableSimulationRows: variableSimulation?.rows ?? [],
+sohRows
   };
 }
 function clamp(value, min, max) {
