@@ -778,8 +778,13 @@ function animateChart() {
   animationFrame = requestAnimationFrame(step);
 }
 function toggleSimulationOptions() {
-  const enabled = document.getElementById('variableCurrentSimulationEnabled').checked;
-  document.getElementById('simulationOptions').hidden = !enabled;
+  const enabled = document.getElementById('variableCurrentSimulationEnabled')?.checked || false;
+
+  const simulationOptions = document.getElementById('simulationOptions');
+  const vehicleSimulationInputs = document.getElementById('vehicleSimulationInputs');
+
+  if (simulationOptions) simulationOptions.hidden = !enabled;
+  if (vehicleSimulationInputs) vehicleSimulationInputs.hidden = !enabled;
 }
 function showLoading() {
   const loading = document.getElementById('loadingScreen');
