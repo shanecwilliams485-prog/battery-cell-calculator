@@ -655,11 +655,16 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
     const rawCurrentA = nominalVoltageV > 0 ? rawPowerKW * 1000 / nominalVoltageV : 0;
     const cappedCurrentA = clamp(rawCurrentA, 0, currentLimitA || rawCurrentA);
 
-    const isBrakingOrSlowing = nextSpeedMph < speedMph;
-    const currentResponse = isBrakingOrSlowing ? 0.18 : 0.12;
+    const isAccelerating = nextSpeedMph > speedMph + 0.5;
+const isBrakingOrSlowing = nextSpeedMph < speedMph - 0.5;
 
-    let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * currentResponse;
+const currentResponse = isAccelerating
+  ? 0.72
+  : isBrakingOrSlowing
+    ? 0.45
+    : 0.28;
 
+let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * currentResponse;
     // Small realistic sensor/controller ripple.
     const recordedRipple =
       Math.sin(elapsedSeconds / 9) * 0.6 +
