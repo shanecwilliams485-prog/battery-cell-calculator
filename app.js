@@ -567,18 +567,25 @@ function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds)
 
   const speedMps = mphToMps(speedMph);
   const nextSpeedMps = mphToMps(nextSpeedMph);
-  const accelerationMps2 = (nextSpeedMps - speedMps) / Math.max(1, durationSeconds);
+  const averageSpeedMps = Math.max(0, (speedMps + nextSpeedMps) / 2);
+  const dt = Math.max(1, durationSeconds);
 
-  const rollingForceN = massKg * gravity * crr;
-  const aeroForceN = 0.5 * airDensity * cd * frontalAreaM2 * speedMps * speedMps;
-  const accelerationForceN = massKg * accelerationMps2;
+  const rollingPowerKW = massKg * gravity * crr * averageSpeedMps / 1000;
+  const aeroPowerKW = 0.5 * airDensity * cd * frontalAreaM2 * averageSpeedMps ** 3 / 1000;
 
-  const tractiveForceN = Math.max(0, rollingForceN + aeroForceN + accelerationForceN);
-  const wheelPowerKW = tractiveForceN * speedMps / 1000;
+  // Positive acceleration energy demand.
+  // This is what was too weak before.
+  const deltaKineticEnergyJ = 0.5 * massKg * (nextSpeedMps ** 2 - speedMps ** 2);
+  const accelerationPowerKW = Math.max(0, deltaKineticEnergyJ / dt / 1000);
+
+  // Extra real-world demand for inverter losses, tyre load, drivetrain response,
+  // and the fact that acceleration is not perfectly smooth in real driving.
+  const accelerationBoostKW = accelerationPowerKW > 0 ? 8 + accelerationPowerKW * 0.45 : 0;
+
+  const wheelPowerKW = rollingPowerKW + aeroPowerKW + accelerationPowerKW + accelerationBoostKW;
 
   return wheelPowerKW / efficiency + accessoryLoadKW;
 }
-
 function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA) {
   const currentLimitA = Math.max(0, maxDischargeCurrentA || 0);
   const stepSeconds = Math.max(2, clampNumber(input.simulationTimeStepMinutes, 10));
