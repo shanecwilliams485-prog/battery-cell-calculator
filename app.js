@@ -136,7 +136,14 @@ function setInputs(inputs) {
   }
   toggleSimulationOptions();
 }
+function toggleAdvancedVehicleRealismOptions() {
+  const advancedToggle = document.getElementById('advancedVehicleRealismEnabled');
+  const advancedInputs = document.getElementById('advancedVehicleRealismInputs');
 
+  if (!advancedToggle || !advancedInputs) return;
+
+  advancedInputs.hidden = !advancedToggle.checked;
+}
 function parseModuleConfigurationValue(value) {
   const match = String(value || "").match(/^(\d+)S(\d+)P$/);
   if (!match) return null;
