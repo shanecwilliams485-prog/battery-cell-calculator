@@ -780,10 +780,10 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
   let segmentElapsedSeconds = 0;
 
   let weightedCurrentSeconds = 0;
-  let weightedPowerSeconds = 0;
-  let weightedSpeedSeconds = 0;
-  let measuredSeconds = 0;
-
+let weightedPowerSeconds = 0;
+let weightedSpeedSeconds = 0;
+let simulatedDistanceMiles = 0;
+let measuredSeconds = 0;
   let previousCurrentA = 0;
 
   while (elapsedSeconds < graphDurationSeconds && segmentIndex < cycle.length) {
