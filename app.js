@@ -24,6 +24,16 @@ const DEFAULT_INPUTS = {
   drivetrainEfficiencyPercent: 90,
   assumedLoadKW: 1.0,
   simulationTimeStepMinutes: 10,
+  regenEnabled: true,
+  maxRegenCurrentA: 120,
+  regenEfficiencyPercent: 65,
+  regenDisableAboveSocPercent: 95,
+  batteryTemperatureC: 25,
+  roadGradientProfile: "rolling",
+  auxiliaryLoadProfile: "normal",
+  tyreRoadProfile: "normal",
+  driverAggression: 5,
+  payloadKg: 0,
 };
 
 const STORAGE_KEY = 'batteryCellCalculator.inputs.v1';
@@ -64,7 +74,20 @@ const fields = [
   ['drivetrainEfficiencyPercent', 'number'],
   ['assumedLoadKW', 'number'],
   ['simulationTimeStepMinutes', 'number']
-];
+  ['regenEnabled', 'checkbox'],
+  ['maxRegenCurrentA', 'number'],
+  ['regenEfficiencyPercent', 'number'],
+  ['regenDisableAboveSocPercent', 'number'],
+
+  ['batteryTemperatureC', 'number'],
+
+  ['roadGradientProfile', 'text'],
+  ['auxiliaryLoadProfile', 'text'],
+  ['tyreRoadProfile', 'text'],
+
+  ['driverAggression', 'number'],
+  ['payloadKg', 'number'],
+  ];
 
 function fmt(value, decimals = 1) {
   if (!Number.isFinite(value)) value = 0;
