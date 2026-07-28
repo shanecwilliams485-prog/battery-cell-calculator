@@ -830,13 +830,24 @@ const isPerformancePulse =
   );
 
 const isOvertakePulse =
-  mode.includes("overtake") ||
-  mode.includes("acceleration");
-
+  input.driveCycle === "performance" &&
+  (
+    mode.includes("overtake") ||
+    mode.includes("acceleration")
+  );
 let demandedCurrentA = rawCurrentA;
 
 if (currentLimitA > 0 && isPerformancePulse) {
-  // Use the pulse current properly during hard driving.
+  // Use the pulse current properly during hard driving.} else if (currentLimitA > 0 && isOvertakePulse && isAccelerating) {
+  const pulseShape = Math.sin(Math.PI * segmentProgress);
+  const overtakeFloorA = currentLimitA * 0.18;
+  const overtakePeakA = currentLimitA * (0.28 + random() * 0.06);
+
+  demandedCurrentA = Math.max(
+    demandedCurrentA,
+    overtakeFloorA + (overtakePeakA - overtakeFloorA) * pulseShape
+  );
+}
   // Shape gives a ramp-up, peak, and ramp-down instead of a square block.
   const pulseShape = Math.sin(Math.PI * segmentProgress);
   const pulseFloorA = currentLimitA * 0.68;
