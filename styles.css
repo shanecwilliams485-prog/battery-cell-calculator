@@ -210,6 +210,13 @@ vehicle-range-card {
 .graph-card {
   grid-column: 1 / -1;
 }
+.range-note {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
 .simulation-settings-card {
   grid-column: 1 / -1;
 }
