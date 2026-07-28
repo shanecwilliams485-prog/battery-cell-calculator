@@ -731,14 +731,19 @@ if (results.hasSecondModule) {
   if (secondModuleCellsEl) secondModuleCellsEl.textContent = `${fmt(results.module2CellCount, 0)} cells`;
 }
   
-  document.getElementById('sohRows').innerHTML = results.sohRows.map(row => `<div class="soh-row"><div><span>${row.percentage}% SOH</span><strong>${fmt(row.usableEnergyKWh, 2)} kWh</strong></div><progress value="${row.percentage}" max="100"></progress></div>`).join('');
-  let runtime = valueRow('Spreadsheet runtime', `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`);
-  runtime += results.runtimeAtAssumedLoadMinutes !== null ? valueRow('At optional load', `${fmt(results.runtimeAtAssumedLoadMinutes, 1)} min`) : `<p class="muted">Enter an optional load in kW to estimate runtime for a specific motor, inverter, or device load.</p>`;
-  if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null) {
+document.getElementById('sohRows').innerHTML = results.sohRows.map(row => `<div class="soh-row"><div><span>${row.percentage}% SOH</span><strong>${fmt(row.usableEnergyKWh, 2)} kWh</strong></div><progress value="${row.percentage}" max="100"></progress></div>`).join('');
+
+let runtime = valueRow('Spreadsheet runtime', `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`);
+
+if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null) {
   runtime += '<hr>'
     + valueRow('Vehicle average power', `${fmt(results.variableAveragePowerKW, 2)} kW`)
+    + valueRow('Vehicle average current', `${fmt(results.variableAverageCurrentA, 1)} A`)
     + valueRow('Vehicle runtime', `${fmt(results.variableRuntimeMinutes, 1)} min`)
-    + valueRow('Vehicle 0% SOC', `${fmt(results.variableZeroSOCMinute, 0)} min`);
+    + valueRow('Vehicle 0% SOC', `${fmt(results.variableZeroSOCMinute, 0)} min`)
+    + valueRow('Graph samples', `${results.variableSimulationRows.length}`);
+} else {
+  runtime += `<p class="muted">Tick Vehicle runtime simulation to calculate current draw from vehicle weight, speed, drag, rolling resistance and drivetrain efficiency.</p>`;
 }
   document.getElementById('runtimeRows').innerHTML = runtime;
   const simSection = document.getElementById('simulationSection');
@@ -751,15 +756,7 @@ if (results.hasSecondModule) {
 }
 
 function driveStyleLabel(mode) {
-  const labels = {
-    stop: 'Traffic light / idle',
-    town: 'Town driving',
-    road: 'A-road cruise',
-    highway: 'Highway cruise',
-    accelerate: 'Acceleration',
-    pull: 'Full-throttle pull'
-  };
-  return labels[mode] || 'Driving';
+  return mode || 'Driving';
 }
 function updateDriverLiveData(row) {
   if (!row) return;
