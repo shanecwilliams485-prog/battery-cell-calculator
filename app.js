@@ -469,9 +469,10 @@ function calculate(input) {
     totalCellWeightKG,
     maxDischargeCRating,
     maxChargeCRating,
-    usableEnergyKWh,
-    runtimeAtContinuousDischargeMinutes,
-    runtimeAtAssumedLoadMinutes,
+   usableEnergyKWh,
+usableEnergyFactor: input.usableEnergyFactor,
+runtimeAtContinuousDischargeMinutes,
+runtimeAtAssumedLoadMinutes,
 
     moduleConfig: module1Config,
     moduleCount1,
