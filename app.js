@@ -721,11 +721,12 @@ function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds)
   // Positive acceleration energy demand.
   // This is what was too weak before.
   const deltaKineticEnergyJ = 0.5 * massKg * (nextSpeedMps ** 2 - speedMps ** 2);
-  const accelerationPowerKW = Math.max(0, deltaKineticEnergyJ / dt / 1000);
+  const rawAccelerationPowerKW = Math.max(0, deltaKineticEnergyJ / dt / 1000);
+const accelerationPowerKW = clamp(rawAccelerationPowerKW, 0, 35);
 
   // Extra real-world demand for inverter losses, tyre load, drivetrain response,
   // and the fact that acceleration is not perfectly smooth in real driving.
-  const accelerationBoostKW = accelerationPowerKW > 0 ? 1.5 + accelerationPowerKW * 0.08 : 0;
+ const accelerationBoostKW = accelerationPowerKW > 0 ? accelerationPowerKW * 0.03 : 0;
 
   const wheelPowerKW = rollingPowerKW + aeroPowerKW + accelerationPowerKW + accelerationBoostKW;
 
