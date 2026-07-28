@@ -467,181 +467,189 @@ function calculate(input) {
     sohRows
   };
 }
-function seededNoise(seed) {
-  const x = Math.sin(seed * 12.9898) * 43758.5453;
-  return x - Math.floor(x);
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
-function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
-function makeRandom(seed) {
-  let state = seed >>> 0;
-  return function random() {
-    state = (state * 1664525 + 1013904223) >>> 0;
-    return state / 4294967296;
+
+function mphToMps(mph) {
+  return mph * 0.44704;
+}
+
+function getVehicleDriveCycle(cycleName) {
+  const cycles = {
+    city: [
+      { seconds: 0, mph: 0, mode: "Stopped" },
+      { seconds: 10, mph: 15, mode: "City acceleration" },
+      { seconds: 35, mph: 30, mode: "City cruise" },
+      { seconds: 55, mph: 10, mode: "Slowing traffic" },
+      { seconds: 70, mph: 0, mode: "Stopped" },
+      { seconds: 85, mph: 25, mode: "City acceleration" },
+      { seconds: 120, mph: 35, mode: "City cruise" },
+      { seconds: 145, mph: 0, mode: "Braking" }
+    ],
+
+    mixed: [
+      { seconds: 0, mph: 0, mode: "Stopped" },
+      { seconds: 15, mph: 25, mode: "Pull away" },
+      { seconds: 45, mph: 45, mode: "A-road cruise" },
+      { seconds: 80, mph: 60, mode: "Faster road" },
+      { seconds: 115, mph: 40, mode: "Traffic slowing" },
+      { seconds: 150, mph: 65, mode: "Acceleration" },
+      { seconds: 190, mph: 50, mode: "Cruise" },
+      { seconds: 220, mph: 0, mode: "Braking" }
+    ],
+
+    motorway: [
+      { seconds: 0, mph: 0, mode: "Stopped" },
+      { seconds: 20, mph: 30, mode: "Slip road" },
+      { seconds: 45, mph: 55, mode: "Acceleration" },
+      { seconds: 75, mph: 70, mode: "Motorway cruise" },
+      { seconds: 150, mph: 70, mode: "Motorway cruise" },
+      { seconds: 190, mph: 60, mode: "Traffic easing" },
+      { seconds: 230, mph: 70, mode: "Motorway cruise" },
+      { seconds: 260, mph: 0, mode: "Braking" }
+    ],
+
+    performance: [
+      { seconds: 0, mph: 0, mode: "Launch" },
+      { seconds: 6, mph: 30, mode: "Hard acceleration" },
+      { seconds: 14, mph: 60, mode: "Hard acceleration" },
+      { seconds: 28, mph: 80, mode: "Performance pull" },
+      { seconds: 45, mph: 45, mode: "Braking" },
+      { seconds: 58, mph: 70, mode: "Acceleration" },
+      { seconds: 75, mph: 100, mode: "High speed pull" },
+      { seconds: 105, mph: 50, mode: "Braking" },
+      { seconds: 125, mph: 0, mode: "Stopped" }
+    ]
   };
+
+  return cycles[cycleName] || cycles.mixed;
 }
-function lerp(a, b, t) { return a + (b - a) * t; }
-function currentForDriveSegment(segment, elapsedMinutes, currentLimitA, seed) {
-  if (currentLimitA <= 0) return 0;
-  const n1 = seededNoise(seed + elapsedMinutes * 0.73 + segment.seedOffset);
-  const n2 = seededNoise(seed + elapsedMinutes * 1.91 + 9 + segment.seedOffset);
-  const progress = segment.duration > 0 ? clamp(elapsedMinutes / segment.duration, 0, 1) : 0;
-  const slowWave = (Math.sin((elapsedMinutes + seed * 0.001 + segment.seedOffset) * segment.waveSpeed) + 1) / 2;
 
-  if (segment.type === 'stop') {
-    return clamp(4 + n1 * 4, 0, Math.min(8, currentLimitA));
-  }
-  if (segment.type === 'town') {
-    const target = lerp(18, 62, slowWave) + n1 * 14;
-    return clamp(target, 0, Math.min(currentLimitA * 0.35, currentLimitA));
-  }
-  if (segment.type === 'road') {
-    const target = lerp(35, 95, slowWave) + n1 * 20;
-    return clamp(target, 0, Math.min(currentLimitA * 0.55, currentLimitA));
-  }
-  if (segment.type === 'highway') {
-    // Long motorway/highway section: mostly 80–140 A with slow variation.
-    const target = 80 + slowWave * 45 + n1 * 15;
-    return clamp(target, Math.min(80, currentLimitA), Math.min(140, currentLimitA));
-  }
-  if (segment.type === 'accelerate') {
-    // A normal acceleration, not quite full throttle, but much higher than cruising.
-    const swell = Math.sin(progress * Math.PI);
-    const level = segment.intensity * (0.62 + swell * 0.28 + n1 * 0.04);
-    return clamp(currentLimitA * level, 0, currentLimitA);
-  }
-  if (segment.type === 'pull') {
-    // Hard acceleration pull: 2–8 seconds of near-maximum current.
-    // The shape ramps up, holds close to max current, then eases off instead of
-    // appearing as a single unrealistic spike.
-    const ramp = 0.18;
-    let shape = 1;
-    if (progress < ramp) shape = progress / ramp;
-    else if (progress > 1 - ramp) shape = (1 - progress) / ramp;
-    shape = clamp(shape, 0, 1);
-    const level = segment.intensity * (0.88 + shape * 0.12 + n2 * 0.015);
-    return clamp(currentLimitA * level, 0, currentLimitA);
-  }
-  return 0;
-}
-function buildDrivingCurrentProfile(timeStepMinutes, currentLimitA) {
-  const step = Math.max(timeStepMinutes, 0.25);
-  driveCycleRunId += 1;
-  const seed = (Date.now() ^ Math.floor(Math.random() * 0xffffffff) ^ Math.round(currentLimitA * 100) ^ (driveCycleRunId * 2654435761)) >>> 0;
-  const random = makeRandom(seed || 1);
-  const jitter = (base, variation) => Math.max(step, base + (random() * 2 - 1) * variation);
-  const seconds = value => value / 60;
-  const hardPullDuration = () => seconds(2 + random() * 6); // 2–8 seconds
-  const canDoHighPulls = currentLimitA >= 20;
-  const fullPullCount = canDoHighPulls ? 2 + Math.floor(random() * 3) : 0;
-  const fullPullsToPlace = new Set();
-  while (fullPullsToPlace.size < fullPullCount) fullPullsToPlace.add(2 + Math.floor(random() * 10));
-
-  const baseCycle = [
-    { type: 'stop', duration: jitter(0.75, 0.25), waveSpeed: 0.2 },
-    { type: 'town', duration: jitter(4.0, 1.2), waveSpeed: 1.0 + random() * 0.7 },
-    { type: 'road', duration: jitter(5.5, 1.3), waveSpeed: 0.55 + random() * 0.45 },
-    { type: 'stop', duration: jitter(0.75, 0.25), waveSpeed: 0.2 },
-    { type: 'town', duration: jitter(5.0, 1.4), waveSpeed: 0.8 + random() * 0.6 },
-    { type: 'accelerate', duration: jitter(0.6, 0.2), waveSpeed: 2.0, intensity: 0.75 + random() * 0.12 },
-    { type: 'highway', duration: jitter(5.0, 0.4), waveSpeed: 0.20 + random() * 0.18 },
-    { type: 'road', duration: jitter(4.5, 1.0), waveSpeed: 0.45 + random() * 0.45 },
-    { type: 'town', duration: jitter(4.0, 1.0), waveSpeed: 0.9 + random() * 0.6 },
-    { type: 'stop', duration: jitter(0.75, 0.25), waveSpeed: 0.2 },
-    { type: 'highway', duration: jitter(5.0, 0.4), waveSpeed: 0.18 + random() * 0.16 },
-    { type: 'road', duration: jitter(5.0, 1.3), waveSpeed: 0.45 + random() * 0.4 },
-    { type: 'town', duration: jitter(3.5, 1.0), waveSpeed: 0.9 + random() * 0.6 },
-    { type: 'stop', duration: jitter(0.75, 0.25), waveSpeed: 0.2 }
-  ];
-
-  const driveCycle = [];
-  baseCycle.forEach((segment, index) => {
-    driveCycle.push({ ...segment, seedOffset: random() * 1000 });
-    if (fullPullsToPlace.has(index)) {
-      driveCycle.push({
-        type: 'pull',
-        duration: hardPullDuration(),
-        waveSpeed: 5.0,
-        intensity: 0.94 + random() * 0.06,
-        seedOffset: random() * 1000
-      });
-    } else if (canDoHighPulls && random() < 0.25 && segment.type !== 'stop' && segment.type !== 'highway') {
-      driveCycle.push({
-        type: 'accelerate',
-        duration: jitter(0.55, 0.2),
-        waveSpeed: 2.2,
-        intensity: 0.68 + random() * 0.18,
-        seedOffset: random() * 1000
-      });
-    }
-  });
-
+function buildVehicleSpeedProfile(input) {
+  const cycle = getVehicleDriveCycle(input.driveCycle);
+  const stepSeconds = Math.max(1, clampNumber(input.simulationTimeStepMinutes, 10));
   const profile = [];
-  let minute = 0;
-  driveCycle.forEach((segment, segmentIndex) => {
-    // Cruise sections can use the user's larger simulation step, but hard
-    // acceleration pulls are sampled every second so a 2–8 second pull is
-    // actually visible in the replay and in the live driver data.
-    const segmentStep = segment.type === 'pull' ? Math.min(step, seconds(1)) : step;
-    for (let t = 0; t < segment.duration - 1e-9; t += segmentStep) {
-      const sampleDuration = Math.min(segmentStep, segment.duration - t);
-      const current = currentForDriveSegment(segment, t, currentLimitA, seed + segmentIndex * 37);
-      minute += sampleDuration;
-      profile.push({ minute, durationMinutes: sampleDuration, current, type: segment.type });
-    }
-  });
 
-  profile.sampleNumber = driveCycleRunId;
+  for (let i = 0; i < cycle.length - 1; i++) {
+    const start = cycle[i];
+    const end = cycle[i + 1];
+    const duration = Math.max(1, end.seconds - start.seconds);
+
+    for (let t = 0; t < duration; t += stepSeconds) {
+      const sampleSeconds = Math.min(stepSeconds, duration - t);
+      const progress = duration > 0 ? t / duration : 0;
+      const nextProgress = duration > 0 ? (t + sampleSeconds) / duration : 1;
+
+      const mph = start.mph + (end.mph - start.mph) * progress;
+      const nextMph = start.mph + (end.mph - start.mph) * nextProgress;
+
+      profile.push({
+        durationSeconds: sampleSeconds,
+        speedMph: mph,
+        nextSpeedMph: nextMph,
+        mode: end.mode
+      });
+    }
+  }
+
   return profile;
 }
-function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, timeStepMinutes, maxDischargeCurrentA) {
+
+function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA) {
+  const massKg = Math.max(1, clampNumber(input.vehicleMassKg, 1300));
+  const cd = Math.max(0.1, clampNumber(input.dragCoefficient, 0.34));
+  const frontalAreaM2 = Math.max(0.5, clampNumber(input.frontalAreaM2, 2.1));
+  const crr = Math.max(0.001, clampNumber(input.rollingResistanceCoefficient, 0.013));
+  const efficiency = clamp(clampNumber(input.drivetrainEfficiencyPercent, 90) / 100, 0.5, 0.98);
+  const accessoryLoadKW = Math.max(0, clampNumber(input.assumedLoadKW, 1.0));
   const currentLimitA = Math.max(0, maxDischargeCurrentA || 0);
-  const profile = buildDrivingCurrentProfile(timeStepMinutes, currentLimitA);
-  const profileSampleNumber = profile.sampleNumber || driveCycleRunId;
-  const weightedMinutes = profile.reduce((sum, row) => sum + row.durationMinutes, 0);
-  const profileAverageCurrentA = weightedMinutes ? profile.reduce((sum, row) => sum + row.current * row.durationMinutes, 0) / weightedMinutes : 0;
-  const profileAveragePowerKW = nominalVoltageV * profileAverageCurrentA / 1000.0;
-  if (usableEnergyKWh <= 0 || nominalVoltageV <= 0 || !profile.length || profileAveragePowerKW <= 0) {
-    return { averageCurrentA: profileAverageCurrentA, averagePowerKW: profileAveragePowerKW, runtimeMinutes: 0, zeroSOCMinute: 0, profileSampleNumber, rows: [] };
+
+  const airDensity = 1.225;
+  const gravity = 9.81;
+  const speedProfile = buildVehicleSpeedProfile(input);
+
+  if (usableEnergyKWh <= 0 || nominalVoltageV <= 0 || !speedProfile.length) {
+    return {
+      averageCurrentA: 0,
+      averagePowerKW: 0,
+      runtimeMinutes: 0,
+      zeroSOCMinute: 0,
+      profileSampleNumber: driveCycleRunId,
+      rows: []
+    };
   }
 
-  // Build the graph from the exact same discharge samples used for the runtime estimate.
-  // The generated drive cycle is repeated until usable energy reaches zero, so the
-  // displayed graph, SOC preview, average power, and runtime estimate all agree.
+  driveCycleRunId += 1;
+
+  const driveRows = speedProfile.map(sample => {
+    const speedMps = mphToMps(sample.speedMph);
+    const nextSpeedMps = mphToMps(sample.nextSpeedMph);
+    const durationSeconds = Math.max(1, sample.durationSeconds);
+    const accelerationMps2 = (nextSpeedMps - speedMps) / durationSeconds;
+
+    const rollingForceN = massKg * gravity * crr;
+    const aeroForceN = 0.5 * airDensity * cd * frontalAreaM2 * speedMps * speedMps;
+    const accelerationForceN = massKg * accelerationMps2;
+
+    const totalForceN = rollingForceN + aeroForceN + accelerationForceN;
+    const wheelPowerKW = Math.max(0, totalForceN * speedMps / 1000);
+    const batteryPowerKW = wheelPowerKW / efficiency + accessoryLoadKW;
+    const currentA = nominalVoltageV > 0 ? batteryPowerKW * 1000 / nominalVoltageV : 0;
+
+    return {
+      durationMinutes: durationSeconds / 60,
+      speedMph: sample.speedMph,
+      driveMode: sample.mode,
+      averageCurrentA: clamp(currentA, 0, currentLimitA || currentA),
+      currentLimitA,
+      powerKW: batteryPowerKW
+    };
+  });
+
   const rows = [];
   let cumulativeEnergyUsedKWh = 0;
   let elapsedMinutes = 0;
   let zeroSOCMinute = null;
   let weightedCurrentSum = 0;
+  let weightedPowerSum = 0;
   let measuredMinutes = 0;
   const maxRows = 1500;
 
   while (cumulativeEnergyUsedKWh < usableEnergyKWh && rows.length < maxRows) {
-    for (const sample of profile) {
+    for (const sample of driveRows) {
       if (cumulativeEnergyUsedKWh >= usableEnergyKWh || rows.length >= maxRows) break;
-      const current = sample.current;
-      const powerKW = nominalVoltageV * current / 1000.0;
+
       const durationMinutes = sample.durationMinutes;
+      const powerKW = sample.powerKW;
+      const fullSampleEnergyKWh = powerKW * (durationMinutes / 60);
       const availableEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
-      const fullSampleEnergyKWh = powerKW * (durationMinutes / 60.0);
+
       const effectiveDurationMinutes = fullSampleEnergyKWh > availableEnergyKWh && powerKW > 0
-        ? (availableEnergyKWh / powerKW) * 60.0
+        ? (availableEnergyKWh / powerKW) * 60
         : durationMinutes;
-      const energyUsedKWh = powerKW * (effectiveDurationMinutes / 60.0);
+
+      const energyUsedKWh = powerKW * (effectiveDurationMinutes / 60);
 
       elapsedMinutes += effectiveDurationMinutes;
       cumulativeEnergyUsedKWh += energyUsedKWh;
-      weightedCurrentSum += current * effectiveDurationMinutes;
+      weightedCurrentSum += sample.averageCurrentA * effectiveDurationMinutes;
+      weightedPowerSum += powerKW * effectiveDurationMinutes;
       measuredMinutes += effectiveDurationMinutes;
 
       const remainingEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
-      const socPercent = usableEnergyKWh > 0 ? Math.max(0, remainingEnergyKWh / usableEnergyKWh * 100.0) : 0;
-      if (zeroSOCMinute === null && cumulativeEnergyUsedKWh >= usableEnergyKWh) zeroSOCMinute = elapsedMinutes;
+      const socPercent = usableEnergyKWh > 0 ? remainingEnergyKWh / usableEnergyKWh * 100 : 0;
+
+      if (zeroSOCMinute === null && cumulativeEnergyUsedKWh >= usableEnergyKWh) {
+        zeroSOCMinute = elapsedMinutes;
+      }
 
       rows.push({
         minute: elapsedMinutes,
-        driveMode: sample.type,
-        averageCurrentA: current,
-        currentLimitA,
+        driveMode: sample.driveMode,
+        speedMph: sample.speedMph,
+        averageCurrentA: sample.averageCurrentA,
+        currentLimitA: sample.currentLimitA,
         powerKW,
         energyUsedKWh,
         cumulativeEnergyUsedKWh,
@@ -651,10 +659,18 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, timeSt
     }
   }
 
-  const runtimeMinutes = zeroSOCMinute ?? (profileAveragePowerKW > 0 ? usableEnergyKWh / profileAveragePowerKW * 60.0 : elapsedMinutes);
-  const averageCurrentA = measuredMinutes > 0 ? weightedCurrentSum / measuredMinutes : profileAverageCurrentA;
-  const averagePowerKW = nominalVoltageV * averageCurrentA / 1000.0;
-  return { averageCurrentA, averagePowerKW, runtimeMinutes, zeroSOCMinute: zeroSOCMinute ?? runtimeMinutes, profileSampleNumber, rows };
+  const averageCurrentA = measuredMinutes > 0 ? weightedCurrentSum / measuredMinutes : 0;
+  const averagePowerKW = measuredMinutes > 0 ? weightedPowerSum / measuredMinutes : 0;
+  const runtimeMinutes = zeroSOCMinute ?? elapsedMinutes;
+
+  return {
+    averageCurrentA,
+    averagePowerKW,
+    runtimeMinutes,
+    zeroSOCMinute: zeroSOCMinute ?? runtimeMinutes,
+    profileSampleNumber: driveCycleRunId,
+    rows
+  };
 }
 function valueRow(label, value) { return `<div class="value-row"><span>${label}</span><strong>${value}</strong></div>`; }
 function renderResults(results) {
