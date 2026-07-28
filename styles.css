@@ -202,7 +202,8 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--green); 
 }
 
 .soh-card,
-.runtime-estimate-card {
+.runtime-estimate-card,
+vehicle-range-card {
   grid-column: span 3;
 }
 
@@ -778,6 +779,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 .second-module-results-card,
 .soh-card,
 .runtime-estimate-card,
+.vehicle-range-card,
 .graph-card {
   grid-column: 1 / -1;
 }
