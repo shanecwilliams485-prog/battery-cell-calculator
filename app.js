@@ -890,7 +890,10 @@ let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * c
 
     weightedCurrentSeconds += averageCurrentA * durationSeconds;
 weightedPowerSeconds += powerKW * durationSeconds;
+weightedSpeedSeconds += speedMph * durationSeconds;weightedCurrentSeconds += averageCurrentA * durationSeconds;
+weightedPowerSeconds += powerKW * durationSeconds;
 weightedSpeedSeconds += speedMph * durationSeconds;
+simulatedDistanceMiles += speedMph * (durationSeconds / 3600);
 measuredSeconds += durationSeconds;
     
     const remainingEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
@@ -929,6 +932,7 @@ return {
   averageCurrentA,
   averagePowerKW,
   averageSpeedMph,
+  simulatedDistanceMiles,
   runtimeMinutes,
   zeroSOCMinute: runtimeMinutes,
   profileSampleNumber: driveCycleRunId,
