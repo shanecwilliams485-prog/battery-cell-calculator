@@ -516,16 +516,16 @@ variableAveragePowerKW: variableSimulation?.averagePowerKW ?? null,
 variableAverageSpeedMph: variableSimulation?.averageSpeedMph ?? null,
 variableRuntimeMinutes: variableSimulation?.runtimeMinutes ?? null,
 variableZeroSOCMinute: variableSimulation?.zeroSOCMinute ?? null,
-vehicleRangeMiles: variableSimulation && variableSimulation.averagePowerKW > 0
-  ? variableSimulation.averageSpeedMph * (usableEnergyKWh / variableSimulation.averagePowerKW)
+vehicleConsumptionKWhPer100Miles: variableSimulation && variableSimulation.simulatedDistanceMiles > 0
+  ? (variableSimulation.simulatedEnergyUsedKWh / variableSimulation.simulatedDistanceMiles) * 100
   : null,
 
-vehicleConsumptionMilesPerKWh: variableSimulation && variableSimulation.averagePowerKW > 0
-  ? variableSimulation.averageSpeedMph / variableSimulation.averagePowerKW
+vehicleConsumptionMilesPerKWh: variableSimulation && variableSimulation.simulatedEnergyUsedKWh > 0
+  ? variableSimulation.simulatedDistanceMiles / variableSimulation.simulatedEnergyUsedKWh
   : null,
 
-vehicleConsumptionKWhPer100Miles: variableSimulation && variableSimulation.averageSpeedMph > 0
-  ? (variableSimulation.averagePowerKW / variableSimulation.averageSpeedMph) * 100
+vehicleRangeMiles: variableSimulation && variableSimulation.simulatedEnergyUsedKWh > 0
+  ? usableEnergyKWh * (variableSimulation.simulatedDistanceMiles / variableSimulation.simulatedEnergyUsedKWh)
   : null,
 variableProfileSampleNumber: variableSimulation?.profileSampleNumber ?? null,
 variableSimulationRows: variableSimulation?.rows ?? [],
