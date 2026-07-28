@@ -184,14 +184,13 @@
 
   <div class="form-grid">
     <label>
-      <span>Regenerative braking</span>
-      <select id="regenEnabled">
-        <option value="true">Enabled</option>
-        <option value="false">Disabled</option>
-      </select>
-      <small>Allows braking and slowing events to recover energy back into the battery pack.</small>
-    </label>
-
+  <span>Regenerative braking</span>
+  <span class="toggle-row">
+    Enabled
+    <input id="regenEnabled" type="checkbox">
+  </span>
+  <small>Allows braking and slowing events to recover energy back into the battery pack.</small>
+</label>
     <label>
       <span>Max regen current A</span>
       <input id="maxRegenCurrentA" type="number" step="1" min="0">
