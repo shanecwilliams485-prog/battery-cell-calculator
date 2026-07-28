@@ -171,7 +171,12 @@
       Simulation time step <span>seconds</span>
       <input id="simulationTimeStepMinutes" type="number" step="1" min="1" inputmode="decimal">
     </label>
-<div class="advanced-vehicle-options">
+<label class="toggle-row advanced-vehicle-toggle">
+  Show advanced vehicle realism
+  <input id="advancedVehicleRealismEnabled" type="checkbox">
+</label>
+
+<div id="advancedVehicleRealismInputs" class="advanced-vehicle-options" hidden>
   <h3>Advanced vehicle realism</h3>
   <p class="muted">
     These options make the vehicle simulation behave more like a real EV driving on UK roads.
