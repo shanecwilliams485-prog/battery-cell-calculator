@@ -475,101 +475,116 @@ function mphToMps(mph) {
   return mph * 0.44704;
 }
 
+function makeSeededRandom(seed) {
+  let state = seed >>> 0;
+
+  return function random() {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}
+
+function easeInOut(t) {
+  const x = clamp(t, 0, 1);
+  return x * x * (3 - 2 * x);
+}
+
 function getVehicleDriveCycle(cycleName) {
   const cycles = {
     city: [
-      { seconds: 0, mph: 0, mode: "Stopped" },
-      { seconds: 10, mph: 15, mode: "City acceleration" },
-      { seconds: 35, mph: 30, mode: "City cruise" },
-      { seconds: 55, mph: 10, mode: "Slowing traffic" },
-      { seconds: 70, mph: 0, mode: "Stopped" },
-      { seconds: 85, mph: 25, mode: "City acceleration" },
-      { seconds: 120, mph: 35, mode: "City cruise" },
-      { seconds: 145, mph: 0, mode: "Braking" }
+      { fromMph: 0, toMph: 18, seconds: 14, mode: "Pull away" },
+      { fromMph: 18, toMph: 28, seconds: 35, mode: "City driving" },
+      { fromMph: 28, toMph: 12, seconds: 18, mode: "Traffic slowing" },
+      { fromMph: 12, toMph: 0, seconds: 10, mode: "Braking" },
+      { fromMph: 0, toMph: 0, seconds: 18, mode: "Stopped" },
+      { fromMph: 0, toMph: 32, seconds: 18, mode: "Acceleration" },
+      { fromMph: 32, toMph: 24, seconds: 45, mode: "Urban traffic" },
+      { fromMph: 24, toMph: 0, seconds: 16, mode: "Braking" }
     ],
 
     mixed: [
-      { seconds: 0, mph: 0, mode: "Stopped" },
-      { seconds: 15, mph: 25, mode: "Pull away" },
-      { seconds: 45, mph: 45, mode: "A-road cruise" },
-      { seconds: 80, mph: 60, mode: "Faster road" },
-      { seconds: 115, mph: 40, mode: "Traffic slowing" },
-      { seconds: 150, mph: 65, mode: "Acceleration" },
-      { seconds: 190, mph: 50, mode: "Cruise" },
-      { seconds: 220, mph: 0, mode: "Braking" }
+      { fromMph: 0, toMph: 28, seconds: 18, mode: "Pull away" },
+      { fromMph: 28, toMph: 46, seconds: 45, mode: "A-road cruise" },
+      { fromMph: 46, toMph: 58, seconds: 35, mode: "Faster road" },
+      { fromMph: 58, toMph: 42, seconds: 28, mode: "Traffic slowing" },
+      { fromMph: 42, toMph: 64, seconds: 38, mode: "Acceleration" },
+      { fromMph: 64, toMph: 55, seconds: 60, mode: "Cruise" },
+      { fromMph: 55, toMph: 25, seconds: 30, mode: "Slowing traffic" },
+      { fromMph: 25, toMph: 0, seconds: 20, mode: "Braking" }
     ],
 
     motorway: [
-      { seconds: 0, mph: 0, mode: "Stopped" },
-      { seconds: 20, mph: 30, mode: "Slip road" },
-      { seconds: 45, mph: 55, mode: "Acceleration" },
-      { seconds: 75, mph: 70, mode: "Motorway cruise" },
-      { seconds: 150, mph: 70, mode: "Motorway cruise" },
-      { seconds: 190, mph: 60, mode: "Traffic easing" },
-      { seconds: 230, mph: 70, mode: "Motorway cruise" },
-      { seconds: 260, mph: 0, mode: "Braking" }
+      { fromMph: 0, toMph: 35, seconds: 24, mode: "Slip road" },
+      { fromMph: 35, toMph: 62, seconds: 35, mode: "Acceleration" },
+      { fromMph: 62, toMph: 70, seconds: 40, mode: "Joining motorway" },
+      { fromMph: 70, toMph: 68, seconds: 120, mode: "Motorway cruise" },
+      { fromMph: 68, toMph: 72, seconds: 90, mode: "Speed correction" },
+      { fromMph: 72, toMph: 64, seconds: 80, mode: "Traffic easing" },
+      { fromMph: 64, toMph: 70, seconds: 95, mode: "Motorway cruise" },
+      { fromMph: 70, toMph: 58, seconds: 45, mode: "Slowing traffic" }
     ],
 
     performance: [
-      { seconds: 0, mph: 0, mode: "Launch" },
-      { seconds: 6, mph: 30, mode: "Hard acceleration" },
-      { seconds: 14, mph: 60, mode: "Hard acceleration" },
-      { seconds: 28, mph: 80, mode: "Performance pull" },
-      { seconds: 45, mph: 45, mode: "Braking" },
-      { seconds: 58, mph: 70, mode: "Acceleration" },
-      { seconds: 75, mph: 100, mode: "High speed pull" },
-      { seconds: 105, mph: 50, mode: "Braking" },
-      { seconds: 125, mph: 0, mode: "Stopped" }
+      { fromMph: 0, toMph: 30, seconds: 7, mode: "Hard acceleration" },
+      { fromMph: 30, toMph: 62, seconds: 10, mode: "Hard acceleration" },
+      { fromMph: 62, toMph: 82, seconds: 18, mode: "Performance pull" },
+      { fromMph: 82, toMph: 48, seconds: 16, mode: "Braking" },
+      { fromMph: 48, toMph: 72, seconds: 20, mode: "Acceleration" },
+      { fromMph: 72, toMph: 88, seconds: 20, mode: "High speed pull" },
+      { fromMph: 88, toMph: 55, seconds: 22, mode: "Braking" },
+      { fromMph: 55, toMph: 0, seconds: 30, mode: "Cooling down" }
     ]
   };
 
   return cycles[cycleName] || cycles.mixed;
 }
 
-function buildVehicleSpeedProfile(input) {
-  const cycle = getVehicleDriveCycle(input.driveCycle);
-  const stepSeconds = Math.max(1, clampNumber(input.simulationTimeStepMinutes, 10));
-  const profile = [];
+function getSegmentSpeedMph(segment, elapsedSeconds, segmentElapsedSeconds, cycleVariation, random) {
+  const progress = segment.seconds > 0 ? segmentElapsedSeconds / segment.seconds : 0;
+  const smoothProgress = easeInOut(progress);
 
-  for (let i = 0; i < cycle.length - 1; i++) {
-    const start = cycle[i];
-    const end = cycle[i + 1];
-    const duration = Math.max(1, end.seconds - start.seconds);
+  let speedMph = segment.fromMph + (segment.toMph - segment.fromMph) * smoothProgress;
 
-    for (let t = 0; t < duration; t += stepSeconds) {
-      const sampleSeconds = Math.min(stepSeconds, duration - t);
-      const progress = duration > 0 ? t / duration : 0;
-      const nextProgress = duration > 0 ? (t + sampleSeconds) / duration : 1;
-
-      const mph = start.mph + (end.mph - start.mph) * progress;
-      const nextMph = start.mph + (end.mph - start.mph) * nextProgress;
-
-      profile.push({
-        durationSeconds: sampleSeconds,
-        speedMph: mph,
-        nextSpeedMph: nextMph,
-        mode: end.mode
-      });
-    }
+  if (speedMph > 1) {
+    const trafficWave = Math.sin(elapsedSeconds / 18) * 1.4;
+    const smallNoise = (random() - 0.5) * 0.8;
+    speedMph = speedMph * cycleVariation + trafficWave + smallNoise;
   }
 
-  return profile;
+  return Math.max(0, speedMph);
 }
 
-function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA) {
+function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds) {
   const massKg = Math.max(1, clampNumber(input.vehicleMassKg, 1300));
   const cd = Math.max(0.1, clampNumber(input.dragCoefficient, 0.34));
   const frontalAreaM2 = Math.max(0.5, clampNumber(input.frontalAreaM2, 2.1));
   const crr = Math.max(0.001, clampNumber(input.rollingResistanceCoefficient, 0.013));
   const efficiency = clamp(clampNumber(input.drivetrainEfficiencyPercent, 90) / 100, 0.5, 0.98);
   const accessoryLoadKW = Math.max(0, clampNumber(input.assumedLoadKW, 1.0));
-  const currentLimitA = Math.max(0, maxDischargeCurrentA || 0);
 
   const airDensity = 1.225;
   const gravity = 9.81;
-  const speedProfile = buildVehicleSpeedProfile(input);
 
-  if (usableEnergyKWh <= 0 || nominalVoltageV <= 0 || !speedProfile.length) {
+  const speedMps = mphToMps(speedMph);
+  const nextSpeedMps = mphToMps(nextSpeedMph);
+  const accelerationMps2 = (nextSpeedMps - speedMps) / Math.max(1, durationSeconds);
+
+  const rollingForceN = massKg * gravity * crr;
+  const aeroForceN = 0.5 * airDensity * cd * frontalAreaM2 * speedMps * speedMps;
+  const accelerationForceN = massKg * accelerationMps2;
+
+  const tractiveForceN = Math.max(0, rollingForceN + aeroForceN + accelerationForceN);
+  const wheelPowerKW = tractiveForceN * speedMps / 1000;
+
+  return wheelPowerKW / efficiency + accessoryLoadKW;
+}
+
+function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA) {
+  const currentLimitA = Math.max(0, maxDischargeCurrentA || 0);
+  const stepSeconds = Math.max(5, clampNumber(input.simulationTimeStepMinutes, 10));
+  const cycle = getVehicleDriveCycle(input.driveCycle);
+
+  if (usableEnergyKWh <= 0 || nominalVoltageV <= 0 || !cycle.length) {
     return {
       averageCurrentA: 0,
       averagePowerKW: 0,
@@ -582,86 +597,119 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
 
   driveCycleRunId += 1;
 
-  const driveRows = speedProfile.map(sample => {
-    const speedMps = mphToMps(sample.speedMph);
-    const nextSpeedMps = mphToMps(sample.nextSpeedMph);
-    const durationSeconds = Math.max(1, sample.durationSeconds);
-    const accelerationMps2 = (nextSpeedMps - speedMps) / durationSeconds;
-
-    const rollingForceN = massKg * gravity * crr;
-    const aeroForceN = 0.5 * airDensity * cd * frontalAreaM2 * speedMps * speedMps;
-    const accelerationForceN = massKg * accelerationMps2;
-
-    const totalForceN = rollingForceN + aeroForceN + accelerationForceN;
-    const wheelPowerKW = Math.max(0, totalForceN * speedMps / 1000);
-    const batteryPowerKW = wheelPowerKW / efficiency + accessoryLoadKW;
-    const currentA = nominalVoltageV > 0 ? batteryPowerKW * 1000 / nominalVoltageV : 0;
-
-    return {
-      durationMinutes: durationSeconds / 60,
-      speedMph: sample.speedMph,
-      driveMode: sample.mode,
-      averageCurrentA: clamp(currentA, 0, currentLimitA || currentA),
-      currentLimitA,
-      powerKW: batteryPowerKW
-    };
-  });
+  const random = makeSeededRandom(
+    Date.now()
+    ^ Math.round(usableEnergyKWh * 1000)
+    ^ Math.round(nominalVoltageV * 10)
+    ^ Math.round(currentLimitA * 10)
+    ^ driveCycleRunId
+  );
 
   const rows = [];
   let cumulativeEnergyUsedKWh = 0;
-  let elapsedMinutes = 0;
+  let elapsedSeconds = 0;
+  let segmentIndex = 0;
+  let segmentElapsedSeconds = 0;
   let zeroSOCMinute = null;
-  let weightedCurrentSum = 0;
-  let weightedPowerSum = 0;
-  let measuredMinutes = 0;
-  const maxRows = 1500;
+
+  let weightedCurrentSeconds = 0;
+  let weightedPowerSeconds = 0;
+  let measuredSeconds = 0;
+
+  let previousCurrentA = 0;
+  let cycleVariation = 0.96 + random() * 0.08;
+
+  const maxRows = 6000;
 
   while (cumulativeEnergyUsedKWh < usableEnergyKWh && rows.length < maxRows) {
-    for (const sample of driveRows) {
-      if (cumulativeEnergyUsedKWh >= usableEnergyKWh || rows.length >= maxRows) break;
+    const segment = cycle[segmentIndex];
+    const remainingSegmentSeconds = Math.max(1, segment.seconds - segmentElapsedSeconds);
+    const durationSeconds = Math.min(stepSeconds, remainingSegmentSeconds);
 
-      const durationMinutes = sample.durationMinutes;
-      const powerKW = sample.powerKW;
-      const fullSampleEnergyKWh = powerKW * (durationMinutes / 60);
-      const availableEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
+    const speedMph = getSegmentSpeedMph(
+      segment,
+      elapsedSeconds,
+      segmentElapsedSeconds,
+      cycleVariation,
+      random
+    );
 
-      const effectiveDurationMinutes = fullSampleEnergyKWh > availableEnergyKWh && powerKW > 0
-        ? (availableEnergyKWh / powerKW) * 60
-        : durationMinutes;
+    const nextSpeedMph = getSegmentSpeedMph(
+      segment,
+      elapsedSeconds + durationSeconds,
+      segmentElapsedSeconds + durationSeconds,
+      cycleVariation,
+      random
+    );
 
-      const energyUsedKWh = powerKW * (effectiveDurationMinutes / 60);
+    const rawPowerKW = calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds);
+    const rawCurrentA = nominalVoltageV > 0 ? rawPowerKW * 1000 / nominalVoltageV : 0;
 
-      elapsedMinutes += effectiveDurationMinutes;
-      cumulativeEnergyUsedKWh += energyUsedKWh;
-      weightedCurrentSum += sample.averageCurrentA * effectiveDurationMinutes;
-      weightedPowerSum += powerKW * effectiveDurationMinutes;
-      measuredMinutes += effectiveDurationMinutes;
+    const cappedCurrentA = clamp(rawCurrentA, 0, currentLimitA || rawCurrentA);
 
-      const remainingEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
-      const socPercent = usableEnergyKWh > 0 ? remainingEnergyKWh / usableEnergyKWh * 100 : 0;
+    const isBrakingOrSlowing = nextSpeedMph < speedMph;
+    const currentResponse = isBrakingOrSlowing ? 0.42 : 0.22;
 
-      if (zeroSOCMinute === null && cumulativeEnergyUsedKWh >= usableEnergyKWh) {
-        zeroSOCMinute = elapsedMinutes;
+    let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * currentResponse;
+
+    const recordedRipple = Math.sin(elapsedSeconds / 7) * 0.9 + (random() - 0.5) * 0.8;
+    averageCurrentA = Math.max(0, averageCurrentA + recordedRipple);
+
+    previousCurrentA = averageCurrentA;
+
+    const powerKW = nominalVoltageV * averageCurrentA / 1000;
+    const fullSampleEnergyKWh = powerKW * (durationSeconds / 3600);
+    const availableEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
+
+    const effectiveDurationSeconds = fullSampleEnergyKWh > availableEnergyKWh && powerKW > 0
+      ? (availableEnergyKWh / powerKW) * 3600
+      : durationSeconds;
+
+    const energyUsedKWh = powerKW * (effectiveDurationSeconds / 3600);
+
+    elapsedSeconds += effectiveDurationSeconds;
+    cumulativeEnergyUsedKWh += energyUsedKWh;
+
+    weightedCurrentSeconds += averageCurrentA * effectiveDurationSeconds;
+    weightedPowerSeconds += powerKW * effectiveDurationSeconds;
+    measuredSeconds += effectiveDurationSeconds;
+
+    const remainingEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
+    const socPercent = usableEnergyKWh > 0 ? remainingEnergyKWh / usableEnergyKWh * 100 : 0;
+
+    if (zeroSOCMinute === null && cumulativeEnergyUsedKWh >= usableEnergyKWh) {
+      zeroSOCMinute = elapsedSeconds / 60;
+    }
+
+    rows.push({
+      minute: elapsedSeconds / 60,
+      driveMode: segment.mode,
+      speedMph,
+      averageCurrentA,
+      currentLimitA,
+      powerKW,
+      energyUsedKWh,
+      cumulativeEnergyUsedKWh,
+      remainingEnergyKWh,
+      socPercent
+    });
+
+    segmentElapsedSeconds += durationSeconds;
+
+    if (segmentElapsedSeconds >= segment.seconds - 1e-9) {
+      segmentElapsedSeconds = 0;
+      segmentIndex += 1;
+
+      if (segmentIndex >= cycle.length) {
+        segmentIndex = 0;
+        cycleVariation = 0.94 + random() * 0.12;
       }
-
-      rows.push({
-        minute: elapsedMinutes,
-        driveMode: sample.driveMode,
-        speedMph: sample.speedMph,
-        averageCurrentA: sample.averageCurrentA,
-        currentLimitA: sample.currentLimitA,
-        powerKW,
-        energyUsedKWh,
-        cumulativeEnergyUsedKWh,
-        remainingEnergyKWh,
-        socPercent
-      });
     }
   }
 
-  const averageCurrentA = measuredMinutes > 0 ? weightedCurrentSum / measuredMinutes : 0;
-  const averagePowerKW = measuredMinutes > 0 ? weightedPowerSum / measuredMinutes : 0;
-  const runtimeMinutes = zeroSOCMinute ?? elapsedMinutes;
+  const averageCurrentA = measuredSeconds > 0 ? weightedCurrentSeconds / measuredSeconds : 0;
+  const averagePowerKW = measuredSeconds > 0 ? weightedPowerSeconds / measuredSeconds : 0;
+  const runtimeMinutes = zeroSOCMinute ?? elapsedSeconds / 60;
 
   return {
     averageCurrentA,
