@@ -781,10 +781,10 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
   let segmentIndex = 0;
   let segmentElapsedSeconds = 0;
 
-  let weightedCurrentSeconds = 0;
+let weightedCurrentSeconds = 0;
 let weightedPowerSeconds = 0;
-let weightedSpeedSeconds = 0;
 let simulatedDistanceMiles = 0;
+let simulatedEnergyUsedKWh = 0;
 let measuredSeconds = 0;
   let previousCurrentA = 0;
 
@@ -890,12 +890,10 @@ let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * c
     elapsedSeconds += durationSeconds;
     cumulativeEnergyUsedKWh += energyUsedKWh;
 
-    weightedCurrentSeconds += averageCurrentA * durationSeconds;
+weightedCurrentSeconds += averageCurrentA * durationSeconds;
 weightedPowerSeconds += powerKW * durationSeconds;
-weightedSpeedSeconds += speedMph * durationSeconds;weightedCurrentSeconds += averageCurrentA * durationSeconds;
-weightedPowerSeconds += powerKW * durationSeconds;
-weightedSpeedSeconds += speedMph * durationSeconds;
 simulatedDistanceMiles += speedMph * (durationSeconds / 3600);
+simulatedEnergyUsedKWh += powerKW * (durationSeconds / 3600);
 measuredSeconds += durationSeconds;
     
     const remainingEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
