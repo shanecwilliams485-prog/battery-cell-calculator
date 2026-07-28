@@ -24,6 +24,7 @@ const DEFAULT_INPUTS = {
   drivetrainEfficiencyPercent: 90,
   assumedLoadKW: 1.0,
   simulationTimeStepMinutes: 10,
+  advancedVehicleRealismEnabled: false,
   regenEnabled: true,
   maxRegenCurrentA: 120,
   regenEfficiencyPercent: 65,
@@ -74,6 +75,7 @@ const fields = [
   ['drivetrainEfficiencyPercent', 'number'],
   ['assumedLoadKW', 'number'],
   ['simulationTimeStepMinutes', 'number']
+  ['advancedVehicleRealismEnabled', 'checkbox'],
   ['regenEnabled', 'checkbox'],
   ['maxRegenCurrentA', 'number'],
   ['regenEfficiencyPercent', 'number'],
