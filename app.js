@@ -1050,6 +1050,23 @@ if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null
   runtime += `<p class="muted">Tick Vehicle runtime simulation to calculate current draw from vehicle weight, speed, drag, rolling resistance and drivetrain efficiency.</p>`;
 }
   document.getElementById('runtimeRows').innerHTML = runtime;
+  const vehicleRangeSection = document.getElementById('vehicleRangeSection');
+const vehicleRangeRows = document.getElementById('vehicleRangeRows');
+
+if (vehicleRangeSection && vehicleRangeRows) {
+  if (results.variableSimulationEnabled && results.vehicleRangeMiles !== null) {
+    vehicleRangeSection.hidden = false;
+
+    vehicleRangeRows.innerHTML =
+      valueRow('Estimated range', `${fmt(results.vehicleRangeMiles, 1)} miles`)
+      + valueRow('Average simulated speed', `${fmt(results.variableAverageSpeedMph, 1)} mph`)
+      + valueRow('Consumption', `${fmt(results.vehicleConsumptionKWhPer100Miles, 1)} kWh / 100 miles`)
+      + valueRow('Efficiency', `${fmt(results.vehicleConsumptionMilesPerKWh, 2)} miles / kWh`);
+  } else {
+    vehicleRangeSection.hidden = true;
+    vehicleRangeRows.innerHTML = "";
+  }
+}
  const simulationSettingsSection = document.getElementById('simulationSettingsSection');
 const simulationSettingsRows = document.getElementById('simulationSettingsRows');
 
