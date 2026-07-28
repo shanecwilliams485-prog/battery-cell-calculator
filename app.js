@@ -729,7 +729,9 @@ function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds)
 
   const wheelPowerKW = rollingPowerKW + aeroPowerKW + accelerationPowerKW + accelerationBoostKW;
 
-  return wheelPowerKW / efficiency + accessoryLoadKW;
+const realisticPowerKW = wheelPowerKW / efficiency + accessoryLoadKW;
+
+return clamp(realisticPowerKW, 0, 120);
 }
 function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA) {
   const currentLimitA = Math.max(0, maxDischargeCurrentA || 0);
