@@ -910,7 +910,14 @@ let measuredSeconds = 0;
       random
     );
 
-    const rawPowerKW = calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds);
+    const rawPowerKW = calculateVehiclePowerKW(
+  input,
+  speedMph,
+  nextSpeedMph,
+  durationSeconds,
+  elapsedSeconds,
+  nominalVoltageV
+);
 const rawCurrentA = nominalVoltageV > 0 ? rawPowerKW * 1000 / nominalVoltageV : 0;
 
 const mode = String(segment.mode || "").toLowerCase();
