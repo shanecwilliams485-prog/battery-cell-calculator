@@ -171,7 +171,90 @@
       Simulation time step <span>seconds</span>
       <input id="simulationTimeStepMinutes" type="number" step="1" min="1" inputmode="decimal">
     </label>
+<div class="advanced-vehicle-options">
+  <h3>Advanced vehicle realism</h3>
+  <p class="muted">
+    These options make the vehicle simulation behave more like a real EV driving on UK roads.
+  </p>
 
+  <div class="form-grid">
+    <label>
+      <span>Regenerative braking</span>
+      <select id="regenEnabled">
+        <option value="true">Enabled</option>
+        <option value="false">Disabled</option>
+      </select>
+      <small>Allows braking and slowing events to recover energy back into the battery pack.</small>
+    </label>
+
+    <label>
+      <span>Max regen current A</span>
+      <input id="maxRegenCurrentA" type="number" step="1" min="0">
+      <small>Maximum current the pack can accept during regenerative braking.</small>
+    </label>
+
+    <label>
+      <span>Regen efficiency %</span>
+      <input id="regenEfficiencyPercent" type="number" step="1" min="0" max="100">
+      <small>How much braking energy is successfully recovered after motor, inverter and battery losses.</small>
+    </label>
+
+    <label>
+      <span>Disable regen above SOC %</span>
+      <input id="regenDisableAboveSocPercent" type="number" step="1" min="0" max="100">
+      <small>Limits regen when the battery is nearly full, because a full pack cannot accept much charge.</small>
+    </label>
+
+    <label>
+      <span>Battery temperature °C</span>
+      <input id="batteryTemperatureC" type="number" step="1">
+      <small>Cold batteries reduce regen and discharge ability; hot batteries may reduce discharge power.</small>
+    </label>
+
+    <label>
+      <span>Road gradient profile</span>
+      <select id="roadGradientProfile">
+        <option value="flat">Flat</option>
+        <option value="rolling">Rolling UK roads</option>
+        <option value="hilly">Hilly roads</option>
+      </select>
+      <small>Adds uphill and downhill load variation. Uphill uses more power; downhill can reduce load or increase regen.</small>
+    </label>
+
+    <label>
+      <span>Auxiliary load profile</span>
+      <select id="auxiliaryLoadProfile">
+        <option value="low">Low load</option>
+        <option value="normal">Normal driving</option>
+        <option value="winter">Winter heating</option>
+      </select>
+      <small>Represents lights, pumps, fans, infotainment, heating, air conditioning and other vehicle loads.</small>
+    </label>
+
+    <label>
+      <span>Tyre / road profile</span>
+      <select id="tyreRoadProfile">
+        <option value="eco">Eco tyre / dry road</option>
+        <option value="normal">Normal tyre / dry road</option>
+        <option value="performance">Performance tyre</option>
+        <option value="wet">Wet road</option>
+      </select>
+      <small>Adjusts rolling resistance. Performance tyres and wet roads usually use more energy.</small>
+    </label>
+
+    <label>
+      <span>Driver aggression 1–10</span>
+      <input id="driverAggression" type="number" step="1" min="1" max="10">
+      <small>Higher values increase acceleration demand, overtaking frequency and pulse-current usage.</small>
+    </label>
+
+    <label>
+      <span>Payload kg</span>
+      <input id="payloadKg" type="number" step="1" min="0">
+      <small>Adds passengers, luggage or cargo weight on top of the base vehicle mass.</small>
+    </label>
+  </div>
+</div>
     <p class="muted vehicle-simulation-note">
       This will replace the current random current graph with a physics-based runtime model using vehicle weight, aerodynamic drag, rolling resistance, drivetrain efficiency, accessory load, and drive cycle.
     </p>
