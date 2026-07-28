@@ -581,7 +581,7 @@ function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds)
 
 function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA) {
   const currentLimitA = Math.max(0, maxDischargeCurrentA || 0);
-  const stepSeconds = Math.max(5, clampNumber(input.simulationTimeStepMinutes, 10));
+  const stepSeconds = Math.max(2, clampNumber(input.simulationTimeStepMinutes, 10));
   const cycle = getVehicleDriveCycle(input.driveCycle);
 
   if (usableEnergyKWh <= 0 || nominalVoltageV <= 0 || !cycle.length) {
@@ -610,7 +610,6 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
   let elapsedSeconds = 0;
   let segmentIndex = 0;
   let segmentElapsedSeconds = 0;
-  let zeroSOCMinute = null;
 
   let weightedCurrentSeconds = 0;
   let weightedPowerSeconds = 0;
@@ -619,12 +618,15 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
   let previousCurrentA = 0;
   let cycleVariation = 0.96 + random() * 0.08;
 
-  const maxRows = 6000;
+  // This is the key change:
+  // The graph shows a realistic 30-minute recorded sample,
+  // not the entire battery discharge until 0% SOC.
+  const graphDurationSeconds = 30 * 60;
 
-  while (cumulativeEnergyUsedKWh < usableEnergyKWh && rows.length < maxRows) {
+  while (elapsedSeconds < graphDurationSeconds) {
     const segment = cycle[segmentIndex];
     const remainingSegmentSeconds = Math.max(1, segment.seconds - segmentElapsedSeconds);
-    const durationSeconds = Math.min(stepSeconds, remainingSegmentSeconds);
+    const durationSeconds = Math.min(stepSeconds, remainingSegmentSeconds, graphDurationSeconds - elapsedSeconds);
 
     const speedMph = getSegmentSpeedMph(
       segment,
@@ -644,42 +646,34 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
 
     const rawPowerKW = calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds);
     const rawCurrentA = nominalVoltageV > 0 ? rawPowerKW * 1000 / nominalVoltageV : 0;
-
     const cappedCurrentA = clamp(rawCurrentA, 0, currentLimitA || rawCurrentA);
 
     const isBrakingOrSlowing = nextSpeedMph < speedMph;
-    const currentResponse = isBrakingOrSlowing ? 0.42 : 0.22;
+    const currentResponse = isBrakingOrSlowing ? 0.18 : 0.12;
 
     let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * currentResponse;
 
-    const recordedRipple = Math.sin(elapsedSeconds / 7) * 0.9 + (random() - 0.5) * 0.8;
-    averageCurrentA = Math.max(0, averageCurrentA + recordedRipple);
+    // Small realistic sensor/controller ripple.
+    const recordedRipple =
+      Math.sin(elapsedSeconds / 9) * 0.6 +
+      Math.sin(elapsedSeconds / 23) * 0.4 +
+      (random() - 0.5) * 0.5;
 
+    averageCurrentA = Math.max(0, averageCurrentA + recordedRipple);
     previousCurrentA = averageCurrentA;
 
     const powerKW = nominalVoltageV * averageCurrentA / 1000;
-    const fullSampleEnergyKWh = powerKW * (durationSeconds / 3600);
-    const availableEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
+    const energyUsedKWh = powerKW * (durationSeconds / 3600);
 
-    const effectiveDurationSeconds = fullSampleEnergyKWh > availableEnergyKWh && powerKW > 0
-      ? (availableEnergyKWh / powerKW) * 3600
-      : durationSeconds;
-
-    const energyUsedKWh = powerKW * (effectiveDurationSeconds / 3600);
-
-    elapsedSeconds += effectiveDurationSeconds;
+    elapsedSeconds += durationSeconds;
     cumulativeEnergyUsedKWh += energyUsedKWh;
 
-    weightedCurrentSeconds += averageCurrentA * effectiveDurationSeconds;
-    weightedPowerSeconds += powerKW * effectiveDurationSeconds;
-    measuredSeconds += effectiveDurationSeconds;
+    weightedCurrentSeconds += averageCurrentA * durationSeconds;
+    weightedPowerSeconds += powerKW * durationSeconds;
+    measuredSeconds += durationSeconds;
 
     const remainingEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
     const socPercent = usableEnergyKWh > 0 ? remainingEnergyKWh / usableEnergyKWh * 100 : 0;
-
-    if (zeroSOCMinute === null && cumulativeEnergyUsedKWh >= usableEnergyKWh) {
-      zeroSOCMinute = elapsedSeconds / 60;
-    }
 
     rows.push({
       minute: elapsedSeconds / 60,
@@ -709,13 +703,16 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
 
   const averageCurrentA = measuredSeconds > 0 ? weightedCurrentSeconds / measuredSeconds : 0;
   const averagePowerKW = measuredSeconds > 0 ? weightedPowerSeconds / measuredSeconds : 0;
-  const runtimeMinutes = zeroSOCMinute ?? elapsedSeconds / 60;
+
+  const runtimeMinutes = averagePowerKW > 0
+    ? usableEnergyKWh / averagePowerKW * 60
+    : 0;
 
   return {
     averageCurrentA,
     averagePowerKW,
     runtimeMinutes,
-    zeroSOCMinute: zeroSOCMinute ?? runtimeMinutes,
+    zeroSOCMinute: runtimeMinutes,
     profileSampleNumber: driveCycleRunId,
     rows
   };
