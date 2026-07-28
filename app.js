@@ -1109,6 +1109,7 @@ function renderResults(results) {
     valueRow('Max discharge', `${fmt(results.maxDischargeCurrentA, 1)} A / ${fmt(results.maxDischargePowerKW, 2)} kW`),
     valueRow('Continuous discharge', `${fmt(results.continuousDischargeCurrentA, 1)} A / ${fmt(results.continuousDischargePowerKW, 2)} kW`),
     valueRow('Max charge', `${fmt(results.maxChargeCurrentA, 1)} A / ${fmt(results.maxChargePowerKW, 2)} kW`),
+    valueRow('Usable factor', `${fmt(results.usableEnergyFactor * 100, 0)} %`), 
     valueRow('Voltage range', `${fmt(results.minVoltageV, 1)}–${fmt(results.maxVoltageV, 1)} V`),
     valueRow('Cell weight', `${fmt(results.totalCellWeightKG, 2)} kg`),
     valueRow('Discharge C rating', `${fmt(results.maxDischargeCRating, 0)} C`),
