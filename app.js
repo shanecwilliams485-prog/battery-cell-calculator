@@ -413,7 +413,7 @@ function calculate(input) {
   const runtimeAtAssumedLoadMinutes = input.assumedLoadKW > 0 ? usableEnergyKWh / input.assumedLoadKW * 60.0 : null;
 
   const variableSimulation = input.variableCurrentSimulationEnabled
-    ? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input.simulationTimeStepMinutes, maxDischargeCurrentA)
+? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA)
     : null;
 
   const sohRows = [100, 95, 90, 85, 80].map(percentage => ({
