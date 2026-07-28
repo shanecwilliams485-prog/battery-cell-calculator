@@ -922,7 +922,9 @@ measuredSeconds += durationSeconds;
 
 const averageCurrentA = measuredSeconds > 0 ? weightedCurrentSeconds / measuredSeconds : 0;
 const averagePowerKW = measuredSeconds > 0 ? weightedPowerSeconds / measuredSeconds : 0;
-const averageSpeedMph = measuredSeconds > 0 ? weightedSpeedSeconds / measuredSeconds : 0;
+const averageSpeedMph = measuredSeconds > 0
+  ? simulatedDistanceMiles / (measuredSeconds / 3600)
+  : 0;
 
   const runtimeMinutes = averagePowerKW > 0
     ? usableEnergyKWh / averagePowerKW * 60
