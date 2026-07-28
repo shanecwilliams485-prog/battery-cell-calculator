@@ -74,7 +74,7 @@ const fields = [
   ['rollingResistanceCoefficient', 'number'],
   ['drivetrainEfficiencyPercent', 'number'],
   ['assumedLoadKW', 'number'],
-  ['simulationTimeStepMinutes', 'number']
+  ['simulationTimeStepMinutes', 'number'],
   ['advancedVehicleRealismEnabled', 'checkbox'],
   ['regenEnabled', 'checkbox'],
   ['maxRegenCurrentA', 'number'],
