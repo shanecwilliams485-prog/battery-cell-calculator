@@ -1128,6 +1128,10 @@ function init() {
   document.getElementById('resetBtn').addEventListener('click', resetAll);
   document.getElementById('backBtn').addEventListener('click', showCalculatorPage);
   document.getElementById('variableCurrentSimulationEnabled').addEventListener('change', toggleSimulationOptions);
+  document.getElementById('advancedVehicleRealismEnabled')?.addEventListener('change', () => {
+  saveInputs(getInputs());
+  toggleAdvancedVehicleRealismOptions();
+});
   document.getElementById('animateBtn').addEventListener('click', animateChart);
 
   for (const [name] of fields) {
