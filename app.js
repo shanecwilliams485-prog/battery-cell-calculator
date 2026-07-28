@@ -700,7 +700,78 @@ function getSegmentSpeedMph(segment, elapsedSeconds, segmentElapsedSeconds, cycl
 
   return Math.max(0, speedMph);
 }
+function getAuxiliaryLoadKW(input) {
+  if (!input.advancedVehicleRealismEnabled) {
+    return Math.max(0, clampNumber(input.assumedLoadKW, 1.0));
+  }
 
+  const profile = input.auxiliaryLoadProfile || "normal";
+
+  if (profile === "low") return 0.6;
+  if (profile === "winter") return 2.4;
+
+  return Math.max(0.8, clampNumber(input.assumedLoadKW, 1.0));
+}
+
+function getTyreRoadMultiplier(input) {
+  if (!input.advancedVehicleRealismEnabled) return 1;
+
+  const profile = input.tyreRoadProfile || "normal";
+
+  if (profile === "eco") return 0.90;
+  if (profile === "performance") return 1.12;
+  if (profile === "wet") return 1.18;
+
+  return 1;
+}
+
+function getDriverAggressionFactor(input) {
+  if (!input.advancedVehicleRealismEnabled) return 1;
+
+  const aggression = clamp(clampNumber(input.driverAggression, 5), 1, 10);
+
+  return 0.75 + aggression * 0.075;
+}
+
+function getTemperaturePowerMultiplier(input) {
+  if (!input.advancedVehicleRealismEnabled) return 1;
+
+  const tempC = clampNumber(input.batteryTemperatureC, 25);
+
+  if (tempC < 0) return 1.18;
+  if (tempC < 10) return 1.10;
+  if (tempC > 45) return 1.08;
+  if (tempC > 35) return 1.04;
+
+  return 1;
+}
+
+function getRoadGradientPercent(input, elapsedSeconds) {
+  if (!input.advancedVehicleRealismEnabled) return 0;
+
+  const profile = input.roadGradientProfile || "rolling";
+
+  if (profile === "flat") return 0;
+
+  if (profile === "hilly") {
+    return Math.sin(elapsedSeconds / 95) * 3.5 + Math.sin(elapsedSeconds / 37) * 1.2;
+  }
+
+  return Math.sin(elapsedSeconds / 130) * 1.4 + Math.sin(elapsedSeconds / 55) * 0.5;
+}
+
+function getRegenEfficiency(input) {
+  if (!input.advancedVehicleRealismEnabled || !input.regenEnabled) return 0;
+
+  const regenEfficiency = clamp(clampNumber(input.regenEfficiencyPercent, 65) / 100, 0, 0.9);
+  const tempC = clampNumber(input.batteryTemperatureC, 25);
+
+  if (tempC < 0) return regenEfficiency * 0.25;
+  if (tempC < 10) return regenEfficiency * 0.55;
+  if (tempC > 45) return regenEfficiency * 0.65;
+
+  return regenEfficiency;
+}
 function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds) {
   const massKg = Math.max(1, clampNumber(input.vehicleMassKg, 1300));
   const cd = Math.max(0.1, clampNumber(input.dragCoefficient, 0.34));
