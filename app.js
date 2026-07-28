@@ -838,31 +838,18 @@ const isOvertakePulse =
 let demandedCurrentA = rawCurrentA;
 
 if (currentLimitA > 0 && isPerformancePulse) {
-  // Use the pulse current properly during hard driving.} else if (currentLimitA > 0 && isOvertakePulse && isAccelerating) {
   const pulseShape = Math.sin(Math.PI * segmentProgress);
-  const overtakeFloorA = currentLimitA * 0.18;
-  const overtakePeakA = currentLimitA * (0.28 + random() * 0.06);
-
-  demandedCurrentA = Math.max(
-    demandedCurrentA,
-    overtakeFloorA + (overtakePeakA - overtakeFloorA) * pulseShape
-  );
-}
-  // Shape gives a ramp-up, peak, and ramp-down instead of a square block.
-  const pulseShape = Math.sin(Math.PI * segmentProgress);
-  const pulseFloorA = currentLimitA * 0.68;
-  const pulsePeakA = currentLimitA * (0.88 + random() * 0.10);
+  const pulseFloorA = currentLimitA * 0.45;
+  const pulsePeakA = currentLimitA * (0.65 + random() * 0.08);
 
   demandedCurrentA = Math.max(
     demandedCurrentA,
     pulseFloorA + (pulsePeakA - pulseFloorA) * pulseShape
   );
 } else if (currentLimitA > 0 && isOvertakePulse && isAccelerating) {
-  // Normal British-road overtakes should use a decent chunk of pulse current,
-  // but not as aggressively as the performance drive cycle.
   const pulseShape = Math.sin(Math.PI * segmentProgress);
-  const overtakeFloorA = currentLimitA * 0.42;
-  const overtakePeakA = currentLimitA * (0.62 + random() * 0.12);
+  const overtakeFloorA = currentLimitA * 0.18;
+  const overtakePeakA = currentLimitA * (0.28 + random() * 0.06);
 
   demandedCurrentA = Math.max(
     demandedCurrentA,
@@ -883,6 +870,10 @@ const currentResponse = isPerformancePulse
         : 0.28;
 
 let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * currentResponse;
+    
+    if (input.driveCycle !== "performance") {
+  averageCurrentA = clamp(averageCurrentA, 0, 165);
+}
 
     // Real logged current is never perfectly smooth.
     const roadSurfaceRipple =
