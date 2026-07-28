@@ -785,6 +785,15 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 .vehicle-simulation-toggle {
   width: 100%;
 }
+  
+.advanced-vehicle-toggle {
+    width: 100%;
+  }
+
+  .advanced-vehicle-options {
+    grid-column: 1 / -1;
+  }  
+  
   .pack-layout-usable-factor label {
   grid-template-columns: 1fr;
 }
