@@ -32,7 +32,7 @@ let lastResults = null;
 let animationFrame = null;
 let chartPointCount = 1;
 let driveCycleRunId = 0;
-const CHART_ANIMATION_DELAY_MS = 135; // Increase this value to make the variable discharge graph draw more slowly.
+const CHART_ANIMATION_DELAY_MS = 35; // Increase this value to make the vehicle runtime graph draw more slowly.
 
 const fields = [
   ['nominalVoltage', 'number'],
