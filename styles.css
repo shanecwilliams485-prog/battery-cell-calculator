@@ -630,15 +630,38 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   grid-column: 1 / -1;
   margin: 4px 0 0;
   line-height: 1.45;
-  
- .simulation-top-row {
-  display: grid;
-  grid-template-columns: 280px minmax(260px, 340px) 400px;
-  gap: 30px;
-  align-items: start;
-  justify-content: start;
-  margin-bottom: 14px; 
 }
+
+.advanced-vehicle-toggle {
+  grid-column: 1 / -1;
+  width: fit-content;
+  min-height: 47px;
+  margin-top: 6px;
+}
+
+.advanced-vehicle-options {
+  grid-column: 1 / -1;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.advanced-vehicle-options h3 {
+  margin: 0 0 6px;
+}
+
+.advanced-vehicle-options .form-grid {
+  margin-top: 14px;
+}
+
+.advanced-vehicle-options small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .simulation-top-row {
   display: grid;
   grid-template-columns: 280px minmax(260px, 340px) 400px;
@@ -647,7 +670,6 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   justify-content: start;
   margin-bottom: 14px;
 }
-
 .simulation-left-inputs,
 .simulation-middle-inputs,
 .simulation-side-inputs {
