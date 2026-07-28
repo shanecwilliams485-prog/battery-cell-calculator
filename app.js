@@ -1047,6 +1047,15 @@ function animateChart() {
   }
   animationFrame = requestAnimationFrame(step);
 }
+function toggleAdvancedVehicleRealismOptions() {
+  const advancedToggle = document.getElementById('advancedVehicleRealismEnabled');
+  const advancedInputs = document.getElementById('advancedVehicleRealismInputs');
+
+  if (!advancedToggle || !advancedInputs) return;
+
+  advancedInputs.hidden = !advancedToggle.checked;
+}
+
 function toggleSimulationOptions() {
   const enabled = document.getElementById('variableCurrentSimulationEnabled')?.checked || false;
 
@@ -1055,6 +1064,7 @@ function toggleSimulationOptions() {
 
   if (simulationOptions) simulationOptions.hidden = !enabled;
   if (vehicleSimulationInputs) vehicleSimulationInputs.hidden = !enabled;
+
   toggleAdvancedVehicleRealismOptions();
 }
 function showLoading() {
