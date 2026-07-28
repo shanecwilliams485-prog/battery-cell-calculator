@@ -787,7 +787,7 @@ function drawChart(rows, count = rows.length) {
   const pad = { left: 48, right: 18, top: 20, bottom: 34 };
   const visible = rows.slice(0, Math.max(1, count));
   const minA = 0;
-  const maxA = Math.max(...rows.map(r => r.currentLimitA || r.averageCurrentA), ...rows.map(r => r.averageCurrentA), 1);
+  const maxA = Math.max(...rows.map(r => r.averageCurrentA), 1) * 1.15;
   // Use sample spacing on the x-axis so very short 2–8 second hard pulls are
   // visible in the replay. The live data panel still shows the true elapsed time.
   const x = (_row, fallbackIndex = 0) => pad.left + (fallbackIndex / Math.max(rows.length - 1, 1)) * (w - pad.left - pad.right);
