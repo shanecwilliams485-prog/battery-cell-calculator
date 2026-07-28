@@ -933,7 +933,6 @@ if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null
     + valueRow('Vehicle average current', `${fmt(results.variableAverageCurrentA, 1)} A`)
     + valueRow('Vehicle runtime', `${fmt(results.variableRuntimeMinutes, 1)} min`)
     + valueRow('Vehicle 0% SOC', `${fmt(results.variableZeroSOCMinute, 0)} min`)
-    + valueRow('Graph samples', `${results.variableSimulationRows.length}`);
 } else {
   runtime += `<p class="muted">Tick Vehicle runtime simulation to calculate current draw from vehicle weight, speed, drag, rolling resistance and drivetrain efficiency.</p>`;
 }
