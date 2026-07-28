@@ -630,6 +630,14 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   grid-column: 1 / -1;
   margin: 4px 0 0;
   line-height: 1.45;
+  
+ .simulation-top-row {
+  display: grid;
+  grid-template-columns: 280px minmax(260px, 340px) 400px;
+  gap: 30px;
+  align-items: start;
+  justify-content: start;
+  margin-bottom: 14px; 
 }
 .simulation-top-row {
   display: grid;
