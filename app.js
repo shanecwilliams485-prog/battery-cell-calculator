@@ -735,14 +735,17 @@ if (results.hasSecondModule) {
   let runtime = valueRow('Spreadsheet runtime', `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`);
   runtime += results.runtimeAtAssumedLoadMinutes !== null ? valueRow('At optional load', `${fmt(results.runtimeAtAssumedLoadMinutes, 1)} min`) : `<p class="muted">Enter an optional load in kW to estimate runtime for a specific motor, inverter, or device load.</p>`;
   if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null) {
-    runtime += '<hr>' + valueRow('Variable discharge average power', `${fmt(results.variableAveragePowerKW, 2)} kW`) + valueRow('Variable discharge runtime', `${fmt(results.variableRuntimeMinutes, 1)} min`) + valueRow('Variable discharge 0% SOC', `${fmt(results.variableZeroSOCMinute, 0)} min`);
-  }
+  runtime += '<hr>'
+    + valueRow('Vehicle average power', `${fmt(results.variableAveragePowerKW, 2)} kW`)
+    + valueRow('Vehicle runtime', `${fmt(results.variableRuntimeMinutes, 1)} min`)
+    + valueRow('Vehicle 0% SOC', `${fmt(results.variableZeroSOCMinute, 0)} min`);
+}
   document.getElementById('runtimeRows').innerHTML = runtime;
   const simSection = document.getElementById('simulationSection');
   if (results.variableSimulationEnabled && results.variableSimulationRows.length) {
     simSection.hidden = false;
     const profileTitle = document.getElementById('profileTitle');
-    if (profileTitle) profileTitle.textContent = 'Variable Discharge Simulation';
+    if (profileTitle) profileTitle.textContent = 'Vehicle Runtime Simulation';
     drawChart(results.variableSimulationRows, results.variableSimulationRows.length);
   } else { simSection.hidden = true; }
 }
@@ -807,7 +810,7 @@ function drawChart(rows, count = rows.length) {
   ctx.fillText(`${Math.round(maxA)} A`, 8, pad.top + 4); ctx.fillText(`${Math.round(minA)} A`, 8, h - pad.bottom + 4);
   updateDriverLiveData(last);
   const chartStats = document.getElementById('chartStats');
-  if (chartStats) chartStats.textContent = `Live driver-style discharge data • hard pulls last 2–8 seconds • 0–${fmt(maxA, 0)} A range`;
+  if (chartStats) chartStats.textContent = `Vehicle runtime simulation • current draw based on speed, mass, drag, rolling resistance and drivetrain efficiency • 0–${fmt(maxA, 0)} A range`;
 }
 function animateChart() {
   if (!lastResults?.variableSimulationRows?.length) return;
