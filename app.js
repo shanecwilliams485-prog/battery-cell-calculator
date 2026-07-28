@@ -15,7 +15,7 @@ const DEFAULT_INPUTS = {
   moduleCount2: 0,
   secondModuleConfiguration: "",
   usableEnergyFactor: 0.88,
-  variableCurrentSimulationEnabled: true,
+  variableCurrentSimulationEnabled: false,
   driveCycle: 'mixed',
   vehicleMassKg: 1300,
   dragCoefficient: 0.34,
@@ -35,10 +35,35 @@ let driveCycleRunId = 0;
 const CHART_ANIMATION_DELAY_MS = 135; // Increase this value to make the variable discharge graph draw more slowly.
 
 const fields = [
-  ['nominalVoltage', 'number'], ['maxVoltage', 'number'], ['minVoltage', 'number'], ['capacityAh', 'number'],
-  ['maxDischargeCurrentA', 'number'], ['continuousDischargeCurrentA', 'number'], ['maxChargeCurrentA', 'number'], ['cellWeightG', 'number'],
-  ['seriesCount', 'int'], ['parallelCount', 'int'], ['moduleCount1', 'int'], ['moduleConfiguration', 'text'], ['useSecondModuleConfiguration', 'checkbox'], ['moduleCount2', 'int'], ['secondModuleConfiguration', 'text'], ['usableEnergyFactor', 'number'], ['assumedLoadKW', 'number'],
-  ['variableCurrentSimulationEnabled', 'checkbox'], ['simulationTimeStepMinutes', 'number']
+  ['nominalVoltage', 'number'],
+  ['maxVoltage', 'number'],
+  ['minVoltage', 'number'],
+  ['capacityAh', 'number'],
+
+  ['maxDischargeCurrentA', 'number'],
+  ['continuousDischargeCurrentA', 'number'],
+  ['maxChargeCurrentA', 'number'],
+  ['cellWeightG', 'number'],
+
+  ['seriesCount', 'int'],
+  ['parallelCount', 'int'],
+  ['moduleCount1', 'int'],
+  ['moduleConfiguration', 'text'],
+  ['useSecondModuleConfiguration', 'checkbox'],
+  ['moduleCount2', 'int'],
+  ['secondModuleConfiguration', 'text'],
+
+  ['usableEnergyFactor', 'number'],
+
+  ['variableCurrentSimulationEnabled', 'checkbox'],
+  ['driveCycle', 'text'],
+  ['vehicleMassKg', 'number'],
+  ['dragCoefficient', 'number'],
+  ['frontalAreaM2', 'number'],
+  ['rollingResistanceCoefficient', 'number'],
+  ['drivetrainEfficiencyPercent', 'number'],
+  ['assumedLoadKW', 'number'],
+  ['simulationTimeStepMinutes', 'number']
 ];
 
 function fmt(value, decimals = 1) {
