@@ -725,7 +725,7 @@ function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds)
 
   // Extra real-world demand for inverter losses, tyre load, drivetrain response,
   // and the fact that acceleration is not perfectly smooth in real driving.
-  const accelerationBoostKW = accelerationPowerKW > 0 ? 8 + accelerationPowerKW * 0.45 : 0;
+  const accelerationBoostKW = accelerationPowerKW > 0 ? 1.5 + accelerationPowerKW * 0.08 : 0;
 
   const wheelPowerKW = rollingPowerKW + aeroPowerKW + accelerationPowerKW + accelerationBoostKW;
 
