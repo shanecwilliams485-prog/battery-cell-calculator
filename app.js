@@ -671,9 +671,8 @@ function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds)
 function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA) {
   const currentLimitA = Math.max(0, maxDischargeCurrentA || 0);
   const stepSeconds = Math.max(2, clampNumber(input.simulationTimeStepMinutes, 10));
-  const cycle = getVehicleDriveCycle(input.driveCycle);
 
-  if (usableEnergyKWh <= 0 || nominalVoltageV <= 0 || !cycle.length) {
+  if (usableEnergyKWh <= 0 || nominalVoltageV <= 0) {
     return {
       averageCurrentA: 0,
       averagePowerKW: 0,
@@ -694,6 +693,20 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
     ^ driveCycleRunId
   );
 
+  const graphDurationSeconds = 30 * 60;
+  const cycle = getVehicleDriveCycle(input.driveCycle, random, graphDurationSeconds);
+
+  if (!cycle.length) {
+    return {
+      averageCurrentA: 0,
+      averagePowerKW: 0,
+      runtimeMinutes: 0,
+      zeroSOCMinute: 0,
+      profileSampleNumber: driveCycleRunId,
+      rows: []
+    };
+  }
+
   const rows = [];
   let cumulativeEnergyUsedKWh = 0;
   let elapsedSeconds = 0;
@@ -705,14 +718,8 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
   let measuredSeconds = 0;
 
   let previousCurrentA = 0;
-  let cycleVariation = 0.96 + random() * 0.08;
 
-  // This is the key change:
-  // The graph shows a realistic 30-minute recorded sample,
-  // not the entire battery discharge until 0% SOC.
-  const graphDurationSeconds = 30 * 60;
-
-  while (elapsedSeconds < graphDurationSeconds) {
+  while (elapsedSeconds < graphDurationSeconds && segmentIndex < cycle.length) {
     const segment = cycle[segmentIndex];
     const remainingSegmentSeconds = Math.max(1, segment.seconds - segmentElapsedSeconds);
     const durationSeconds = Math.min(stepSeconds, remainingSegmentSeconds, graphDurationSeconds - elapsedSeconds);
@@ -721,7 +728,7 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
       segment,
       elapsedSeconds,
       segmentElapsedSeconds,
-      cycleVariation,
+      1,
       random
     );
 
@@ -729,7 +736,7 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
       segment,
       elapsedSeconds + durationSeconds,
       segmentElapsedSeconds + durationSeconds,
-      cycleVariation,
+      1,
       random
     );
 
@@ -738,22 +745,25 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
     const cappedCurrentA = clamp(rawCurrentA, 0, currentLimitA || rawCurrentA);
 
     const isAccelerating = nextSpeedMph > speedMph + 0.5;
-const isBrakingOrSlowing = nextSpeedMph < speedMph - 0.5;
+    const isBrakingOrSlowing = nextSpeedMph < speedMph - 0.5;
 
-const currentResponse = isAccelerating
-  ? 0.72
-  : isBrakingOrSlowing
-    ? 0.45
-    : 0.28;
+    const currentResponse = isAccelerating
+      ? 0.72
+      : isBrakingOrSlowing
+        ? 0.45
+        : 0.28;
 
-let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * currentResponse;
-    // Small realistic sensor/controller ripple.
-    const recordedRipple =
-      Math.sin(elapsedSeconds / 9) * 0.6 +
-      Math.sin(elapsedSeconds / 23) * 0.4 +
-      (random() - 0.5) * 0.5;
+    let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * currentResponse;
 
-    averageCurrentA = Math.max(0, averageCurrentA + recordedRipple);
+    // Real logged current is never perfectly smooth.
+    const roadSurfaceRipple =
+      Math.sin(elapsedSeconds / 6.5) * 0.7 +
+      Math.sin(elapsedSeconds / 17) * 0.5 +
+      Math.sin(elapsedSeconds / 41) * 0.35;
+
+    const sensorNoise = (random() - 0.5) * 0.9;
+
+    averageCurrentA = Math.max(0, averageCurrentA + roadSurfaceRipple + sensorNoise);
     previousCurrentA = averageCurrentA;
 
     const powerKW = nominalVoltageV * averageCurrentA / 1000;
@@ -787,11 +797,6 @@ let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * c
     if (segmentElapsedSeconds >= segment.seconds - 1e-9) {
       segmentElapsedSeconds = 0;
       segmentIndex += 1;
-
-      if (segmentIndex >= cycle.length) {
-        segmentIndex = 0;
-        cycleVariation = 0.94 + random() * 0.12;
-      }
     }
   }
 
