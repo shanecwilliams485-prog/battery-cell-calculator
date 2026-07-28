@@ -876,9 +876,10 @@ let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * c
     cumulativeEnergyUsedKWh += energyUsedKWh;
 
     weightedCurrentSeconds += averageCurrentA * durationSeconds;
-    weightedPowerSeconds += powerKW * durationSeconds;
-    measuredSeconds += durationSeconds;
-
+weightedPowerSeconds += powerKW * durationSeconds;
+weightedSpeedSeconds += speedMph * durationSeconds;
+measuredSeconds += durationSeconds;
+    
     const remainingEnergyKWh = Math.max(0, usableEnergyKWh - cumulativeEnergyUsedKWh);
     const socPercent = usableEnergyKWh > 0 ? remainingEnergyKWh / usableEnergyKWh * 100 : 0;
 
@@ -903,21 +904,23 @@ let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * c
     }
   }
 
-  const averageCurrentA = measuredSeconds > 0 ? weightedCurrentSeconds / measuredSeconds : 0;
-  const averagePowerKW = measuredSeconds > 0 ? weightedPowerSeconds / measuredSeconds : 0;
+const averageCurrentA = measuredSeconds > 0 ? weightedCurrentSeconds / measuredSeconds : 0;
+const averagePowerKW = measuredSeconds > 0 ? weightedPowerSeconds / measuredSeconds : 0;
+const averageSpeedMph = measuredSeconds > 0 ? weightedSpeedSeconds / measuredSeconds : 0;
 
   const runtimeMinutes = averagePowerKW > 0
     ? usableEnergyKWh / averagePowerKW * 60
     : 0;
 
-  return {
-    averageCurrentA,
-    averagePowerKW,
-    runtimeMinutes,
-    zeroSOCMinute: runtimeMinutes,
-    profileSampleNumber: driveCycleRunId,
-    rows
-  };
+return {
+  averageCurrentA,
+  averagePowerKW,
+  averageSpeedMph,
+  runtimeMinutes,
+  zeroSOCMinute: runtimeMinutes,
+  profileSampleNumber: driveCycleRunId,
+  rows
+};
 }
 function yesNo(value) {
   return value ? "Enabled" : "Disabled";
