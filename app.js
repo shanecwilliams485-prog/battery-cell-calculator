@@ -741,19 +741,68 @@ function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input,
     );
 
     const rawPowerKW = calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds);
-    const rawCurrentA = nominalVoltageV > 0 ? rawPowerKW * 1000 / nominalVoltageV : 0;
-    const cappedCurrentA = clamp(rawCurrentA, 0, currentLimitA || rawCurrentA);
+const rawCurrentA = nominalVoltageV > 0 ? rawPowerKW * 1000 / nominalVoltageV : 0;
 
-    const isAccelerating = nextSpeedMph > speedMph + 0.5;
-    const isBrakingOrSlowing = nextSpeedMph < speedMph - 0.5;
+const mode = String(segment.mode || "").toLowerCase();
+const segmentProgress = segment.seconds > 0
+  ? clamp((segmentElapsedSeconds + durationSeconds / 2) / segment.seconds, 0, 1)
+  : 0;
 
-    const currentResponse = isAccelerating
+const isAccelerating = nextSpeedMph > speedMph + 0.5;
+const isBrakingOrSlowing = nextSpeedMph < speedMph - 0.5;
+
+const isPerformancePulse =
+  input.driveCycle === "performance" &&
+  (
+    mode.includes("hard acceleration") ||
+    mode.includes("performance pull") ||
+    mode.includes("high speed") ||
+    mode.includes("fast a-road")
+  );
+
+const isOvertakePulse =
+  mode.includes("overtake") ||
+  mode.includes("acceleration");
+
+let demandedCurrentA = rawCurrentA;
+
+if (currentLimitA > 0 && isPerformancePulse) {
+  // Use the pulse current properly during hard driving.
+  // Shape gives a ramp-up, peak, and ramp-down instead of a square block.
+  const pulseShape = Math.sin(Math.PI * segmentProgress);
+  const pulseFloorA = currentLimitA * 0.68;
+  const pulsePeakA = currentLimitA * (0.88 + random() * 0.10);
+
+  demandedCurrentA = Math.max(
+    demandedCurrentA,
+    pulseFloorA + (pulsePeakA - pulseFloorA) * pulseShape
+  );
+} else if (currentLimitA > 0 && isOvertakePulse && isAccelerating) {
+  // Normal British-road overtakes should use a decent chunk of pulse current,
+  // but not as aggressively as the performance drive cycle.
+  const pulseShape = Math.sin(Math.PI * segmentProgress);
+  const overtakeFloorA = currentLimitA * 0.42;
+  const overtakePeakA = currentLimitA * (0.62 + random() * 0.12);
+
+  demandedCurrentA = Math.max(
+    demandedCurrentA,
+    overtakeFloorA + (overtakePeakA - overtakeFloorA) * pulseShape
+  );
+}
+
+const cappedCurrentA = clamp(demandedCurrentA, 0, currentLimitA || demandedCurrentA);
+
+const currentResponse = isPerformancePulse
+  ? 0.95
+  : isOvertakePulse && isAccelerating
+    ? 0.82
+    : isAccelerating
       ? 0.72
       : isBrakingOrSlowing
         ? 0.45
         : 0.28;
 
-    let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * currentResponse;
+let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * currentResponse;
 
     // Real logged current is never perfectly smooth.
     const roadSurfaceRipple =
