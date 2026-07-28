@@ -980,12 +980,39 @@ if (results.hasSecondModule) {
 document.getElementById('sohRows').innerHTML = results.sohRows.map(row => `<div class="soh-row"><div><span>${row.percentage}% SOH</span><strong>${fmt(row.usableEnergyKWh, 2)} kWh</strong></div><progress value="${row.percentage}" max="100"></progress></div>`).join('');
 
 let runtime = valueRow('Pack linear discharge runtime', `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`);
+
 if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null) {
   runtime += '<hr>'
     + valueRow('Vehicle average power', `${fmt(results.variableAveragePowerKW, 2)} kW`)
     + valueRow('Vehicle average current', `${fmt(results.variableAverageCurrentA, 1)} A`)
     + valueRow('Vehicle runtime', `${fmt(results.variableRuntimeMinutes, 1)} min`)
     + valueRow('Vehicle 0% SOC', `${fmt(results.variableZeroSOCMinute, 0)} min`)
+    + '<hr>'
+    + valueRow('Drive cycle', driveCycleLabel(results.driveCycle))
+    + valueRow('Vehicle weight', `${fmt(results.vehicleMassKg, 0)} kg`)
+    + valueRow('Drag coefficient', `${fmt(results.dragCoefficient, 2)} Cd`)
+    + valueRow('Frontal area', `${fmt(results.frontalAreaM2, 2)} m²`)
+    + valueRow('Rolling resistance', `${fmt(results.rollingResistanceCoefficient, 3)} Crr`)
+    + valueRow('Drivetrain efficiency', `${fmt(results.drivetrainEfficiencyPercent, 0)} %`)
+    + valueRow('Accessory load', `${fmt(results.assumedLoadKW, 1)} kW`);
+
+  if (results.advancedVehicleRealismEnabled) {
+    runtime += '<hr>'
+      + valueRow('Advanced realism', 'Enabled')
+      + valueRow('Regenerative braking', yesNo(results.regenEnabled))
+      + valueRow('Max regen current', `${fmt(results.maxRegenCurrentA, 0)} A`)
+      + valueRow('Regen efficiency', `${fmt(results.regenEfficiencyPercent, 0)} %`)
+      + valueRow('Regen disabled above SOC', `${fmt(results.regenDisableAboveSocPercent, 0)} %`)
+      + valueRow('Battery temperature', `${fmt(results.batteryTemperatureC, 0)} °C`)
+      + valueRow('Road gradient', roadGradientLabel(results.roadGradientProfile))
+      + valueRow('Auxiliary load profile', auxiliaryLoadLabel(results.auxiliaryLoadProfile))
+      + valueRow('Tyre / road profile', tyreRoadLabel(results.tyreRoadProfile))
+      + valueRow('Driver aggression', `${fmt(results.driverAggression, 0)} / 10`)
+      + valueRow('Payload', `${fmt(results.payloadKg, 0)} kg`);
+  } else {
+    runtime += '<hr>'
+      + valueRow('Advanced realism', 'Disabled');
+  }
 } else {
   runtime += `<p class="muted">Tick Vehicle runtime simulation to calculate current draw from vehicle weight, speed, drag, rolling resistance and drivetrain efficiency.</p>`;
 }
