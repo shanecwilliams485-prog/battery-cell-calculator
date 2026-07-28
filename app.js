@@ -489,56 +489,138 @@ function easeInOut(t) {
   return x * x * (3 - 2 * x);
 }
 
-function getVehicleDriveCycle(cycleName) {
-  const cycles = {
+function randomBetween(random, min, max) {
+  return min + random() * (max - min);
+}
+
+function pickWeighted(random, options) {
+  const total = options.reduce((sum, option) => sum + option.weight, 0);
+  let target = random() * total;
+
+  for (const option of options) {
+    target -= option.weight;
+    if (target <= 0) return option;
+  }
+
+  return options[options.length - 1];
+}
+
+function addJourneySegment(segments, fromMph, toMph, seconds, mode, remainingSeconds) {
+  const duration = Math.max(4, Math.min(seconds, remainingSeconds));
+
+  segments.push({
+    fromMph,
+    toMph,
+    seconds: duration,
+    mode
+  });
+
+  return toMph;
+}
+
+function getVehicleDriveCycle(cycleName, random, targetSeconds = 30 * 60) {
+  const segments = [];
+  let elapsedSeconds = 0;
+  let speedMph = 0;
+
+  const eventBanks = {
     city: [
-      { fromMph: 0, toMph: 18, seconds: 14, mode: "Pull away" },
-      { fromMph: 18, toMph: 28, seconds: 35, mode: "City driving" },
-      { fromMph: 28, toMph: 12, seconds: 18, mode: "Traffic slowing" },
-      { fromMph: 12, toMph: 0, seconds: 10, mode: "Braking" },
-      { fromMph: 0, toMph: 0, seconds: 18, mode: "Stopped" },
-      { fromMph: 0, toMph: 32, seconds: 18, mode: "Acceleration" },
-      { fromMph: 32, toMph: 24, seconds: 45, mode: "Urban traffic" },
-      { fromMph: 24, toMph: 0, seconds: 16, mode: "Braking" }
+      { weight: 18, min: 0, max: 0, seconds: [8, 35], mode: "Traffic lights / queue" },
+      { weight: 20, min: 8, max: 22, seconds: [12, 45], mode: "20 mph street" },
+      { weight: 24, min: 18, max: 32, seconds: [20, 70], mode: "30 mph urban road" },
+      { weight: 12, min: 5, max: 18, seconds: [10, 35], mode: "Roundabout approach" },
+      { weight: 10, min: 25, max: 40, seconds: [25, 70], mode: "Urban dual carriageway" },
+      { weight: 8, min: 0, max: 8, seconds: [6, 20], mode: "Junction crawl" },
+      { weight: 8, min: 12, max: 28, seconds: [15, 50], mode: "Residential traffic" }
     ],
 
     mixed: [
-      { fromMph: 0, toMph: 28, seconds: 18, mode: "Pull away" },
-      { fromMph: 28, toMph: 46, seconds: 45, mode: "A-road cruise" },
-      { fromMph: 46, toMph: 58, seconds: 35, mode: "Faster road" },
-      { fromMph: 58, toMph: 42, seconds: 28, mode: "Traffic slowing" },
-      { fromMph: 42, toMph: 64, seconds: 38, mode: "Acceleration" },
-      { fromMph: 64, toMph: 55, seconds: 60, mode: "Cruise" },
-      { fromMph: 55, toMph: 25, seconds: 30, mode: "Slowing traffic" },
-      { fromMph: 25, toMph: 0, seconds: 20, mode: "Braking" }
+      { weight: 9, min: 0, max: 0, seconds: [8, 30], mode: "Traffic lights / junction" },
+      { weight: 12, min: 18, max: 32, seconds: [20, 70], mode: "Village 30 mph" },
+      { weight: 14, min: 35, max: 48, seconds: [30, 100], mode: "B-road bends" },
+      { weight: 18, min: 45, max: 62, seconds: [45, 130], mode: "A-road cruise" },
+      { weight: 12, min: 55, max: 70, seconds: [40, 120], mode: "National speed limit" },
+      { weight: 10, min: 20, max: 38, seconds: [15, 55], mode: "Roundabout / traffic" },
+      { weight: 8, min: 8, max: 24, seconds: [10, 45], mode: "Slow vehicle ahead" },
+      { weight: 9, min: 50, max: 72, seconds: [12, 35], mode: "Overtake / acceleration" },
+      { weight: 8, min: 30, max: 45, seconds: [20, 70], mode: "Roadworks / restriction" }
     ],
 
     motorway: [
-      { fromMph: 0, toMph: 35, seconds: 24, mode: "Slip road" },
-      { fromMph: 35, toMph: 62, seconds: 35, mode: "Acceleration" },
-      { fromMph: 62, toMph: 70, seconds: 40, mode: "Joining motorway" },
-      { fromMph: 70, toMph: 68, seconds: 120, mode: "Motorway cruise" },
-      { fromMph: 68, toMph: 72, seconds: 90, mode: "Speed correction" },
-      { fromMph: 72, toMph: 64, seconds: 80, mode: "Traffic easing" },
-      { fromMph: 64, toMph: 70, seconds: 95, mode: "Motorway cruise" },
-      { fromMph: 70, toMph: 58, seconds: 45, mode: "Slowing traffic" }
+      { weight: 8, min: 35, max: 55, seconds: [20, 50], mode: "Slip road / joining" },
+      { weight: 28, min: 63, max: 72, seconds: [70, 220], mode: "Motorway cruise" },
+      { weight: 18, min: 58, max: 68, seconds: [45, 150], mode: "Traffic flow" },
+      { weight: 12, min: 48, max: 60, seconds: [30, 100], mode: "Middle-lane traffic" },
+      { weight: 10, min: 40, max: 52, seconds: [25, 90], mode: "Roadworks 50 mph" },
+      { weight: 10, min: 68, max: 76, seconds: [12, 40], mode: "Overtake acceleration" },
+      { weight: 8, min: 28, max: 45, seconds: [20, 70], mode: "Congestion building" },
+      { weight: 6, min: 0, max: 15, seconds: [10, 40], mode: "Stop-start traffic" }
     ],
 
     performance: [
-      { fromMph: 0, toMph: 30, seconds: 7, mode: "Hard acceleration" },
-      { fromMph: 30, toMph: 62, seconds: 10, mode: "Hard acceleration" },
-      { fromMph: 62, toMph: 82, seconds: 18, mode: "Performance pull" },
-      { fromMph: 82, toMph: 48, seconds: 16, mode: "Braking" },
-      { fromMph: 48, toMph: 72, seconds: 20, mode: "Acceleration" },
-      { fromMph: 72, toMph: 88, seconds: 20, mode: "High speed pull" },
-      { fromMph: 88, toMph: 55, seconds: 22, mode: "Braking" },
-      { fromMph: 55, toMph: 0, seconds: 30, mode: "Cooling down" }
+      { weight: 12, min: 0, max: 20, seconds: [8, 25], mode: "Slow corner / junction" },
+      { weight: 22, min: 35, max: 65, seconds: [10, 35], mode: "Hard acceleration" },
+      { weight: 16, min: 45, max: 75, seconds: [15, 55], mode: "Fast A-road" },
+      { weight: 14, min: 20, max: 45, seconds: [8, 30], mode: "Braking for bend" },
+      { weight: 16, min: 55, max: 90, seconds: [8, 28], mode: "Performance pull" },
+      { weight: 10, min: 35, max: 55, seconds: [20, 55], mode: "Cooling cruise" },
+      { weight: 10, min: 0, max: 12, seconds: [8, 22], mode: "Junction / reset" }
     ]
   };
 
-  return cycles[cycleName] || cycles.mixed;
-}
+  const bank = eventBanks[cycleName] || eventBanks.mixed;
 
+  while (elapsedSeconds < targetSeconds) {
+    const event = pickWeighted(random, bank);
+    const remainingSeconds = targetSeconds - elapsedSeconds;
+
+    let nextSpeedMph = randomBetween(random, event.min, event.max);
+    let durationSeconds = randomBetween(random, event.seconds[0], event.seconds[1]);
+
+    // Avoid robotic jumps. If the next target is very different, create a
+    // separate acceleration or slowing segment before the main road section.
+    const speedDifference = nextSpeedMph - speedMph;
+
+    if (Math.abs(speedDifference) > 12 && remainingSeconds > 20) {
+      const transitionSeconds = clamp(Math.abs(speedDifference) * randomBetween(random, 0.45, 0.9), 6, 35);
+      const transitionMode = speedDifference > 0 ? "Acceleration" : "Slowing / braking";
+
+      speedMph = addJourneySegment(
+        segments,
+        speedMph,
+        nextSpeedMph,
+        transitionSeconds,
+        transitionMode,
+        remainingSeconds
+      );
+
+      elapsedSeconds += transitionSeconds;
+    }
+
+    const updatedRemainingSeconds = targetSeconds - elapsedSeconds;
+    if (updatedRemainingSeconds <= 0) break;
+
+    // Small natural speed drift inside a section.
+    const sectionEndSpeed = clamp(
+      nextSpeedMph + randomBetween(random, -4, 4),
+      0,
+      cycleName === "performance" ? 95 : 76
+    );
+
+    speedMph = addJourneySegment(
+      segments,
+      speedMph,
+      sectionEndSpeed,
+      durationSeconds,
+      event.mode,
+      updatedRemainingSeconds
+    );
+
+    elapsedSeconds += Math.min(durationSeconds, updatedRemainingSeconds);
+  }
+
+  return segments;
+}
 function getSegmentSpeedMph(segment, elapsedSeconds, segmentElapsedSeconds, cycleVariation, random) {
   const progress = segment.seconds > 0 ? segmentElapsedSeconds / segment.seconds : 0;
   const smoothProgress = easeInOut(progress);
