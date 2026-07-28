@@ -918,6 +918,51 @@ let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * c
     rows
   };
 }
+function yesNo(value) {
+  return value ? "Enabled" : "Disabled";
+}
+
+function driveCycleLabel(value) {
+  const labels = {
+    mixed: "Mixed road",
+    city: "City",
+    motorway: "Motorway",
+    performance: "Performance driving"
+  };
+
+  return labels[value] || value || "Mixed road";
+}
+
+function roadGradientLabel(value) {
+  const labels = {
+    flat: "Flat",
+    rolling: "Rolling UK roads",
+    hilly: "Hilly roads"
+  };
+
+  return labels[value] || value || "Rolling UK roads";
+}
+
+function auxiliaryLoadLabel(value) {
+  const labels = {
+    low: "Low load",
+    normal: "Normal driving",
+    winter: "Winter heating"
+  };
+
+  return labels[value] || value || "Normal driving";
+}
+
+function tyreRoadLabel(value) {
+  const labels = {
+    eco: "Eco tyre / dry road",
+    normal: "Normal tyre / dry road",
+    performance: "Performance tyre",
+    wet: "Wet road"
+  };
+
+  return labels[value] || value || "Normal tyre / dry road";
+}
 function valueRow(label, value) { return `<div class="value-row"><span>${label}</span><strong>${value}</strong></div>`; }
 function renderResults(results) {
   document.getElementById('results').hidden = false;
