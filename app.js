@@ -1062,6 +1062,45 @@ if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null
   runtime += `<p class="muted">Tick Vehicle runtime simulation to calculate current draw from vehicle weight, speed, drag, rolling resistance and drivetrain efficiency.</p>`;
 }
   document.getElementById('runtimeRows').innerHTML = runtime;
+ const simulationSettingsSection = document.getElementById('simulationSettingsSection');
+const simulationSettingsRows = document.getElementById('simulationSettingsRows');
+
+if (simulationSettingsSection && simulationSettingsRows) {
+  if (results.variableSimulationEnabled) {
+    simulationSettingsSection.hidden = false;
+
+    let settings = valueRow('Drive cycle', driveCycleLabel(results.driveCycle))
+      + valueRow('Vehicle weight', `${fmt(results.vehicleMassKg, 0)} kg`)
+      + valueRow('Drag coefficient', `${fmt(results.dragCoefficient, 2)} Cd`)
+      + valueRow('Frontal area', `${fmt(results.frontalAreaM2, 2)} m²`)
+      + valueRow('Rolling resistance', `${fmt(results.rollingResistanceCoefficient, 3)} Crr`)
+      + valueRow('Drivetrain efficiency', `${fmt(results.drivetrainEfficiencyPercent, 0)} %`)
+      + valueRow('Accessory load', `${fmt(results.assumedLoadKW, 1)} kW`);
+
+    if (results.advancedVehicleRealismEnabled) {
+      settings += '<hr>'
+        + valueRow('Advanced realism', 'Enabled')
+        + valueRow('Regenerative braking', yesNo(results.regenEnabled))
+        + valueRow('Max regen current', `${fmt(results.maxRegenCurrentA, 0)} A`)
+        + valueRow('Regen efficiency', `${fmt(results.regenEfficiencyPercent, 0)} %`)
+        + valueRow('Regen disabled above SOC', `${fmt(results.regenDisableAboveSocPercent, 0)} %`)
+        + valueRow('Battery temperature', `${fmt(results.batteryTemperatureC, 0)} °C`)
+        + valueRow('Road gradient', roadGradientLabel(results.roadGradientProfile))
+        + valueRow('Auxiliary load profile', auxiliaryLoadLabel(results.auxiliaryLoadProfile))
+        + valueRow('Tyre / road profile', tyreRoadLabel(results.tyreRoadProfile))
+        + valueRow('Driver aggression', `${fmt(results.driverAggression, 0)} / 10`)
+        + valueRow('Payload', `${fmt(results.payloadKg, 0)} kg`);
+    } else {
+      settings += '<hr>'
+        + valueRow('Advanced realism', 'Disabled');
+    }
+
+    simulationSettingsRows.innerHTML = settings;
+  } else {
+    simulationSettingsSection.hidden = true;
+    simulationSettingsRows.innerHTML = "";
+  }
+} 
   const simSection = document.getElementById('simulationSection');
   if (results.variableSimulationEnabled && results.variableSimulationRows.length) {
     simSection.hidden = false;
