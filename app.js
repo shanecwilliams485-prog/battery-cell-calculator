@@ -772,13 +772,22 @@ function getRegenEfficiency(input) {
 
   return regenEfficiency;
 }
-function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds) {
-  const massKg = Math.max(1, clampNumber(input.vehicleMassKg, 1300));
+function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds, elapsedSeconds = 0, nominalVoltageV = 0) {
+  const baseMassKg = Math.max(1, clampNumber(input.vehicleMassKg, 1300));
+  const payloadKg = input.advancedVehicleRealismEnabled
+    ? Math.max(0, clampNumber(input.payloadKg, 0))
+    : 0;
+
+  const massKg = baseMassKg + payloadKg;
+
   const cd = Math.max(0.1, clampNumber(input.dragCoefficient, 0.34));
   const frontalAreaM2 = Math.max(0.5, clampNumber(input.frontalAreaM2, 2.1));
-  const crr = Math.max(0.001, clampNumber(input.rollingResistanceCoefficient, 0.013));
+
+  const tyreMultiplier = getTyreRoadMultiplier(input);
+  const crr = Math.max(0.001, clampNumber(input.rollingResistanceCoefficient, 0.013)) * tyreMultiplier;
+
   const efficiency = clamp(clampNumber(input.drivetrainEfficiencyPercent, 90) / 100, 0.5, 0.98);
-  const accessoryLoadKW = Math.max(0, clampNumber(input.assumedLoadKW, 1.0));
+  const accessoryLoadKW = getAuxiliaryLoadKW(input);
 
   const airDensity = 1.225;
   const gravity = 9.81;
@@ -791,21 +800,42 @@ function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds)
   const rollingPowerKW = massKg * gravity * crr * averageSpeedMps / 1000;
   const aeroPowerKW = 0.5 * airDensity * cd * frontalAreaM2 * averageSpeedMps ** 3 / 1000;
 
-  // Positive acceleration energy demand.
-  // This is what was too weak before.
+  const gradientPercent = getRoadGradientPercent(input, elapsedSeconds);
+  const gradientPowerKW = massKg * gravity * (gradientPercent / 100) * averageSpeedMps / 1000;
+
   const deltaKineticEnergyJ = 0.5 * massKg * (nextSpeedMps ** 2 - speedMps ** 2);
   const rawAccelerationPowerKW = Math.max(0, deltaKineticEnergyJ / dt / 1000);
-const accelerationPowerKW = clamp(rawAccelerationPowerKW, 0, 35);
 
-  // Extra real-world demand for inverter losses, tyre load, drivetrain response,
-  // and the fact that acceleration is not perfectly smooth in real driving.
- const accelerationBoostKW = accelerationPowerKW > 0 ? accelerationPowerKW * 0.03 : 0;
+  const aggressionFactor = getDriverAggressionFactor(input);
+  const accelerationCapKW = input.driveCycle === "performance" ? 65 : 28;
+  const accelerationPowerKW = clamp(rawAccelerationPowerKW * aggressionFactor, 0, accelerationCapKW);
 
-  const wheelPowerKW = rollingPowerKW + aeroPowerKW + accelerationPowerKW + accelerationBoostKW;
+  const accelerationBoostKW = accelerationPowerKW > 0 ? accelerationPowerKW * 0.02 : 0;
 
-const realisticPowerKW = wheelPowerKW / efficiency + accessoryLoadKW;
+  const wheelPowerKW =
+    rollingPowerKW +
+    aeroPowerKW +
+    gradientPowerKW +
+    accelerationPowerKW +
+    accelerationBoostKW;
 
-return clamp(realisticPowerKW, 0, 120);
+  const propulsionPowerKW = Math.max(0, wheelPowerKW) / efficiency + accessoryLoadKW;
+
+  const regenEfficiency = getRegenEfficiency(input);
+  const maxRegenCurrentA = Math.max(0, clampNumber(input.maxRegenCurrentA, 120));
+  const maxRegenPowerKW = nominalVoltageV > 0 ? nominalVoltageV * maxRegenCurrentA / 1000 : 0;
+
+  const brakingPowerKW = Math.max(0, -deltaKineticEnergyJ / dt / 1000);
+  const downhillPowerKW = Math.max(0, -gradientPowerKW);
+
+  const regenPowerKW = input.advancedVehicleRealismEnabled
+    ? Math.min(maxRegenPowerKW, (brakingPowerKW + downhillPowerKW) * regenEfficiency)
+    : 0;
+
+  const temperatureMultiplier = getTemperaturePowerMultiplier(input);
+  const netPowerKW = propulsionPowerKW * temperatureMultiplier - regenPowerKW;
+
+  return clamp(netPowerKW, 0, input.driveCycle === "performance" ? 160 : 75);
 }
 function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA) {
   const currentLimitA = Math.max(0, maxDischargeCurrentA || 0);
