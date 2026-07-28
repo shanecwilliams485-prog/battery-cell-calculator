@@ -513,8 +513,18 @@ payloadKg: input.payloadKg,
 
 variableAverageCurrentA: variableSimulation?.averageCurrentA ?? null,
 variableAveragePowerKW: variableSimulation?.averagePowerKW ?? null,
+variableAverageSpeedMph: variableSimulation?.averageSpeedMph ?? null,
 variableRuntimeMinutes: variableSimulation?.runtimeMinutes ?? null,
 variableZeroSOCMinute: variableSimulation?.zeroSOCMinute ?? null,
+vehicleRangeMiles: variableSimulation
+  ? variableSimulation.averageSpeedMph * (variableSimulation.runtimeMinutes / 60)
+  : null,
+vehicleConsumptionMilesPerKWh: variableSimulation && usableEnergyKWh > 0
+  ? (variableSimulation.averageSpeedMph * (variableSimulation.runtimeMinutes / 60)) / usableEnergyKWh
+  : null,
+vehicleConsumptionKWhPer100Miles: variableSimulation && variableSimulation.averageSpeedMph > 0
+  ? 100 / ((variableSimulation.averageSpeedMph * (variableSimulation.runtimeMinutes / 60)) / usableEnergyKWh)
+  : null,
 variableProfileSampleNumber: variableSimulation?.profileSampleNumber ?? null,
 variableSimulationRows: variableSimulation?.rows ?? [],
 sohRows
