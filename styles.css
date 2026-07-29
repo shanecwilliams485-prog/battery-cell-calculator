@@ -755,6 +755,11 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   grid-column: span 3;
 }
 
+input[readonly] {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
 .graph-card {
   grid-column: 1 / -1;
 }
