@@ -535,7 +535,12 @@ function calculate(input) {
   const calculatedMaxRegenCurrentA = maxChargeCurrentA * 0.8;
   const calculatedBatteryTemperatureC = getEstimatedBatteryTemperatureC(input);
   const calculatedRegenEfficiencyPercent = getCalculatedRegenEfficiencyPercent(input);
-
+  const simulationInput = {
+    ...input,
+    maxRegenCurrentA: calculatedMaxRegenCurrentA,
+    batteryTemperatureC: calculatedBatteryTemperatureC,
+    regenEfficiencyPercent: calculatedRegenEfficiencyPercent
+  };
   const maxDischargePowerKW = (input.nominalVoltage * series * input.maxDischargeCurrentA * parallel) / 1000.0;
   const continuousDischargePowerKW = (input.nominalVoltage * series * input.continuousDischargeCurrentA * parallel) / 1000.0;
   const maxChargePowerKW = (input.nominalVoltage * series * input.maxChargeCurrentA * parallel) / 1000.0;
@@ -549,8 +554,8 @@ function calculate(input) {
   const runtimeAtAssumedLoadMinutes = input.assumedLoadKW > 0 ? usableEnergyKWh / input.assumedLoadKW * 60.0 : null;
 
   const variableSimulation = input.variableCurrentSimulationEnabled
-? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA)
-    : null;
+   ? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, simulationInput, maxDischargeCurrentA)
+   : null;
 
   const sohRows = [100, 95, 90, 85, 80].map(percentage => ({
     percentage,
@@ -870,14 +875,7 @@ function getRoadGradientPercent(input, elapsedSeconds) {
 function getRegenEfficiency(input) {
   if (!input.advancedVehicleRealismEnabled || !input.regenEnabled) return 0;
 
-  const regenEfficiency = clamp(clampNumber(input.regenEfficiencyPercent, 65) / 100, 0, 0.9);
-  const tempC = clampNumber(input.batteryTemperatureC, 25);
-
-  if (tempC < 0) return regenEfficiency * 0.25;
-  if (tempC < 10) return regenEfficiency * 0.55;
-  if (tempC > 45) return regenEfficiency * 0.65;
-
-  return regenEfficiency;
+  return clamp(clampNumber(input.regenEfficiencyPercent, 65) / 100, 0, 0.8);
 }
 function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds, elapsedSeconds = 0, nominalVoltageV = 0) {
   const baseMassKg = Math.max(1, clampNumber(input.vehicleMassKg, 1300));
