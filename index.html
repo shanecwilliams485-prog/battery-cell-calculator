@@ -192,10 +192,10 @@
   <small>Allows braking and slowing events to recover energy back into the battery pack.</small>
 </label>
     <label>
-      <span>Max regen current A</span>
-      <input id="maxRegenCurrentA" type="number" step="1" min="0">
-      <small>Maximum current the pack can accept during regenerative braking.</small>
-    </label>
+  <span>Calculated max regen current (A)</span>
+  <input id="maxRegenCurrentA" type="number" readonly>
+  <small>Automatically calculated as 80% of pack max charge current.</small>
+</label>
 
    <label>
   <span>Regen efficiency (%)</span>
