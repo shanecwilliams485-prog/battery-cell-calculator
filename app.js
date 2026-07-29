@@ -23,7 +23,7 @@ const DEFAULT_INPUTS = {
   rollingResistanceCoefficient: 0.013,
   drivetrainEfficiencyPercent: 90,
   assumedLoadKW: 1.0,
-  simulationTimeStepMinutes: 10,
+  simulationTimeStepSeconds: 10,
   advancedVehicleRealismEnabled: false,
   regenEnabled: true,
   maxRegenCurrentA: 120,
@@ -74,7 +74,7 @@ const fields = [
   ['rollingResistanceCoefficient', 'number'],
   ['drivetrainEfficiencyPercent', 'number'],
   ['assumedLoadKW', 'number'],
-  ['simulationTimeStepMinutes', 'number'],
+  ['simulationTimeStepSeconds', 'number'],
   ['advancedVehicleRealismEnabled', 'checkbox'],
   ['regenEnabled', 'checkbox'],
   ['maxRegenCurrentA', 'number'],
@@ -840,7 +840,7 @@ function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds,
 }
 function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA) {
   const currentLimitA = Math.max(0, maxDischargeCurrentA || 0);
-  const stepSeconds = Math.max(2, clampNumber(input.simulationTimeStepMinutes, 10));
+  const stepSeconds = Math.max(2, clampNumber(input.simulationTimeStepSeconds, 10));
 
   if (usableEnergyKWh <= 0 || nominalVoltageV <= 0) {
     return {
