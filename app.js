@@ -1450,7 +1450,7 @@ function init() {
       saveInputs(getInputs());
     });
   }
-
+updateCalculatedMaxRegenCurrentInput();
   document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
   hideLoading();
