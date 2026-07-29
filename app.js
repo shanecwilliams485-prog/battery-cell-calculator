@@ -31,7 +31,9 @@ const DEFAULT_INPUTS = {
   regenDisableAboveSocPercent: 95,
   batteryTemperatureC: 25,
   roadGradientProfile: "rolling",
-  auxiliaryLoadProfile: "normal",
+  airConditioningEnabled: false,
+  heatingEnabled: false,
+  electricalAccessoriesEnabled: false,
   tyreRoadProfile: "normal",
   driverAggression: 5,
   payloadKg: 0,
@@ -84,7 +86,9 @@ const fields = [
   ['batteryTemperatureC', 'number'],
 
   ['roadGradientProfile', 'text'],
-  ['auxiliaryLoadProfile', 'text'],
+  ['airConditioningEnabled', 'checkbox'],
+  ['heatingEnabled', 'checkbox'],
+  ['electricalAccessoriesEnabled', 'checkbox'],
   ['tyreRoadProfile', 'text'],
 
   ['driverAggression', 'number'],
