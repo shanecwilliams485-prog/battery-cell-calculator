@@ -484,7 +484,6 @@ function calculate(input) {
   const maxChargeCurrentA = input.maxChargeCurrentA * parallel;
   const calculatedMaxRegenCurrentA = maxChargeCurrentA * 0.8;
   const calculatedBatteryTemperatureC = getEstimatedBatteryTemperatureC(input);
-  const calculatedBatteryTemperatureC = getEstimatedBatteryTemperatureC(input);
 
   const maxDischargePowerKW = (input.nominalVoltage * series * input.maxDischargeCurrentA * parallel) / 1000.0;
   const continuousDischargePowerKW = (input.nominalVoltage * series * input.continuousDischargeCurrentA * parallel) / 1000.0;
