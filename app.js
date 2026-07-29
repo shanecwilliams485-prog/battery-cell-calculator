@@ -435,6 +435,7 @@ function calculate(input) {
   const maxDischargeCurrentA = input.maxDischargeCurrentA * parallel;
   const continuousDischargeCurrentA = input.continuousDischargeCurrentA * parallel;
   const maxChargeCurrentA = input.maxChargeCurrentA * parallel;
+  const calculatedMaxRegenCurrentA = maxChargeCurrentA * 0.8;
 
   const maxDischargePowerKW = (input.nominalVoltage * series * input.maxDischargeCurrentA * parallel) / 1000.0;
   const continuousDischargePowerKW = (input.nominalVoltage * series * input.continuousDischargeCurrentA * parallel) / 1000.0;
@@ -506,7 +507,7 @@ drivetrainEfficiencyPercent: input.drivetrainEfficiencyPercent,
 assumedLoadKW: input.assumedLoadKW,
 
 regenEnabled: input.regenEnabled,
-maxRegenCurrentA: input.maxRegenCurrentA,
+maxRegenCurrentA: calculatedMaxRegenCurrentA,
 regenEfficiencyPercent: input.regenEfficiencyPercent,
 regenDisableAboveSocPercent: input.regenDisableAboveSocPercent,
 batteryTemperatureC: input.batteryTemperatureC,
@@ -1215,7 +1216,7 @@ if (simulationSettingsSection && simulationSettingsRows) {
       settings += '<hr>'
         + valueRow('Advanced realism', 'Enabled')
         + valueRow('Regenerative braking', yesNo(results.regenEnabled))
-        + valueRow('Max regen current', `${fmt(results.maxRegenCurrentA, 0)} A`)
+       + valueRow('Calculated max regen current', `${fmt(results.maxRegenCurrentA, 0)} A`)
         + valueRow('Regen efficiency', `${fmt(results.regenEfficiencyPercent, 0)} %`)
         + valueRow('Regen disabled above SOC', `${fmt(results.regenDisableAboveSocPercent, 0)} %`)
         + valueRow('Battery temperature', `${fmt(results.batteryTemperatureC, 0)} °C`)
