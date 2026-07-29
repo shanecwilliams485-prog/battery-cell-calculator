@@ -1346,6 +1346,7 @@ if (simulationSettingsSection && simulationSettingsRows) {
         + valueRow('Road gradient', roadGradientLabel(results.roadGradientProfile))
         + valueRow('Air conditioning', yesNo(results.airConditioningEnabled))
         + valueRow('Heating', yesNo(results.heatingEnabled))
+        + valueRow('Heater type', results.heatingEnabled ? heaterTypeLabel(results.heaterType) : "Off")
         + valueRow('Head lights / wipers / radio', yesNo(results.electricalAccessoriesEnabled))
         + valueRow('Weather conditions', weatherConditionLabel(results.weatherCondition))
         + valueRow('Driver aggression', `${fmt(results.driverAggression, 0)} / 10`)
