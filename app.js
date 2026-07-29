@@ -1421,6 +1421,7 @@ function init() {
   for (const [name] of fields) {
     document.getElementById(name)?.addEventListener('input', () => {
       if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
+        updateCalculatedMaxRegenCurrentInput();
         updateModuleConfigurationOptions();
       } else if (name === "moduleConfiguration") {
         updateModuleCount1FromConfiguration();
