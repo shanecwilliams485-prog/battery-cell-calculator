@@ -226,14 +226,31 @@
     </label>
 
     <label>
-      <span>Auxiliary load profile</span>
-      <select id="auxiliaryLoadProfile">
-        <option value="low">Low load</option>
-        <option value="normal">Normal driving</option>
-        <option value="winter">Winter heating</option>
-      </select>
-      <small>Represents lights, pumps, fans, infotainment, heating, air conditioning and other vehicle loads.</small>
-    </label>
+  <span>Air conditioning</span>
+  <span class="toggle-row">
+    Enabled
+    <input id="airConditioningEnabled" type="checkbox">
+  </span>
+  <small>Adds extra load for cabin cooling.</small>
+</label>
+
+<label>
+  <span>Heating</span>
+  <span class="toggle-row">
+    Enabled
+    <input id="heatingEnabled" type="checkbox">
+  </span>
+  <small>Adds extra load for cabin heating or demisting.</small>
+</label>
+
+<label>
+  <span>Head lights / wipers / radio</span>
+  <span class="toggle-row">
+    Enabled
+    <input id="electricalAccessoriesEnabled" type="checkbox">
+  </span>
+  <small>Adds normal electrical accessory load while driving.</small>
+</label>
 
     <label>
       <span>Tyre / road profile</span>
