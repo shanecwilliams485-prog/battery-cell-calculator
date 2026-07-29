@@ -614,7 +614,7 @@ frontalAreaM2: input.frontalAreaM2,
 rollingResistanceCoefficient: input.rollingResistanceCoefficient,
 drivetrainEfficiencyPercent: input.drivetrainEfficiencyPercent,
 assumedLoadKW: input.assumedLoadKW,
-
+auxiliaryLoadKW: calculatedAuxiliaryLoadKW,
 regenEnabled: input.regenEnabled,
 maxRegenCurrentA: calculatedMaxRegenCurrentA,
 regenEfficiencyPercent: calculatedRegenEfficiencyPercent,
@@ -1342,7 +1342,7 @@ if (simulationSettingsSection && simulationSettingsRows) {
       + valueRow('Frontal area', `${fmt(results.frontalAreaM2, 2)} m²`)
       + valueRow('Rolling resistance', `${fmt(results.rollingResistanceCoefficient, 3)} Crr`)
       + valueRow('Drivetrain efficiency', `${fmt(results.drivetrainEfficiencyPercent, 0)} %`)
-      + valueRow('Accessory load', `${fmt(results.assumedLoadKW, 1)} kW`);
+      + valueRow('Accessory load', `${fmt(results.auxiliaryLoadKW, 2)} kW`);
 
     if (results.advancedVehicleRealismEnabled) {
       settings += '<hr>'
