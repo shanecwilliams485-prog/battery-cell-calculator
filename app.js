@@ -1197,7 +1197,14 @@ function roadGradientLabel(value) {
 
   return labels[value] || value || "Mixed";
 }
+function heaterTypeLabel(value) {
+  const labels = {
+    resistive: "Resistive heater",
+    heatPump: "Heat pump"
+  };
 
+  return labels[value] || "Resistive heater";
+}
 function weatherConditionLabel(value) {
   const labels = {
     wetCold: "Wet / cold",
