@@ -1574,11 +1574,11 @@ function init() {
       saveInputs(getInputs());
     }
 
-    updateCalculatedMaxRegenCurrentInput();
-    updateCalculatedBatteryTemperatureInput();
-    updateCalculatedRegenEfficiencyInput();
-    refreshResultsIfVisible();
-    refreshResultsIfVisible();
+updateCalculatedMaxRegenCurrentInput();
+updateCalculatedBatteryTemperatureInput();
+updateCalculatedRegenEfficiencyInput();
+updateAppliedAccessoryLoadInput();
+refreshResultsIfVisible();
   });
 
   document.getElementById(name)?.addEventListener('change', () => {
@@ -1592,12 +1592,11 @@ function init() {
       updateSecondModuleConfigurationOptions(name);
     }
 
-    saveInputs(getInputs());
-    updateCalculatedMaxRegenCurrentInput();
-    updateCalculatedBatteryTemperatureInput();
-    updateCalculatedRegenEfficiencyInput();
-    refreshResultsIfVisible();
-    refreshResultsIfVisible();
+updateCalculatedMaxRegenCurrentInput();
+updateCalculatedBatteryTemperatureInput();
+updateCalculatedRegenEfficiencyInput();
+updateAppliedAccessoryLoadInput();
+refreshResultsIfVisible();
   });
 }
 
