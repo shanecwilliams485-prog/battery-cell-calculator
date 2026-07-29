@@ -1074,12 +1074,12 @@ function driveCycleLabel(value) {
 
 function roadGradientLabel(value) {
   const labels = {
+    mixed: "Mixed",
     flat: "Flat",
-    rolling: "Rolling UK roads",
-    hilly: "Hilly roads"
+    hilly: "Hilly"
   };
 
-  return labels[value] || value || "Rolling UK roads";
+  return labels[value] || value || "Mixed";
 }
 
 function auxiliaryLoadLabel(value) {
