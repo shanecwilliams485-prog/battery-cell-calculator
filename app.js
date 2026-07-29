@@ -1108,6 +1108,8 @@ function weatherConditionLabel(value) {
 function valueRow(label, value) { return `<div class="value-row"><span>${label}</span><strong>${value}</strong></div>`; }
 function renderResults(results) {
   document.getElementById('results').hidden = false;
+  const maxRegenInput = document.getElementById('maxRegenCurrentA');
+if (maxRegenInput) maxRegenInput.value = fmt(results.maxRegenCurrentA, 0);
   document.getElementById('resultCards').innerHTML = `
   <article class="result-card"><span>⚡</span><small>Pack energy</small><strong>${fmt(results.packEnergyKWh, 2)} kWh</strong></article>
   <article class="result-card"><span>🔋</span><small>Usable energy</small><strong>${fmt(results.usableEnergyKWh, 2)} kWh</strong></article>
