@@ -1522,6 +1522,15 @@ function resetAll() {
   lastResults = null;
   showCalculatorPage();
 }
+function refreshResultsIfVisible() {
+  const resultsPage = document.getElementById('resultsPage');
+
+  if (!resultsPage || resultsPage.hidden) return;
+
+  const inputs = getInputs();
+  lastResults = calculate(inputs);
+  renderResults(lastResults);
+}
 function init() {
   setInputs(loadInputs());
   updateModuleConfigurationOptions();
