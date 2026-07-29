@@ -1453,8 +1453,9 @@ function init() {
   });
 }
 
-updateCalculatedMaxRegenCurrentInput();
-    document.getElementById('calculatorPage').hidden = false;
+  updateCalculatedMaxRegenCurrentInput();
+
+  document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
   hideLoading();
 }
