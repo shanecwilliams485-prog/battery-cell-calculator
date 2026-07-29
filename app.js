@@ -393,12 +393,13 @@ function getEstimatedBatteryTemperatureC(input) {
   const aggression = input.driverAggression || "normal";
 
   const weatherBaseTemps = {
-    wetCold: 8,
-    wetWarm: 18,
-    icy: -2,
-    dryCold: 10,
-    dryHot: 32
-  };
+  dryWarm: 18,
+  dryCold: 7,
+  wetWarm: 16,
+  wetCold: 7,
+  icy: 4,
+  dryHot: 28
+};
 
   const aggressionHeat = {
     calm: 2,
