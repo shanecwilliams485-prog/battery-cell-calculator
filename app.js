@@ -607,7 +607,7 @@ assumedLoadKW: input.assumedLoadKW,
 
 regenEnabled: input.regenEnabled,
 maxRegenCurrentA: calculatedMaxRegenCurrentA,
-regenEfficiencyPercent: input.regenEfficiencyPercent,
+regenEfficiencyPercent: calculatedRegenEfficiencyPercent,
 regenDisableAboveSocPercent: input.regenDisableAboveSocPercent,
 batteryTemperatureC: calculatedBatteryTemperatureC,
 roadGradientProfile: input.roadGradientProfile,
