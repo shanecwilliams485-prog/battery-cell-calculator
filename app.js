@@ -386,7 +386,21 @@ function updateSecondModuleConfigurationOptions(changedCount = "") {
   setSelectOptions(moduleCount1Select, validCount1Options, currentCount1);
   setSelectOptions(moduleCount2Select, validCount2Options, currentCount2);
 }
+function updateCalculatedMaxRegenCurrentInput() {
+  const maxChargeInput = document.getElementById('maxChargeCurrentA');
+  const parallelInput = document.getElementById('parallelCount');
+  const maxRegenInput = document.getElementById('maxRegenCurrentA');
 
+  if (!maxChargeInput || !parallelInput || !maxRegenInput) return;
+
+  const cellMaxChargeCurrentA = clampNumber(maxChargeInput.value, 0);
+  const parallelCount = Math.max(0, Math.round(clampNumber(parallelInput.value, 0)));
+
+  const packMaxChargeCurrentA = cellMaxChargeCurrentA * parallelCount;
+  const calculatedMaxRegenCurrentA = packMaxChargeCurrentA * 0.8;
+
+  maxRegenInput.value = fmt(calculatedMaxRegenCurrentA, 0);
+}
 function calculate(input) {
   const series = Math.max(input.seriesCount, 0);
   const parallel = Math.max(input.parallelCount, 0);
