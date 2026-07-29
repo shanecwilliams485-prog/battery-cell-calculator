@@ -35,7 +35,7 @@ const DEFAULT_INPUTS = {
   heatingEnabled: false,
   electricalAccessoriesEnabled: false,
   tyreRoadProfile: "normal",
-  driverAggression: 2,
+  driverAggression: "normal",
   payloadKg: 0,
 };
 
@@ -91,7 +91,7 @@ const fields = [
   ['electricalAccessoriesEnabled', 'checkbox'],
   ['tyreRoadProfile', 'text'],
 
-  ['driverAggression', 'number'],
+  ['driverAggression', 'text'],
   ['payloadKg', 'number'],
   ];
 
