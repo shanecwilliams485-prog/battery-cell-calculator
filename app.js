@@ -819,12 +819,25 @@ function getAuxiliaryLoadKW(input) {
     return Math.max(0, clampNumber(input.assumedLoadKW, 1.0));
   }
 
-  const profile = input.auxiliaryLoadProfile || "normal";
+  let auxiliaryLoadKW = 0;
 
-  if (profile === "low") return 0.6;
-  if (profile === "winter") return 2.4;
+  if (input.airConditioningEnabled) {
+    auxiliaryLoadKW += 1.5;
+  }
 
-  return Math.max(0.8, clampNumber(input.assumedLoadKW, 1.0));
+  if (input.heatingEnabled) {
+    if (input.heaterType === "heatPump") {
+      auxiliaryLoadKW += 0.75;
+    } else {
+      auxiliaryLoadKW += 2.5;
+    }
+  }
+
+  if (input.electricalAccessoriesEnabled) {
+    auxiliaryLoadKW += 0.5;
+  }
+
+  return auxiliaryLoadKW;
 }
 
 function getTyreRoadMultiplier(input) {
