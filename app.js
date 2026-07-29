@@ -409,6 +409,46 @@ function getEstimatedBatteryTemperatureC(input) {
 
   return baseTempC + heatRiseC;
 }
+function getCalculatedRegenEfficiencyPercent(input) {
+  if (!input.regenEnabled) return 0;
+
+  const baseRegenEfficiencyPercent = 65;
+  const batteryTemperatureC = getEstimatedBatteryTemperatureC(input);
+  const weather = input.weatherCondition || "dryCold";
+  const roadGradient = input.roadGradientProfile || "mixed";
+
+  let temperatureFactor = 1;
+
+  if (batteryTemperatureC < 0) temperatureFactor = 0.25;
+  else if (batteryTemperatureC < 10) temperatureFactor = 0.55;
+  else if (batteryTemperatureC > 45) temperatureFactor = 0.65;
+  else if (batteryTemperatureC > 35) temperatureFactor = 0.85;
+
+  const weatherFactors = {
+    icy: 0.35,
+    wetCold: 0.70,
+    wetWarm: 0.85,
+    dryCold: 0.95,
+    dryHot: 0.90
+  };
+
+  const roadGradientFactors = {
+    flat: 0.90,
+    mixed: 1.00,
+    hilly: 1.08
+  };
+
+  const weatherFactor = weatherFactors[weather] ?? 0.95;
+  const roadGradientFactor = roadGradientFactors[roadGradient] ?? 1.00;
+
+  const calculatedEfficiency =
+    baseRegenEfficiencyPercent *
+    temperatureFactor *
+    weatherFactor *
+    roadGradientFactor;
+
+  return Math.max(0, Math.min(calculatedEfficiency, 80));
+}
 function updateCalculatedMaxRegenCurrentInput() {
   const maxChargeInput = document.getElementById('maxChargeCurrentA');
   const parallelInput = document.getElementById('parallelCount');
