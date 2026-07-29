@@ -1382,3 +1382,42 @@ input[readonly] {
 .loading-screen {
   display: none !important;
 }
+#calculatorPage,
+#resultsPage {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+.page-spin-out {
+  animation: pageSpinOut 850ms cubic-bezier(.55, .05, .25, 1) forwards;
+  transform-origin: center center;
+}
+
+.page-spin-in {
+  animation: pageSpinIn 850ms cubic-bezier(.18, .75, .25, 1) forwards;
+  transform-origin: center center;
+}
+
+@keyframes pageSpinOut {
+  0% {
+    opacity: 1;
+    transform: perspective(1200px) rotateY(0deg) translateZ(0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: perspective(1200px) rotateY(75deg) translateZ(-900px) scale(0.35);
+  }
+}
+
+@keyframes pageSpinIn {
+  0% {
+    opacity: 0;
+    transform: perspective(1200px) rotateY(-75deg) translateZ(-900px) scale(0.35);
+  }
+
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) rotateY(0deg) translateZ(0) scale(1);
+  }
+}
