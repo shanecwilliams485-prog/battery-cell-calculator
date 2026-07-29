@@ -33,6 +33,7 @@ const DEFAULT_INPUTS = {
   roadGradientProfile: "mixed",
   airConditioningEnabled: false,
   heatingEnabled: false,
+  heaterType: "resistive",
   electricalAccessoriesEnabled: false,
   weatherCondition: "dryCold",
   driverAggression: "normal",
@@ -88,6 +89,7 @@ const fields = [
   ['roadGradientProfile', 'text'],
   ['airConditioningEnabled', 'checkbox'],
   ['heatingEnabled', 'checkbox'],
+  ['heaterType', 'text'],
   ['electricalAccessoriesEnabled', 'checkbox'],
   ['weatherCondition', 'text'],
 
