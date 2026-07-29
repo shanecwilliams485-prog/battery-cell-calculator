@@ -35,7 +35,7 @@ const DEFAULT_INPUTS = {
   heatingEnabled: false,
   heaterType: "resistive",
   electricalAccessoriesEnabled: false,
-  weatherCondition: "dryCold",
+  weatherCondition: "dryWarm",
   driverAggression: "normal",
   payloadKg: 0,
 };
