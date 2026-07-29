@@ -1099,16 +1099,6 @@ function roadGradientLabel(value) {
   return labels[value] || value || "Mixed";
 }
 
-function auxiliaryLoadLabel(value) {
-  const labels = {
-    low: "Low load",
-    normal: "Normal driving",
-    winter: "Winter heating"
-  };
-
-  return labels[value] || value || "Normal driving";
-}
-
 function weatherConditionLabel(value) {
   const labels = {
     wetCold: "Wet / cold",
