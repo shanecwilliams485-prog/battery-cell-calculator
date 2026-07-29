@@ -1542,25 +1542,13 @@ function handleCalculate(event) {
   try {
     const inputs = getInputs();
     saveInputs(inputs);
+
     lastResults = calculate(inputs);
+    renderResults(lastResults);
 
-    showLoading();
-
-    window.setTimeout(() => {
-      try {
-        showResultsPage();
-        renderResults(lastResults);
-        hideLoading();
-      } catch (error) {
-        hideLoading();
-        alert("Results error: " + error.message);
-        console.error(error);
-      }
-    }, 2500);
-
+    animateToResultsPage();
   } catch (error) {
-    hideLoading();
-    alert("Calculator error: " + error.message);
+    alert("Calculation error: " + error.message);
     console.error(error);
   }
 }
