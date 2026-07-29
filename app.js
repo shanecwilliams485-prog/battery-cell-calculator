@@ -487,6 +487,19 @@ function updateCalculatedRegenEfficiencyInput() {
 
   regenEfficiencyInput.value = fmt(calculatedRegenEfficiencyPercent, 0);
 }
+function updateAppliedAccessoryLoadInput() {
+  const accessoryLoadInput = document.getElementById('assumedLoadKW');
+
+  if (!accessoryLoadInput) return;
+
+  const input = getInputs();
+
+  if (!input.advancedVehicleRealismEnabled) return;
+
+  const appliedAccessoryLoadKW = getAuxiliaryLoadKW(input);
+
+  accessoryLoadInput.value = fmt(appliedAccessoryLoadKW, 2);
+}
 function calculate(input) {
   const series = Math.max(input.seriesCount, 0);
   const parallel = Math.max(input.parallelCount, 0);
