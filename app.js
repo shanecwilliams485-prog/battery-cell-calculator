@@ -1592,6 +1592,7 @@ refreshResultsIfVisible();
       updateSecondModuleConfigurationOptions(name);
     }
 
+saveInputs(getInputs());
 updateCalculatedMaxRegenCurrentInput();
 updateCalculatedBatteryTemperatureInput();
 updateCalculatedRegenEfficiencyInput();
