@@ -1600,11 +1600,11 @@ refreshResultsIfVisible();
   });
 }
 
-  updateCalculatedMaxRegenCurrentInput();
-  updateCalculatedBatteryTemperatureInput();
-  updateCalculatedRegenEfficiencyInput();
-  refreshResultsIfVisible();
-  refreshResultsIfVisible();
+updateCalculatedMaxRegenCurrentInput();
+updateCalculatedBatteryTemperatureInput();
+updateCalculatedRegenEfficiencyInput();
+updateAppliedAccessoryLoadInput();
+refreshResultsIfVisible();
 
   document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
