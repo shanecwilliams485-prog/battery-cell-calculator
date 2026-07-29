@@ -1221,7 +1221,7 @@ if (simulationSettingsSection && simulationSettingsRows) {
         + valueRow('Battery temperature', `${fmt(results.batteryTemperatureC, 0)} °C`)
         + valueRow('Road gradient', roadGradientLabel(results.roadGradientProfile))
         + valueRow('Auxiliary load profile', auxiliaryLoadLabel(results.auxiliaryLoadProfile))
-        + valueRow('Tyre / road profile', tyreRoadLabel(results.tyreRoadProfile))
+        + valueRow('Weather conditions', weatherConditionLabel(results.weatherCondition))
         + valueRow('Driver aggression', `${fmt(results.driverAggression, 0)} / 10`)
         + valueRow('Payload', `${fmt(results.payloadKg, 0)} kg`);
     } else {
