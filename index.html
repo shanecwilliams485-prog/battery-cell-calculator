@@ -182,120 +182,147 @@
     These options make the vehicle simulation behave more like a real EV driving on UK roads.
   </p>
 
-  <div class="form-grid">
-    <label>
-  <span>Regenerative braking</span>
-  <span class="toggle-row">
-    Enabled
-    <input id="regenEnabled" type="checkbox">
-  </span>
-  <small>Allows braking and slowing events to recover energy back into the battery pack.</small>
-</label>
-    <label>
-  <span>Calculated max regen current (A)</span>
-  <input id="maxRegenCurrentA" type="number" readonly>
-  <small>Calculated from cell max charge current × parallel count × 80%.</small>
-</label>
-
-   <label>
-  <span>Regen efficiency (%)</span>
-  <input id="regenEfficiencyPercent" type="number" value="65" readonly>
-  <small>Fixed at 65% for this simulation.</small>
-</label>
-
-    <label>
-      <span>Disable regen above SOC %</span>
-      <input id="regenDisableAboveSocPercent" type="number" step="1" min="0" max="100">
-      <small>Limits regen when the battery is nearly full, because a full pack cannot accept much charge.</small>
+  <div class="advanced-subsection">
+    <label class="advanced-subsection-header">
+      <span>Regen</span>
+      <input class="advanced-subsection-toggle" type="checkbox" checked>
     </label>
 
-   <label>
-  <span>Calculated battery temperature (°C)</span>
-  <input id="batteryTemperatureC" type="number" readonly>
-  <small>Calculated from weather conditions and driver aggression.</small>
-</label>
+    <div class="advanced-subsection-content">
+      <div class="form-grid">
+        <label>
+          <span>Regenerative braking</span>
+          <span class="toggle-row">
+            Enabled
+            <input id="regenEnabled" type="checkbox">
+          </span>
+          <small>Allows braking and slowing events to recover energy back into the battery pack.</small>
+        </label>
 
-   <label>
-  <span>Road gradient profile</span>
-  <select id="roadGradientProfile">
-    <option value="mixed">Mixed</option>
-    <option value="flat">Flat</option>
-    <option value="hilly">Hilly</option>
-  </select>
-  <small>Simulates flat roads, mixed UK roads, or hillier routes.</small>
-</label>
-    
-    <label>
-  <span>Air conditioning</span>
-  <span class="toggle-row">
-    Enabled
-    <input id="airConditioningEnabled" type="checkbox">
-  </span>
-  <small>Adds extra load for cabin cooling.</small>
-</label>
+        <label>
+          <span>Regen efficiency (%)</span>
+          <input id="regenEfficiencyPercent" type="number" value="65" readonly>
+          <small>Calculated from temperature, weather and road conditions.</small>
+        </label>
 
-<label>
-  <span>Heating</span>
-  <span class="toggle-row">
-    Enabled
-    <input id="heatingEnabled" type="checkbox">
-  </span>
-  <small>Adds extra load for cabin heating or demisting.</small>
-</label>
-    
-<label>
-  <span>Heater type</span>
-  <select id="heaterType">
-    <option value="resistive">Resistive heater</option>
-    <option value="heatPump">Heat pump</option>
-  </select>
-  <small>Used when Heating is enabled.</small>
-</label>
-    
-<label>
-  <span>Head lights / wipers / radio</span>
-  <span class="toggle-row">
-    Enabled
-    <input id="electricalAccessoriesEnabled" type="checkbox">
-  </span>
-  <small>Adds normal electrical accessory load while driving.</small>
-</label>
+        <label>
+          <span>Calculated max regen current (A)</span>
+          <input id="maxRegenCurrentA" type="number" readonly>
+          <small>Calculated from cell max charge current × parallel count × 80%.</small>
+        </label>
 
-    <label>
-  <span>Weather conditions</span>
-  <select id="weatherCondition">
-    <option value="dryHot">Dry / hot</option>
-    <option value="dryWarm">Dry / warm</option>
-    <option value="dryCold">Dry / cold</option>
-    <option value="wetWarm">Wet / warm</option>
-    <option value="wetCold">Wet / cold</option>
-    <option value="icy">Icy</option>
-  </select>
-  <small>Adjusts rolling resistance, traction, regen and estimated battery temperature.</small>
-</label>
-    
-<label>
-  <span>Driver aggression</span>
-  <select id="driverAggression">
-    <option value="calm">Calm</option>
-    <option value="normal">Normal</option>
-    <option value="aggressive">Aggressive</option>
-  </select>
-  <small>Changes how sharply the simulated vehicle accelerates.</small>
-</label>
+        <label>
+          <span>Disable regen above SOC %</span>
+          <input id="regenDisableAboveSocPercent" type="number" step="1" min="0" max="100">
+          <small>Limits regen when the battery is nearly full.</small>
+        </label>
+      </div>
+    </div>
+  </div>
 
-    <label>
-      <span>Payload kg</span>
-      <input id="payloadKg" type="number" step="1" min="0">
-      <small>Adds passengers, luggage or cargo weight on top of the base vehicle mass.</small>
+  <div class="advanced-subsection">
+    <label class="advanced-subsection-header">
+      <span>Environmental Conditions</span>
+      <input class="advanced-subsection-toggle" type="checkbox" checked>
     </label>
+
+    <div class="advanced-subsection-content">
+      <div class="form-grid">
+        <label>
+          <span>Calculated battery temperature (°C)</span>
+          <input id="batteryTemperatureC" type="number" readonly>
+          <small>Calculated from weather conditions and driver aggression.</small>
+        </label>
+
+        <label>
+          <span>Weather conditions</span>
+          <select id="weatherCondition">
+            <option value="dryWarm">Dry / warm</option>
+            <option value="dryCold">Dry / cold</option>
+            <option value="wetWarm">Wet / warm</option>
+            <option value="wetCold">Wet / cold</option>
+            <option value="icy">Icy</option>
+            <option value="dryHot">Dry / hot</option>
+          </select>
+          <small>Adjusts rolling resistance, traction, regen and estimated battery temperature.</small>
+        </label>
+
+        <label>
+          <span>Road gradient profile</span>
+          <select id="roadGradientProfile">
+            <option value="mixed">Mixed</option>
+            <option value="flat">Flat</option>
+            <option value="hilly">Hilly</option>
+          </select>
+          <small>Simulates flat roads, mixed UK roads, or hillier routes.</small>
+        </label>
+
+        <label>
+          <span>Driver aggression</span>
+          <select id="driverAggression">
+            <option value="calm">Calm</option>
+            <option value="normal">Normal</option>
+            <option value="aggressive">Aggressive</option>
+          </select>
+          <small>Changes how sharply the simulated vehicle accelerates.</small>
+        </label>
+
+        <label>
+          <span>Payload kg</span>
+          <input id="payloadKg" type="number" step="1" min="0">
+          <small>Adds passengers, luggage or cargo weight on top of the base vehicle mass.</small>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="advanced-subsection">
+    <label class="advanced-subsection-header">
+      <span>Auxiliary Loads</span>
+      <input class="advanced-subsection-toggle" type="checkbox" checked>
+    </label>
+
+    <div class="advanced-subsection-content">
+      <div class="form-grid">
+        <label>
+          <span>Air conditioning</span>
+          <span class="toggle-row">
+            Enabled
+            <input id="airConditioningEnabled" type="checkbox">
+          </span>
+          <small>Adds extra load for cabin cooling.</small>
+        </label>
+
+        <label>
+          <span>Heating</span>
+          <span class="toggle-row">
+            Enabled
+            <input id="heatingEnabled" type="checkbox">
+          </span>
+          <small>Adds extra load for cabin heating or demisting.</small>
+        </label>
+
+        <label>
+          <span>Heater type</span>
+          <select id="heaterType">
+            <option value="resistive">Resistive heater</option>
+            <option value="heatPump">Heat pump</option>
+          </select>
+          <small>Used when Heating is enabled.</small>
+        </label>
+
+        <label>
+          <span>Head lights / wipers / radio</span>
+          <span class="toggle-row">
+            Enabled
+            <input id="electricalAccessoriesEnabled" type="checkbox">
+          </span>
+          <small>Adds normal electrical accessory load while driving.</small>
+        </label>
+      </div>
+    </div>
   </div>
 </div>
-    <p class="muted vehicle-simulation-note">
-      This will replace the current random current graph with a physics-based runtime model using vehicle weight, aerodynamic drag, rolling resistance, drivetrain efficiency, accessory load, and drive cycle.
-    </p>
-  </div>
-
   <div id="simulationOptions" hidden></div>
 </section>
           <div class="calculate-area">
