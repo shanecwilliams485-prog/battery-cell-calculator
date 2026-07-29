@@ -1378,3 +1378,7 @@ input[readonly] {
 .simulation-top-row .toggle-row {
   transform: translateY(-2px) !important;
 }
+#loadingScreen,
+.loading-screen {
+  display: none !important;
+}
