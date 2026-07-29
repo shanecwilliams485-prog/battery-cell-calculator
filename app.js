@@ -512,7 +512,7 @@ regenDisableAboveSocPercent: input.regenDisableAboveSocPercent,
 batteryTemperatureC: input.batteryTemperatureC,
 roadGradientProfile: input.roadGradientProfile,
 auxiliaryLoadProfile: input.auxiliaryLoadProfile,
-tyreRoadProfile: input.tyreRoadProfile,
+weatherCondition: input.weatherCondition,
 driverAggression: input.driverAggression,
 payloadKg: input.payloadKg,
 
