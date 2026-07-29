@@ -1497,6 +1497,41 @@ function showCalculatorPage() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function showResultsPage() {
+  function animateToResultsPage() {
+  const calculatorPage = document.getElementById('calculatorPage');
+  const resultsPage = document.getElementById('resultsPage');
+
+  if (!calculatorPage || !resultsPage) {
+    showResultsPage();
+    return;
+  }
+
+  cancelAnimationFrame(animationFrame);
+
+  calculatorPage.classList.remove('page-spin-in', 'page-spin-out');
+  resultsPage.classList.remove('page-spin-in', 'page-spin-out');
+
+  resultsPage.hidden = true;
+  calculatorPage.hidden = false;
+
+  void calculatorPage.offsetWidth;
+
+  calculatorPage.classList.add('page-spin-out');
+
+  window.setTimeout(() => {
+    calculatorPage.hidden = true;
+    calculatorPage.classList.remove('page-spin-out');
+
+    resultsPage.hidden = false;
+    resultsPage.classList.add('page-spin-in');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    window.setTimeout(() => {
+      resultsPage.classList.remove('page-spin-in');
+    }, 900);
+  }, 850);
+}
   document.getElementById('calculatorPage').hidden = true;
   document.getElementById('resultsPage').hidden = false;
   window.scrollTo({ top: 0, behavior: 'smooth' });
