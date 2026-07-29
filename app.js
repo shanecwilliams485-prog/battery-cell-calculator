@@ -474,6 +474,16 @@ function updateCalculatedBatteryTemperatureInput() {
 
   batteryTemperatureInput.value = fmt(estimatedBatteryTemperatureC, 0);
 }
+function updateCalculatedRegenEfficiencyInput() {
+  const regenEfficiencyInput = document.getElementById('regenEfficiencyPercent');
+
+  if (!regenEfficiencyInput) return;
+
+  const input = getInputs();
+  const calculatedRegenEfficiencyPercent = getCalculatedRegenEfficiencyPercent(input);
+
+  regenEfficiencyInput.value = fmt(calculatedRegenEfficiencyPercent, 0);
+}
 function calculate(input) {
   const series = Math.max(input.seriesCount, 0);
   const parallel = Math.max(input.parallelCount, 0);
