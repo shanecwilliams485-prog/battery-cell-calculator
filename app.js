@@ -1151,6 +1151,9 @@ function renderResults(results) {
   const maxRegenInput = document.getElementById('maxRegenCurrentA');
 if (maxRegenInput) maxRegenInput.value = fmt(results.maxRegenCurrentA, 0);
   updateCalculatedMaxRegenCurrentInput();
+  const batteryTemperatureInput = document.getElementById('batteryTemperatureC');
+if (batteryTemperatureInput) batteryTemperatureInput.value = fmt(results.batteryTemperatureC, 0);
+updateCalculatedBatteryTemperatureInput();
   document.getElementById('resultCards').innerHTML = `
   <article class="result-card"><span>⚡</span><small>Pack energy</small><strong>${fmt(results.packEnergyKWh, 2)} kWh</strong></article>
   <article class="result-card"><span>🔋</span><small>Usable energy</small><strong>${fmt(results.usableEnergyKWh, 2)} kWh</strong></article>
