@@ -386,6 +386,29 @@ function updateSecondModuleConfigurationOptions(changedCount = "") {
   setSelectOptions(moduleCount1Select, validCount1Options, currentCount1);
   setSelectOptions(moduleCount2Select, validCount2Options, currentCount2);
 }
+function getEstimatedBatteryTemperatureC(input) {
+  const weather = input.weatherCondition || "dryCold";
+  const aggression = input.driverAggression || "normal";
+
+  const weatherBaseTemps = {
+    wetCold: 8,
+    wetWarm: 18,
+    icy: -2,
+    dryCold: 10,
+    dryHot: 32
+  };
+
+  const aggressionHeat = {
+    calm: 2,
+    normal: 5,
+    aggressive: 10
+  };
+
+  const baseTempC = weatherBaseTemps[weather] ?? 10;
+  const heatRiseC = aggressionHeat[aggression] ?? 5;
+
+  return baseTempC + heatRiseC;
+}
 function updateCalculatedMaxRegenCurrentInput() {
   const maxChargeInput = document.getElementById('maxChargeCurrentA');
   const parallelInput = document.getElementById('parallelCount');
