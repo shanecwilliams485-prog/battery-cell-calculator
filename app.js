@@ -1235,12 +1235,14 @@ if (simulationSettingsSection && simulationSettingsRows) {
       settings += '<hr>'
         + valueRow('Advanced realism', 'Enabled')
         + valueRow('Regenerative braking', yesNo(results.regenEnabled))
-       + valueRow('Calculated max regen current', `${fmt(results.maxRegenCurrentA, 0)} A`)
+        + valueRow('Calculated max regen current', `${fmt(results.maxRegenCurrentA, 0)} A`)
         + valueRow('Regen efficiency', `${fmt(results.regenEfficiencyPercent, 0)} %`)
         + valueRow('Regen disabled above SOC', `${fmt(results.regenDisableAboveSocPercent, 0)} %`)
         + valueRow('Battery temperature', `${fmt(results.batteryTemperatureC, 0)} °C`)
         + valueRow('Road gradient', roadGradientLabel(results.roadGradientProfile))
-        + valueRow('Auxiliary load profile', auxiliaryLoadLabel(results.auxiliaryLoadProfile))
+        + valueRow('Air conditioning', yesNo(results.airConditioningEnabled))
+        + valueRow('Heating', yesNo(results.heatingEnabled))
+        + valueRow('Head lights / wipers / radio', yesNo(results.electricalAccessoriesEnabled))
         + valueRow('Weather conditions', weatherConditionLabel(results.weatherCondition))
         + valueRow('Driver aggression', `${fmt(results.driverAggression, 0)} / 10`)
         + valueRow('Payload', `${fmt(results.payloadKg, 0)} kg`);
