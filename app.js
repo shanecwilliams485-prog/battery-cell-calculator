@@ -1418,42 +1418,39 @@ function init() {
 });
   document.getElementById('animateBtn').addEventListener('click', animateChart);
 
-  for (const [name] of fields) {
-    document.getElementById(name)?.addEventListener('input', () => {
-      if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
-        updateCalculatedMaxRegenCurrentInput();
-        updateModuleConfigurationOptions();
-      } else if (name === "moduleConfiguration") {
-        updateModuleCount1FromConfiguration();
-      } else if (name === "secondModuleConfiguration") {
-        updateSecondModuleConfigurationOptions();
-        saveInputs(getInputs());
-      } else if (name === "moduleCount1" || name === "moduleCount2") {
-        updateSecondModuleConfigurationOptions(name);
-        saveInputs(getInputs());
-      } else {
-        saveInputs(getInputs());
-      }
-    });
-
-    document.getElementById(name)?.addEventListener('change', () => {
-      if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
-        updateModuleConfigurationOptions();
-      } else if (name === "moduleConfiguration") {
-        updateModuleCount1FromConfiguration();
-      } else if (name === "secondModuleConfiguration") {
-        updateSecondModuleConfigurationOptions();
-      } else if (name === "moduleCount1" || name === "moduleCount2") {
-        updateSecondModuleConfigurationOptions(name);
-      }
-
+ for (const [name] of fields) {
+  document.getElementById(name)?.addEventListener('input', () => {
+    if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
+      updateModuleConfigurationOptions();
+    } else if (name === "moduleConfiguration") {
+      updateModuleCount1FromConfiguration();
+    } else if (name === "secondModuleConfiguration") {
+      updateSecondModuleConfigurationOptions();
       saveInputs(getInputs());
-    });
-  }
-updateCalculatedMaxRegenCurrentInput();
-  document.getElementById('calculatorPage').hidden = false;
-  document.getElementById('resultsPage').hidden = true;
-  hideLoading();
+    } else if (name === "moduleCount1" || name === "moduleCount2") {
+      updateSecondModuleConfigurationOptions(name);
+      saveInputs(getInputs());
+    } else {
+      saveInputs(getInputs());
+    }
+
+    updateCalculatedMaxRegenCurrentInput();
+  });
+
+  document.getElementById(name)?.addEventListener('change', () => {
+    if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
+      updateModuleConfigurationOptions();
+    } else if (name === "moduleConfiguration") {
+      updateModuleCount1FromConfiguration();
+    } else if (name === "secondModuleConfiguration") {
+      updateSecondModuleConfigurationOptions();
+    } else if (name === "moduleCount1" || name === "moduleCount2") {
+      updateSecondModuleConfigurationOptions(name);
+    }
+
+    saveInputs(getInputs());
+    updateCalculatedMaxRegenCurrentInput();
+  });
 }
 
-document.addEventListener('DOMContentLoaded', init);
+updateCalculatedMaxRegenCurrentInput();
