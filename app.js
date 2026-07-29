@@ -1151,6 +1151,7 @@ function renderResults(results) {
   const maxRegenInput = document.getElementById('maxRegenCurrentA');
 if (maxRegenInput) maxRegenInput.value = fmt(results.maxRegenCurrentA, 0);
   updateCalculatedMaxRegenCurrentInput();
+  updateCalculatedBatteryTemperatureInput();
   const batteryTemperatureInput = document.getElementById('batteryTemperatureC');
 if (batteryTemperatureInput) batteryTemperatureInput.value = fmt(results.batteryTemperatureC, 0);
 updateCalculatedBatteryTemperatureInput();
@@ -1466,6 +1467,7 @@ function init() {
     }
 
     updateCalculatedMaxRegenCurrentInput();
+    updateCalculatedBatteryTemperatureInput();
   });
 
   document.getElementById(name)?.addEventListener('change', () => {
@@ -1481,10 +1483,12 @@ function init() {
 
     saveInputs(getInputs());
     updateCalculatedMaxRegenCurrentInput();
+    updateCalculatedBatteryTemperatureInput();
   });
 }
 
   updateCalculatedMaxRegenCurrentInput();
+  updateCalculatedBatteryTemperatureInput();
 
   document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
