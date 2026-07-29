@@ -424,6 +424,16 @@ function updateCalculatedMaxRegenCurrentInput() {
 
   maxRegenInput.value = fmt(calculatedMaxRegenCurrentA, 0);
 }
+function updateCalculatedBatteryTemperatureInput() {
+  const batteryTemperatureInput = document.getElementById('batteryTemperatureC');
+
+  if (!batteryTemperatureInput) return;
+
+  const input = getInputs();
+  const estimatedBatteryTemperatureC = getEstimatedBatteryTemperatureC(input);
+
+  batteryTemperatureInput.value = fmt(estimatedBatteryTemperatureC, 0);
+}
 function calculate(input) {
   const series = Math.max(input.seriesCount, 0);
   const parallel = Math.max(input.parallelCount, 0);
