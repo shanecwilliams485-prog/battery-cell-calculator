@@ -35,7 +35,7 @@ const DEFAULT_INPUTS = {
   heatingEnabled: false,
   electricalAccessoriesEnabled: false,
   tyreRoadProfile: "normal",
-  driverAggression: 5,
+  driverAggression: 2,
   payloadKg: 0,
 };
 
