@@ -1207,14 +1207,15 @@ function heaterTypeLabel(value) {
 }
 function weatherConditionLabel(value) {
   const labels = {
-    wetCold: "Wet / cold",
-    wetWarm: "Wet / warm",
-    icy: "Icy",
+    dryWarm: "Dry / warm",
     dryCold: "Dry / cold",
+    wetWarm: "Wet / warm",
+    wetCold: "Wet / cold",
+    icy: "Icy",
     dryHot: "Dry / hot"
   };
 
-  return labels[value] || value || "Dry / cold";
+  return labels[value] || value || "Dry / warm";
 }
 
 function valueRow(label, value) { return `<div class="value-row"><span>${label}</span><strong>${value}</strong></div>`; }
