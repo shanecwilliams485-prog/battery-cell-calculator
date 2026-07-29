@@ -34,7 +34,7 @@ const DEFAULT_INPUTS = {
   airConditioningEnabled: false,
   heatingEnabled: false,
   electricalAccessoriesEnabled: false,
-  tyreRoadProfile: "normal",
+  weatherCondition: "dryCold",
   driverAggression: "normal",
   payloadKg: 0,
 };
@@ -89,7 +89,7 @@ const fields = [
   ['airConditioningEnabled', 'checkbox'],
   ['heatingEnabled', 'checkbox'],
   ['electricalAccessoriesEnabled', 'checkbox'],
-  ['tyreRoadProfile', 'text'],
+  ['weatherCondition', 'text'],
 
   ['driverAggression', 'text'],
   ['payloadKg', 'number'],
