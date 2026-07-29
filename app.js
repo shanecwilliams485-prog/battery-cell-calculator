@@ -845,13 +845,18 @@ function getAuxiliaryLoadKW(input) {
 function getTyreRoadMultiplier(input) {
   if (!input.advancedVehicleRealismEnabled) return 1;
 
-  const profile = input.tyreRoadProfile || "normal";
+  const weather = input.weatherCondition || "dryWarm";
 
-  if (profile === "eco") return 0.90;
-  if (profile === "performance") return 1.12;
-  if (profile === "wet") return 1.18;
+  const weatherRollingResistanceMultipliers = {
+    dryWarm: 1.00,
+    dryCold: 1.03,
+    wetWarm: 1.05,
+    wetCold: 1.10,
+    icy: 1.18,
+    dryHot: 1.16
+  };
 
-  return 1;
+  return weatherRollingResistanceMultipliers[weather] ?? 1.00;
 }
 
 function getDriverAggressionFactor(input) {
