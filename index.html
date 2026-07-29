@@ -253,16 +253,17 @@
 </label>
 
     <label>
-      <span>Tyre / road profile</span>
-      <select id="tyreRoadProfile">
-        <option value="eco">Eco tyre / dry road</option>
-        <option value="normal">Normal tyre / dry road</option>
-        <option value="performance">Performance tyre</option>
-        <option value="wet">Wet road</option>
-      </select>
-      <small>Adjusts rolling resistance. Performance tyres and wet roads usually use more energy.</small>
-    </label>
-
+  <span>Weather conditions</span>
+  <select id="weatherCondition">
+    <option value="wetCold">Wet / cold</option>
+    <option value="wetWarm">Wet / warm</option>
+    <option value="icy">Icy</option>
+    <option value="dryCold">Dry / cold</option>
+    <option value="dryHot">Dry / hot</option>
+  </select>
+  <small>Used later to adjust rolling resistance, traction and efficiency.</small>
+</label>
+    
 <label>
   <span>Driver aggression</span>
   <select id="driverAggression">
