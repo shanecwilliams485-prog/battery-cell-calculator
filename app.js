@@ -1092,16 +1092,18 @@ function auxiliaryLoadLabel(value) {
   return labels[value] || value || "Normal driving";
 }
 
-function tyreRoadLabel(value) {
+function weatherConditionLabel(value) {
   const labels = {
-    eco: "Eco tyre / dry road",
-    normal: "Normal tyre / dry road",
-    performance: "Performance tyre",
-    wet: "Wet road"
+    wetCold: "Wet / cold",
+    wetWarm: "Wet / warm",
+    icy: "Icy",
+    dryCold: "Dry / cold",
+    dryHot: "Dry / hot"
   };
 
-  return labels[value] || value || "Normal tyre / dry road";
+  return labels[value] || value || "Dry / cold";
 }
+
 function valueRow(label, value) { return `<div class="value-row"><span>${label}</span><strong>${value}</strong></div>`; }
 function renderResults(results) {
   document.getElementById('results').hidden = false;
