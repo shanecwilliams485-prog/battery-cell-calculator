@@ -1497,7 +1497,12 @@ function showCalculatorPage() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function showResultsPage() {
-  function animateToResultsPage() {
+  document.getElementById('calculatorPage').hidden = true;
+  document.getElementById('resultsPage').hidden = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function animateToResultsPage() {
   const calculatorPage = document.getElementById('calculatorPage');
   const resultsPage = document.getElementById('resultsPage');
 
@@ -1531,10 +1536,6 @@ function showResultsPage() {
       resultsPage.classList.remove('page-spin-in');
     }, 900);
   }, 850);
-}
-  document.getElementById('calculatorPage').hidden = true;
-  document.getElementById('resultsPage').hidden = false;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function handleCalculate(event) {
   event?.preventDefault();
