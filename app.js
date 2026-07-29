@@ -1578,6 +1578,7 @@ function init() {
     updateCalculatedBatteryTemperatureInput();
     updateCalculatedRegenEfficiencyInput();
     refreshResultsIfVisible();
+    refreshResultsIfVisible();
   });
 
   document.getElementById(name)?.addEventListener('change', () => {
@@ -1596,12 +1597,14 @@ function init() {
     updateCalculatedBatteryTemperatureInput();
     updateCalculatedRegenEfficiencyInput();
     refreshResultsIfVisible();
+    refreshResultsIfVisible();
   });
 }
 
   updateCalculatedMaxRegenCurrentInput();
   updateCalculatedBatteryTemperatureInput();
   updateCalculatedRegenEfficiencyInput();
+  refreshResultsIfVisible();
   refreshResultsIfVisible();
 
   document.getElementById('calculatorPage').hidden = false;
