@@ -30,7 +30,7 @@ const DEFAULT_INPUTS = {
   regenEfficiencyPercent: 65,
   regenDisableAboveSocPercent: 95,
   batteryTemperatureC: 25,
-  roadGradientProfile: "rolling",
+  roadGradientProfile: "mixed",
   airConditioningEnabled: false,
   heatingEnabled: false,
   electricalAccessoriesEnabled: false,
