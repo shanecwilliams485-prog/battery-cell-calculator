@@ -544,6 +544,8 @@ function calculate(input) {
     batteryTemperatureC: calculatedBatteryTemperatureC,
     regenEfficiencyPercent: calculatedRegenEfficiencyPercent
   };
+
+  const calculatedAuxiliaryLoadKW = getAuxiliaryLoadKW(simulationInput);
   const maxDischargePowerKW = (input.nominalVoltage * series * input.maxDischargeCurrentA * parallel) / 1000.0;
   const continuousDischargePowerKW = (input.nominalVoltage * series * input.continuousDischargeCurrentA * parallel) / 1000.0;
   const maxChargePowerKW = (input.nominalVoltage * series * input.maxChargeCurrentA * parallel) / 1000.0;
