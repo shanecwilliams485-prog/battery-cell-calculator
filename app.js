@@ -1407,45 +1407,49 @@ if (cellSpecRows) {
   valueRow('Cell weight', `${fmt(results.cellWeightG, 1)} g`)
 ].join('');
 }  
-const moduleConfigEl = document.getElementById("moduleResultConfig");
-const moduleVoltageEl = document.getElementById("moduleResultVoltage");
-const moduleCapacityEl = document.getElementById("moduleResultCapacity");
-const moduleEnergyEl = document.getElementById("moduleResultEnergy");
-const moduleCellsEl = document.getElementById("moduleResultCells");
+const moduleRows = document.getElementById("moduleRows");
 
-if (moduleConfigEl) {
-  moduleConfigEl.textContent = results.moduleCount1
-    ? `${fmt(results.moduleCount1, 0)} module${results.moduleCount1 === 1 ? "" : "s"} of ${results.moduleConfig}`
-    : results.moduleConfig;
+if (moduleRows) {
+  moduleRows.innerHTML = [
+    valueRow('Module configuration', results.moduleCount1
+      ? `${fmt(results.moduleCount1, 0)} module${results.moduleCount1 === 1 ? "" : "s"} of ${results.moduleConfig}`
+      : results.moduleConfig),
+    valueRow('Nominal voltage', `${fmt(results.moduleNominalVoltageV, 1)} V`),
+    valueRow('Voltage range', `${fmt(results.moduleMinVoltageV, 1)}–${fmt(results.moduleMaxVoltageV, 1)} V`),
+    valueRow('Capacity', `${fmt(results.moduleCapacityAh, 1)} Ah`),
+    valueRow('Energy', `${fmt(results.moduleEnergyKWh, 2)} kWh`),
+    valueRow('Cells per module', `${fmt(results.moduleCellCount, 0)} cells`),
+    valueRow('Estimated cell mass', `${fmt(results.moduleWeightKG, 2)} kg`),
+    valueRow('Max discharge', `${fmt(results.moduleMaxDischargeCurrentA, 1)} A / ${fmt(results.moduleMaxDischargePowerKW, 2)} kW`),
+    valueRow('Continuous discharge', `${fmt(results.moduleContinuousDischargeCurrentA, 1)} A / ${fmt(results.moduleContinuousDischargePowerKW, 2)} kW`),
+    valueRow('Max charge', `${fmt(results.moduleMaxChargeCurrentA, 1)} A / ${fmt(results.moduleMaxChargePowerKW, 2)} kW`)
+  ].join('');
 }
 
-if (moduleVoltageEl) moduleVoltageEl.textContent = `${fmt(results.moduleNominalVoltageV, 1)} V`;
-if (moduleCapacityEl) moduleCapacityEl.textContent = `${fmt(results.moduleCapacityAh, 1)} Ah`;
-if (moduleEnergyEl) moduleEnergyEl.textContent = `${fmt(results.moduleEnergyKWh, 2)} kWh`;
-if (moduleCellsEl) moduleCellsEl.textContent = `${fmt(results.moduleCellCount, 0)} cells`;
-
 const secondModuleResultsEl = document.getElementById("secondModuleResults");
-const secondModuleConfigEl = document.getElementById("secondModuleResultConfig");
-const secondModuleVoltageEl = document.getElementById("secondModuleResultVoltage");
-const secondModuleCapacityEl = document.getElementById("secondModuleResultCapacity");
-const secondModuleEnergyEl = document.getElementById("secondModuleResultEnergy");
-const secondModuleCellsEl = document.getElementById("secondModuleResultCells");
+const secondModuleRows = document.getElementById("secondModuleRows");
 
 if (secondModuleResultsEl) {
   secondModuleResultsEl.hidden = !results.hasSecondModule;
 }
 
-if (results.hasSecondModule) {
-  if (secondModuleConfigEl) {
-    secondModuleConfigEl.textContent = results.moduleCount2
+if (results.hasSecondModule && secondModuleRows) {
+  secondModuleRows.innerHTML = [
+    valueRow('Module configuration', results.moduleCount2
       ? `${fmt(results.moduleCount2, 0)} module${results.moduleCount2 === 1 ? "" : "s"} of ${results.module2Config}`
-      : results.module2Config;
-  }
-
-  if (secondModuleVoltageEl) secondModuleVoltageEl.textContent = `${fmt(results.module2NominalVoltageV, 1)} V`;
-  if (secondModuleCapacityEl) secondModuleCapacityEl.textContent = `${fmt(results.module2CapacityAh, 1)} Ah`;
-  if (secondModuleEnergyEl) secondModuleEnergyEl.textContent = `${fmt(results.module2EnergyKWh, 2)} kWh`;
-  if (secondModuleCellsEl) secondModuleCellsEl.textContent = `${fmt(results.module2CellCount, 0)} cells`;
+      : results.module2Config),
+    valueRow('Nominal voltage', `${fmt(results.module2NominalVoltageV, 1)} V`),
+    valueRow('Voltage range', `${fmt(results.module2MinVoltageV, 1)}–${fmt(results.module2MaxVoltageV, 1)} V`),
+    valueRow('Capacity', `${fmt(results.module2CapacityAh, 1)} Ah`),
+    valueRow('Energy', `${fmt(results.module2EnergyKWh, 2)} kWh`),
+    valueRow('Cells per module', `${fmt(results.module2CellCount, 0)} cells`),
+    valueRow('Estimated cell mass', `${fmt(results.module2WeightKG, 2)} kg`),
+    valueRow('Max discharge', `${fmt(results.module2MaxDischargeCurrentA, 1)} A / ${fmt(results.module2MaxDischargePowerKW, 2)} kW`),
+    valueRow('Continuous discharge', `${fmt(results.module2ContinuousDischargeCurrentA, 1)} A / ${fmt(results.module2ContinuousDischargePowerKW, 2)} kW`),
+    valueRow('Max charge', `${fmt(results.module2MaxChargeCurrentA, 1)} A / ${fmt(results.module2MaxChargePowerKW, 2)} kW`)
+  ].join('');
+} else if (secondModuleRows) {
+  secondModuleRows.innerHTML = "";
 }
   
 document.getElementById('sohRows').innerHTML = results.sohRows.map(row => `<div class="soh-row"><div><span>${row.percentage}% SOH</span><strong>${fmt(row.usableEnergyKWh, 2)} kWh</strong></div><progress value="${row.percentage}" max="100"></progress></div>`).join('');
