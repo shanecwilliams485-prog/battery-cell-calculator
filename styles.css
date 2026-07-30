@@ -1539,3 +1539,116 @@ input[readonly] {
 .runtime-estimate-card {
   grid-column: 1 / -1;
 }
+@media (max-width: 760px) {
+  body {
+    font-size: 16px;
+  }
+
+  .app-shell {
+    padding: 14px;
+  }
+
+  .hero {
+    padding: 18px;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.9rem, 9vw, 2.8rem);
+    line-height: 1.05;
+  }
+
+  .hero p {
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .company-logo {
+    width: 100% !important;
+    max-width: 320px !important;
+    margin: 0 auto;
+  }
+
+  .calculator-grid,
+  .form-grid,
+  .vehicle-simulation-grid,
+  .module-config-row,
+  .results-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .card,
+  .panel {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 14px;
+  }
+
+  label {
+    gap: 8px;
+  }
+
+  input,
+  select,
+  button {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  input,
+  select {
+    padding: 13px 14px;
+    border-radius: 14px;
+  }
+
+  .calculate-button,
+  .ghost-button {
+    width: 100%;
+    min-height: 52px;
+    font-size: 1rem;
+  }
+
+  .section-heading {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .result-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .result-card {
+    min-height: 96px;
+  }
+
+  .cell-spec-card,
+  .module-results-card,
+  .second-module-results-card,
+  .detailed-results-card,
+  .soh-card,
+  .runtime-estimate-card,
+  .vehicle-range-card,
+  .simulation-settings-card,
+  .graph-card {
+    grid-column: 1 / -1 !important;
+  }
+
+  .value-row {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .value-row span,
+  .value-row strong {
+    font-size: 0.95rem;
+  }
+
+  .value-row strong {
+    text-align: right;
+  }
+}
