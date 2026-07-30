@@ -1930,3 +1930,21 @@ body.mobile-graph-overlay-active {
     font-size: 0.74rem;
   }
 }
+.results-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .results-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .results-actions .ghost-button {
+    width: 100%;
+  }
+}
