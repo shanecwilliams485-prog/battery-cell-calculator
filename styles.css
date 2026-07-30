@@ -1933,3 +1933,140 @@ body.mobile-graph-landscape .driver-dial strong {
     font-size: 0.75rem;
   }
 }
+/* True fullscreen simulation graph overlay */
+.graph-fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: #000;
+  color: var(--text);
+}
+
+.graph-fullscreen-overlay[hidden] {
+  display: none !important;
+}
+
+body.mobile-graph-overlay-active {
+  overflow: hidden;
+}
+
+.graph-rotate-prompt {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 18px;
+  padding: 28px;
+  text-align: center;
+  background:
+    radial-gradient(circle at center, rgba(63, 232, 117, 0.15), transparent 32rem),
+    #000;
+}
+
+.graph-rotate-prompt[hidden] {
+  display: none !important;
+}
+
+.phone-rotate-icon {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border-radius: 28px;
+  border: 2px solid rgba(63, 232, 117, 0.65);
+  color: var(--green);
+  font-size: 3rem;
+  animation: phoneRotatePulse 1.4s ease-in-out infinite;
+}
+
+.graph-rotate-prompt strong {
+  color: var(--green);
+  font-size: clamp(1.4rem, 5vw, 2.4rem);
+}
+
+.graph-rotate-prompt span {
+  max-width: 420px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+@keyframes phoneRotatePulse {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(90deg) scale(1.08);
+  }
+}
+
+.graph-fullscreen-stage {
+  height: 100dvh;
+  width: 100vw;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 8px;
+  background: #000;
+}
+
+.graph-fullscreen-stage[hidden] {
+  display: none !important;
+}
+
+.graph-fullscreen-stage #currentChart {
+  width: 100% !important;
+  height: calc(100dvh - 100px) !important;
+  min-height: 0 !important;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #050505;
+}
+
+.graph-fullscreen-stage #driverLive {
+  display: grid !important;
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+  gap: 7px;
+  margin: 0 !important;
+}
+
+.graph-fullscreen-stage .driver-dial {
+  min-height: 72px;
+  padding: 8px 6px;
+  border-radius: 12px;
+}
+
+.graph-fullscreen-stage .driver-dial span {
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+}
+
+.graph-fullscreen-stage .driver-dial strong {
+  font-size: clamp(0.78rem, 1.8vw, 1rem);
+  line-height: 1.1;
+  margin-top: 5px;
+}
+
+@media (max-height: 430px) and (orientation: landscape) {
+  .graph-fullscreen-stage {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .graph-fullscreen-stage #currentChart {
+    height: calc(100dvh - 82px) !important;
+  }
+
+  .graph-fullscreen-stage .driver-dial {
+    min-height: 58px;
+    padding: 6px 4px;
+  }
+
+  .graph-fullscreen-stage .driver-dial span {
+    font-size: 0.5rem;
+  }
+
+  .graph-fullscreen-stage .driver-dial strong {
+    font-size: 0.74rem;
+  }
+}
