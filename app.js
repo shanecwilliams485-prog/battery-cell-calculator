@@ -1466,15 +1466,51 @@ function driveStyleLabel(mode) {
 }
 function updateDriverLiveData(row) {
   if (!row) return;
+
   const timeEl = document.getElementById('liveTimeValue');
   const currentEl = document.getElementById('liveCurrentValue');
+  const regenCurrentEl = document.getElementById('liveRegenCurrentValue');
+  const speedEl = document.getElementById('liveSpeedValue');
+  const socEl = document.getElementById('liveSocValue');
+  const energyUsedEl = document.getElementById('liveEnergyUsedValue');
+  const regenRecoveredEl = document.getElementById('liveRegenRecoveredValue');
   const styleEl = document.getElementById('liveDriveStyleValue');
+
   if (timeEl) {
     const totalSeconds = Math.round((row.minute || 0) * 60);
     const mins = Math.floor(totalSeconds / 60);
     const secs = String(totalSeconds % 60).padStart(2, '0');
     timeEl.textContent = `${mins}:${secs}`;
   }
+
+  if (currentEl) {
+    currentEl.textContent = `${fmt(row.averageCurrentA || 0, 0)} A`;
+  }
+
+  if (regenCurrentEl) {
+    regenCurrentEl.textContent = `${fmt(row.regenCurrentA || 0, 0)} A`;
+  }
+
+  if (speedEl) {
+    speedEl.textContent = `${fmt(row.speedMph || 0, 0)} mph`;
+  }
+
+  if (socEl) {
+    socEl.textContent = `${fmt(row.socPercent || 0, 0)} %`;
+  }
+
+  if (energyUsedEl) {
+    energyUsedEl.textContent = `${fmt(row.cumulativeEnergyUsedKWh || 0, 2)} kWh`;
+  }
+
+  if (regenRecoveredEl) {
+    regenRecoveredEl.textContent = `${fmt(row.cumulativeRegenRecoveredKWh || 0, 2)} kWh`;
+  }
+
+  if (styleEl) {
+    styleEl.textContent = driveStyleLabel(row.driveMode);
+  }
+}
   if (currentEl) currentEl.textContent = `${fmt(row.averageCurrentA, 0)} A`;
   if (styleEl) styleEl.textContent = driveStyleLabel(row.driveMode);
 }
