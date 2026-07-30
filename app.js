@@ -2061,4 +2061,90 @@ function initMobileInputSections() {
   mobileQuery.addEventListener('change', showMenu);
   showMenu();
 }
+function initMobileResultSections() {
+  const menu = document.getElementById('mobileResultsMenu');
+  const toolbar = document.getElementById('mobileResultsToolbar');
+  const backBtn = document.getElementById('mobileResultsBack');
+  const title = document.getElementById('mobileResultsTitle');
+
+  const sections = [
+    { id: 'cellSpec', title: 'Cell Specification' },
+    { id: 'modules', title: 'Modules' },
+    { id: 'packResults', title: 'Pack Results' },
+    { id: 'sohResults', title: 'Usable Energy vs SOH' },
+    { id: 'vehicleResults', title: 'Vehicle Results' },
+    { id: 'simulationGraph', title: 'Simulation Graph' },
+    { id: 'simulationSettings', title: 'Simulation Settings' }
+  ];
+
+  const mobileQuery = window.matchMedia('(max-width: 760px)');
+
+  function allResultSections() {
+    return [...document.querySelectorAll('.mobile-result-section')];
+  }
+
+  function showMenu() {
+    if (!mobileQuery.matches) {
+      document.body.classList.remove('mobile-results-menu-open', 'mobile-results-section-open');
+
+      if (menu) menu.hidden = true;
+      if (toolbar) toolbar.hidden = true;
+
+      allResultSections().forEach(section => {
+        section.hidden = section.id === 'secondModuleResults' && !(lastResults?.hasSecondModule);
+      });
+
+      return;
+    }
+
+    document.body.classList.add('mobile-results-menu-open');
+    document.body.classList.remove('mobile-results-section-open');
+
+    if (menu) menu.hidden = false;
+    if (toolbar) toolbar.hidden = true;
+
+    allResultSections().forEach(section => {
+      section.hidden = true;
+    });
+  }
+
+  function showSection(sectionId) {
+    const selected = sections.find(section => section.id === sectionId);
+
+    document.body.classList.remove('mobile-results-menu-open');
+    document.body.classList.add('mobile-results-section-open');
+
+    if (menu) menu.hidden = true;
+    if (toolbar) toolbar.hidden = false;
+    if (title) title.textContent = selected?.title || 'Results';
+
+    allResultSections().forEach(section => {
+      const isSelected = section.dataset.resultSection === sectionId;
+
+      if (section.id === 'secondModuleResults' && !(lastResults?.hasSecondModule)) {
+        section.hidden = true;
+      } else {
+        section.hidden = !isSelected;
+      }
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.querySelectorAll('[data-open-result]').forEach(button => {
+    button.addEventListener('click', () => {
+      showSection(button.dataset.openResult);
+    });
+  });
+
+  if (backBtn) {
+    backBtn.addEventListener('click', showMenu);
+  }
+
+  mobileQuery.addEventListener('change', showMenu);
+  showMenu();
+
+  window.showMobileResultsMenu = showMenu;
+  window.showMobileResultSection = showSection;
+}
 document.addEventListener('DOMContentLoaded', init);
