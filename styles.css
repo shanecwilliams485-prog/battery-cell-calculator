@@ -907,7 +907,16 @@ input[readonly] {
   .result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sim-preview-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
-  .detailed-results-card,
+  .detailed-results-card,.cell-spec-card,
+.detailed-results-card,
+.module-results-card,
+.second-module-results-card,
+.soh-card,
+.runtime-estimate-card,
+.vehicle-range-card,
+.graph-card {
+  grid-column: 1 / -1;
+}
   .module-results-card,
   .second-module-results-card,
   .soh-card,
