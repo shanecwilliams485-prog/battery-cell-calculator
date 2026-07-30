@@ -1295,6 +1295,15 @@ function weatherConditionLabel(value) {
 
   return labels[value] || value || "Dry / warm";
 }
+function driverAggressionLabel(value) {
+  const labels = {
+    calm: "Calm",
+    normal: "Normal",
+    aggressive: "Aggressive"
+  };
+
+  return labels[value] || value || "Normal";
+}
 
 function valueRow(label, value) { return `<div class="value-row"><span>${label}</span><strong>${value}</strong></div>`; }
 function renderResults(results) {
