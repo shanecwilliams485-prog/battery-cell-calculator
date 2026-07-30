@@ -2076,6 +2076,7 @@ function initMobileResultSections() {
   const title = document.getElementById('mobileResultsTitle');
 
   const sections = [
+    { id: 'overviewResults', title: 'Overview' },
     { id: 'cellSpec', title: 'Cell Specification' },
     { id: 'modules', title: 'Modules' },
     { id: 'packResults', title: 'Pack Results' },
