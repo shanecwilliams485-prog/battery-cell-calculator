@@ -1473,7 +1473,6 @@ if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null
 }
 
 document.getElementById('runtimeRows').innerHTML = runtime;
-  document.getElementById('runtimeRows').innerHTML = runtime;
  const vehicleRangeSection = document.getElementById('vehicleRangeSection');
 const vehicleRangeRows = document.getElementById('vehicleRangeRows');
 
