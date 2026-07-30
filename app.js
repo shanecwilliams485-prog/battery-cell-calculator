@@ -1567,6 +1567,8 @@ function drawChart(rows, count = rows.length) {
 }
 function animateChart() {
   if (!lastResults?.variableSimulationRows?.length) return;
+  const animateBtn = document.getElementById('animateBtn');
+if (animateBtn) animateBtn.textContent = 'Replay simulation';
   cancelAnimationFrame(animationFrame);
   chartPointCount = 1;
   let lastTime = 0;
