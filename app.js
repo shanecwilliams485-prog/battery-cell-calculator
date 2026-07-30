@@ -49,6 +49,8 @@ let driveCycleRunId = 0;
 let mobileGraphExperienceActive = false;
 let mobileGraphHasPlayed = false;
 let mobileGraphLoopActive = false;
+let chartPlaceholder = null;
+let driverLivePlaceholder = null;
 const CHART_ANIMATION_DELAY_MS = 35; // Increase this value to make the vehicle runtime graph draw more slowly.
 
 const fields = [
