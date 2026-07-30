@@ -1756,3 +1756,39 @@ input[readonly] {
     grid-column: 1 / -1 !important;
   }
 }
+.rotate-phone-message {
+  display: none;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .rotate-phone-message {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+    margin: 12px 0 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(63, 232, 117, 0.35);
+    background: rgba(63, 232, 117, 0.09);
+    color: inherit;
+  }
+
+  .rotate-phone-message strong {
+    color: var(--green);
+    font-size: 1.05rem;
+  }
+
+  .rotate-phone-message span {
+    color: var(--muted);
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 760px) and (orientation: landscape) {
+  .rotate-phone-message {
+    display: none !important;
+  }
+
+  .graph-card canvas {
+    min-height: 320px;
+  }
+}
