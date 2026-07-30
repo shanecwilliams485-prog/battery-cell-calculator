@@ -2016,7 +2016,7 @@ function initMobileInputSections() {
     { id: 'inputVehicleSimulation', title: 'Vehicle Simulation' }
   ];
 
-  const mobileQuery = window.matchMedia('(max-width: 760px)');
+  const mobileQuery = window.matchMedia('(max-width: 950px), (pointer: coarse)')
 
   function showMenu() {
     if (!mobileQuery.matches) {
@@ -2081,7 +2081,7 @@ function handleMobileGraphOrientation() {
 
   if (!message || !graphSection || graphSection.hidden) return;
 
-  const isMobile = window.matchMedia('(max-width: 760px)').matches;
+  const isMobile = window.matchMedia('(max-width: 950px), (pointer: coarse)')
   const isLandscape = window.matchMedia('(orientation: landscape)').matches;
 
   if (!isMobile) {
@@ -2118,7 +2118,7 @@ function initMobileResultSections() {
     { id: 'simulationSettings', title: 'Simulation Settings' }
   ];
 
-  const mobileQuery = window.matchMedia('(max-width: 760px)');
+  const mobileQuery = window.matchMedia('(max-width: 950px), (pointer: coarse)')
 
   function allResultSections() {
     return [...document.querySelectorAll('.mobile-result-section')];
