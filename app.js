@@ -1846,16 +1846,16 @@ function hideLoading() {
 }
 function showCalculatorPage() {
   cancelAnimationFrame(animationFrame);
+
   document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function showResultsPage() {
-  document.getElementById('calculatorPage').hidden = true;
-  document.getElementById('resultsPage').hidden = false;
-  if (window.showMobileResultsMenu) {
-  window.showMobileResultsMenu();
-}
+
+  document.body.classList.remove('mobile-results-menu-open', 'mobile-results-section-open');
+
+  if (window.showMobileInputMenu) {
+    window.showMobileInputMenu();
+  }
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
