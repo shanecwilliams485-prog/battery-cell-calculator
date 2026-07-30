@@ -2079,12 +2079,15 @@ function handleMobileGraphOrientation() {
   const message = document.getElementById('rotatePhoneMessage');
   const graphSection = document.getElementById('simulationSection');
 
-  if (!message || !graphSection || graphSection.hidden) return;
+  if (!message || !graphSection) return;
 
-  const isMobile = window.matchMedia('(max-width: 950px), (pointer: coarse)')
+  const isMobile = window.matchMedia('(max-width: 950px), (pointer: coarse)').matches;
   const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+  const graphIsOpen =
+    !graphSection.hidden &&
+    document.body.classList.contains('mobile-results-section-open');
 
-  if (!isMobile) {
+  if (!isMobile || !graphIsOpen) {
     message.hidden = true;
     return;
   }
@@ -2093,10 +2096,10 @@ function handleMobileGraphOrientation() {
     message.hidden = true;
 
     window.setTimeout(() => {
-      if (typeof animateChart === 'function') {
+      if (graphIsOpen && typeof animateChart === 'function') {
         animateChart();
       }
-    }, 300);
+    }, 350);
   } else {
     message.hidden = false;
   }
