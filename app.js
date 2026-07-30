@@ -1906,8 +1906,12 @@ function handleCalculate(event) {
     animateToResultsPage();
 
     window.setTimeout(() => {
-      renderResults(lastResults);
-    }, 900);
+  renderResults(lastResults);
+
+  if (window.showMobileResultsMenu) {
+    window.showMobileResultsMenu();
+  }
+}, 900);
   } catch (error) {
     alert("Calculation error: " + error.message);
     console.error(error);
