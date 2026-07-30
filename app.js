@@ -1666,61 +1666,56 @@ function drawChart(rows, count = rows.length) {
 
   ctx.stroke();
 
-  ctx.strokeStyle = '#8df0ff';
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-
-  visible.forEach((row, index) => {
-    const px = x(index);
-    const py = yCurrent(-(row.regenCurrentA || 0));
-
-    if (index === 0) ctx.moveTo(px, py);
-    else ctx.lineTo(px, py);
-  });
-
-  ctx.stroke();
-
-  ctx.strokeStyle = '#3fe875';
   ctx.lineWidth = 3;
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+
+for (let index = 1; index < visible.length; index++) {
+  const previousRow = visible[index - 1];
+  const row = visible[index];
+
+  const previousRegenA = previousRow.regenCurrentA || 0;
+  const regenA = row.regenCurrentA || 0;
+
+  const previousBatteryCurrentA = previousRegenA > 0.1
+    ? -previousRegenA
+    : previousRow.averageCurrentA || 0;
+
+  const batteryCurrentA = regenA > 0.1
+    ? -regenA
+    : row.averageCurrentA || 0;
+
+  ctx.strokeStyle = batteryCurrentA < 0 ? '#8df0ff' : '#3fe875';
+
   ctx.beginPath();
-
-  visible.forEach((row, index) => {
-    const px = x(index);
-    const py = yCurrent(row.averageCurrentA || 0);
-
-    if (index === 0) ctx.moveTo(px, py);
-    else ctx.lineTo(px, py);
-  });
-
+  ctx.moveTo(x(index - 1), yCurrent(previousBatteryCurrentA));
+  ctx.lineTo(x(index), yCurrent(batteryCurrentA));
   ctx.stroke();
+}
 
-  const last = visible[visible.length - 1];
-  const lastIndex = visible.length - 1;
-  const lastX = x(lastIndex);
-  const lastCurrentY = yCurrent(last.averageCurrentA || 0);
-  const lastRegenY = yCurrent(-(last.regenCurrentA || 0));
+ const last = visible[visible.length - 1];
+const lastIndex = visible.length - 1;
+const lastX = x(lastIndex);
 
-  ctx.fillStyle = '#d7ffe2';
-  ctx.beginPath();
-  ctx.arc(lastX, lastCurrentY, 5, 0, Math.PI * 2);
-  ctx.fill();
+const lastBatteryCurrentA = (last.regenCurrentA || 0) > 0.1
+  ? -(last.regenCurrentA || 0)
+  : last.averageCurrentA || 0;
 
-  if ((last.regenCurrentA || 0) > 0.1) {
-    ctx.fillStyle = '#8df0ff';
-    ctx.beginPath();
-    ctx.arc(lastX, lastRegenY, 5, 0, Math.PI * 2);
-    ctx.fill();
-  }
+const lastCurrentY = yCurrent(lastBatteryCurrentA);
 
-  ctx.fillStyle = '#3fe875';
-  ctx.font = 'bold 13px system-ui';
-  ctx.fillText('Discharge current', pad.left, 20);
+ctx.fillStyle = lastBatteryCurrentA < 0 ? '#8df0ff' : '#d7ffe2';
+ctx.beginPath();
+ctx.arc(lastX, lastCurrentY, 5, 0, Math.PI * 2);
+ctx.fill();
+ ctx.fillStyle = '#3fe875';
+ctx.font = 'bold 13px system-ui';
+ctx.fillText('Battery current: discharge', pad.left, 20);
 
-  ctx.fillStyle = '#8df0ff';
-  ctx.fillText('Regen current', pad.left + 150, 20);
+ctx.fillStyle = '#8df0ff';
+ctx.fillText('regen', pad.left + 190, 20);
 
-  ctx.fillStyle = 'rgba(255,255,255,.75)';
-  ctx.fillText('Speed profile', pad.left + 275, 20);
+ctx.fillStyle = 'rgba(255,255,255,.75)';
+ctx.fillText('Speed profile', pad.left + 250, 20);
 
   updateDriverLiveData(last);
 
