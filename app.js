@@ -647,6 +647,7 @@ variableAveragePowerKW: variableSimulation?.averagePowerKW ?? null,
 variableAverageSpeedMph: variableSimulation?.averageSpeedMph ?? null,
 variableRuntimeMinutes: variableSimulation?.runtimeMinutes ?? null,
 variableZeroSOCMinute: variableSimulation?.zeroSOCMinute ?? null,
+variableRegenRecoveredKWh: variableSimulation?.regenRecoveredKWh ?? null,
 vehicleConsumptionKWhPer100Miles: variableSimulation && variableSimulation.simulatedDistanceMiles > 0
   ? (variableSimulation.simulatedEnergyUsedKWh / variableSimulation.simulatedDistanceMiles) * 100
   : null,
