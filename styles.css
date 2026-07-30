@@ -243,10 +243,17 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--green); 
   align-items: start;
 }
 
-.detailed-results-card,
+.cell-spec-card,
 .module-results-card,
 .second-module-results-card {
   grid-column: span 2;
+}
+
+.detailed-results-card,
+.soh-card,
+.runtime-estimate-card,
+.vehicle-range-card {
+  grid-column: span 3;
 }
 
 .soh-card,
@@ -879,10 +886,17 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
   height: 100%;
 }
 
-.detailed-results-card,
+.cell-spec-card,
 .module-results-card,
 .second-module-results-card {
   grid-column: span 2;
+}
+
+.detailed-results-card,
+.soh-card,
+.runtime-estimate-card,
+.vehicle-range-card {
+  grid-column: span 3;
 }
 
 .soh-card,
