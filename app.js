@@ -2068,6 +2068,8 @@ function initMobileInputSections() {
 
   mobileQuery.addEventListener('change', showMenu);
   showMenu();
+
+  window.showMobileInputMenu = showMenu;
 }
 function initMobileResultSections() {
   const menu = document.getElementById('mobileResultsMenu');
