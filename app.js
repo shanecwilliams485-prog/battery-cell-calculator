@@ -2138,7 +2138,9 @@ function initMobileResultSections() {
         section.hidden = !isSelected;
       }
     });
-
+if (sectionId === 'simulationGraph') {
+  handleMobileGraphOrientation();
+}
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
