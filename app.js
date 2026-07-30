@@ -1707,9 +1707,12 @@ ctx.fillStyle = lastBatteryCurrentA < 0 ? '#8df0ff' : '#d7ffe2';
 ctx.beginPath();
 ctx.arc(lastX, lastCurrentY, 5, 0, Math.PI * 2);
 ctx.fill();
-ctx.fillStyle = '#ff4d4d';
+ctx.fillStyle = '#3fe875';
 ctx.font = 'bold 13px system-ui';
-ctx.fillText('Battery current: discharge', pad.left, 20);
+ctx.fillText('Battery current:', pad.left, 20);
+
+ctx.fillStyle = '#ff4d4d';
+ctx.fillText('discharge', pad.left + 112, 20);
 ctx.fillStyle = '#8df0ff';
 ctx.fillText('regen', pad.left + 190, 20);
 
