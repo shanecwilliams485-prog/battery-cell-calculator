@@ -231,7 +231,24 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--green); 
 .ghost-button { padding: 10px 14px; background: rgba(63, 232, 117, .13); color: var(--green); border: 1px solid rgba(63, 232, 117, .24); }
 .back-button { white-space: nowrap; }
 .safety-note { margin: 0; padding: 14px; border-radius: 16px; background: rgba(255, 59, 48, .10); color: var(--danger); border: 1px solid rgba(255, 77, 77, .35); font-size: .92rem; line-height: 1.45; font-weight: 700; }
-.result-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1180px) {
+  .result-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .result-card { padding: 17px; border: 1px solid rgba(63,232,117,.2); border-radius: 20px; background: linear-gradient(180deg, rgba(63, 232, 117, .13), rgba(255,255,255,.04)); }
 .result-card span { display: block; font-size: 1.3rem; margin-bottom: 10px; }
 .result-card small { display: block; color: var(--muted); margin-bottom: 5px; }
