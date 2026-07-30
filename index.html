@@ -368,35 +368,77 @@
             <button class="ghost-button back-button" id="backBtn" type="button">← Back to calculator</button>
           </div>
 
-          <div id="resultCards" class="result-grid"></div>
+         <div id="resultCards" class="result-grid"></div>
 
-          <div class="results-layout">
-            <section class="card cell-spec-card">
+<div id="mobileResultsMenu" class="mobile-section-menu mobile-results-menu">
+  <button type="button" class="mobile-section-tile" data-open-result="cellSpec">
+    <strong>Cell Specification</strong>
+    <span>Cell voltage, capacity, current limits, C-ratings and weight</span>
+  </button>
+
+  <button type="button" class="mobile-section-tile" data-open-result="modules">
+    <strong>Modules</strong>
+    <span>Module configuration, voltage range, energy, mass and current limits</span>
+  </button>
+
+  <button type="button" class="mobile-section-tile" data-open-result="packResults">
+    <strong>Pack Results</strong>
+    <span>Pack voltage, energy, usable capacity, current and power limits</span>
+  </button>
+
+  <button type="button" class="mobile-section-tile" data-open-result="sohResults">
+    <strong>Usable Energy vs SOH</strong>
+    <span>Usable energy at different battery state-of-health levels</span>
+  </button>
+
+  <button type="button" class="mobile-section-tile" data-open-result="vehicleResults">
+    <strong>Vehicle Results</strong>
+    <span>Runtime, range, consumption, efficiency and regen recovered</span>
+  </button>
+
+  <button type="button" class="mobile-section-tile" data-open-result="simulationGraph">
+    <strong>Simulation Graph</strong>
+    <span>Animated current, regen, speed, SOC and driving events</span>
+  </button>
+
+  <button type="button" class="mobile-section-tile" data-open-result="simulationSettings">
+    <strong>Simulation Settings</strong>
+    <span>Vehicle, environment, regen and accessory settings used</span>
+  </button>
+</div>
+
+<div id="mobileResultsToolbar" class="mobile-section-toolbar" hidden>
+  <button type="button" id="mobileResultsBack" class="ghost-button">← Back to results</button>
+  <strong id="mobileResultsTitle">Results</strong>
+</div>
+
+<div class="results-layout">
+            <section class="card cell-spec-card mobile-result-section" data-result-section="cellSpec">
               <h3>Cell Specification</h3>
               <div id="cellSpecRows"></div>
             </section>
 
-            <section class="card module-results-card">
+           <section class="card module-results-card mobile-result-section" data-result-section="modules">
   <h3>Module 1</h3>
   <div id="moduleRows"></div>
 </section>
 
-           <section id="secondModuleResults" class="card second-module-results-card" hidden>
+          <section id="secondModuleResults" class="card second-module-results-card mobile-result-section" data-result-section="modules" hidden>
   <h3>Module 2</h3>
   <div id="secondModuleRows"></div>
 </section>
 
-<section class="card detailed-results-card">
+<section class="card detailed-results-card mobile-result-section" data-result-section="packResults">
   <h3>Pack Results</h3>
   <div id="detailedResults"></div>
 </section>
 
-<section class="card soh-card">
+<section class="card soh-card mobile-result-section" data-result-section="sohResults">
   <h3>Usable Energy vs SOH</h3>
   <div id="sohRows"></div>
 </section>
 
-<section class="card runtime-estimate-card">
+<section class="card runtime-estimate-card mobile-result-section" data-result-section="vehicleResults">
   <h3>Vehicle Results</h3>
   <div id="runtimeRows"></div>
 </section>
@@ -404,7 +446,7 @@
   <h3>Vehicle Range</h3>
   <div id="vehicleRangeRows"></div>
 </section>
-            <section id="simulationSection" class="card graph-card" hidden>
+            <section id="simulationSection" class="card graph-card mobile-result-section" data-result-section="simulationGraph" hidden>
   <div class="section-heading compact">
     <div>
       <h3 id="profileTitle">Vehicle Energy Simulation</h3>
@@ -460,7 +502,7 @@
 </div>
             </section>
 
-            <section id="simulationSettingsSection" class="card simulation-settings-card" hidden>
+            <section id="simulationSettingsSection" class="card simulation-settings-card mobile-result-section" data-result-section="simulationSettings" hidden>
               <h3>Simulation Settings</h3>
               <div id="simulationSettingsRows"></div>
             </section>
