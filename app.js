@@ -1905,11 +1905,11 @@ function handleCalculate(event) {
 
     animateToResultsPage();
 
-    window.setTimeout(() => {
+window.setTimeout(() => {
   renderResults(lastResults);
 
-  if (window.showMobileResultsMenu) {
-    window.showMobileResultsMenu();
+  if (window.showMobileResultSection) {
+    window.showMobileResultSection('overviewResults');
   }
 }, 900);
   } catch (error) {
