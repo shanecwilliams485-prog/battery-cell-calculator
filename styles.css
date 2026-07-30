@@ -1724,7 +1724,7 @@ input[readonly] {
     grid-template-columns: 1fr !important;
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 950px), (pointer: coarse) {
   .mobile-results-menu {
     margin-top: 18px;
   }
