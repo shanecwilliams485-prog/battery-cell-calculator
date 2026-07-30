@@ -1743,3 +1743,16 @@ input[readonly] {
     display: none !important;
   }
 }
+.overview-results-card {
+  grid-column: 1 / -1;
+}
+
+.overview-results-card .result-grid {
+  margin-top: 0;
+}
+
+@media (max-width: 760px) {
+  .overview-results-card {
+    grid-column: 1 / -1 !important;
+  }
+}
