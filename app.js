@@ -46,6 +46,9 @@ let lastResults = null;
 let animationFrame = null;
 let chartPointCount = 1;
 let driveCycleRunId = 0;
+let mobileGraphExperienceActive = false;
+let mobileGraphHasPlayed = false;
+let mobileGraphLoopActive = false;
 const CHART_ANIMATION_DELAY_MS = 35; // Increase this value to make the vehicle runtime graph draw more slowly.
 
 const fields = [
@@ -2075,32 +2078,142 @@ function initMobileInputSections() {
 
   window.showMobileInputMenu = showMenu;
 }
+function openMobileGraphExperience() {
+  if (!lastResults?.variableSimulationRows?.length) {
+    alert("Enable Vehicle energy simulation and calculate again before viewing the simulation graph.");
+
+    if (window.showMobileResultsMenu) {
+      window.showMobileResultsMenu();
+    }
+
+    return;
+  }
+
+  const graphSection = document.getElementById('simulationSection');
+
+  mobileGraphExperienceActive = true;
+  mobileGraphHasPlayed = false;
+
+  document.body.classList.add('mobile-graph-experience');
+
+  if (graphSection) {
+    graphSection.hidden = false;
+  }
+
+  handleMobileGraphOrientation();
+}
+
+function closeMobileGraphExperience(returnToResultsMenu = true) {
+  const message = document.getElementById('rotatePhoneMessage');
+
+  stopMobileGraphLoop();
+
+  mobileGraphExperienceActive = false;
+  mobileGraphHasPlayed = false;
+
+  document.body.classList.remove(
+    'mobile-graph-experience',
+    'mobile-graph-rotate',
+    'mobile-graph-landscape'
+  );
+
+  if (message) {
+    message.hidden = true;
+  }
+
+  if (returnToResultsMenu && window.showMobileResultsMenu) {
+    window.showMobileResultsMenu();
+  }
+}
+
+function startMobileGraphLoop() {
+  if (!lastResults?.variableSimulationRows?.length) return;
+
+  stopMobileGraphLoop();
+
+  mobileGraphLoopActive = true;
+  chartPointCount = 1;
+
+  let lastTime = 0;
+  let endPauseStart = null;
+
+  function step(timestamp) {
+    if (!mobileGraphLoopActive) return;
+
+    const rows = lastResults?.variableSimulationRows || [];
+
+    if (!rows.length) {
+      stopMobileGraphLoop();
+      return;
+    }
+
+    if (timestamp - lastTime > CHART_ANIMATION_DELAY_MS) {
+      if (chartPointCount >= rows.length) {
+        if (!endPauseStart) {
+          endPauseStart = timestamp;
+        }
+
+        if (timestamp - endPauseStart > 900) {
+          chartPointCount = 1;
+          endPauseStart = null;
+        }
+      } else {
+        chartPointCount += 1;
+      }
+
+      drawChart(rows, chartPointCount);
+      lastTime = timestamp;
+    }
+
+    animationFrame = requestAnimationFrame(step);
+  }
+
+  animationFrame = requestAnimationFrame(step);
+}
+
+function stopMobileGraphLoop() {
+  mobileGraphLoopActive = false;
+  cancelAnimationFrame(animationFrame);
+}
+
 function handleMobileGraphOrientation() {
   const message = document.getElementById('rotatePhoneMessage');
   const graphSection = document.getElementById('simulationSection');
 
-  if (!message || !graphSection) return;
+  if (!message || !graphSection || !mobileGraphExperienceActive) return;
 
   const isMobile = window.matchMedia('(max-width: 950px), (pointer: coarse)').matches;
   const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-  const graphIsOpen =
-    !graphSection.hidden &&
-    document.body.classList.contains('mobile-results-section-open');
 
-  if (!isMobile || !graphIsOpen) {
-    message.hidden = true;
+  if (!isMobile) {
+    closeMobileGraphExperience(true);
     return;
   }
 
+  graphSection.hidden = false;
+
   if (isLandscape) {
+    document.body.classList.remove('mobile-graph-rotate');
+    document.body.classList.add('mobile-graph-landscape');
+
     message.hidden = true;
+    mobileGraphHasPlayed = true;
 
     window.setTimeout(() => {
-      if (graphIsOpen && typeof animateChart === 'function') {
-        animateChart();
-      }
+      drawChart(lastResults.variableSimulationRows, 1);
+      startMobileGraphLoop();
     }, 350);
   } else {
+    stopMobileGraphLoop();
+
+    if (mobileGraphHasPlayed) {
+      closeMobileGraphExperience(true);
+      return;
+    }
+
+    document.body.classList.remove('mobile-graph-landscape');
+    document.body.classList.add('mobile-graph-rotate');
+
     message.hidden = false;
   }
 }
