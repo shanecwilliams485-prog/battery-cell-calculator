@@ -1474,23 +1474,12 @@ if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null
 
 document.getElementById('runtimeRows').innerHTML = runtime;
   document.getElementById('runtimeRows').innerHTML = runtime;
-  const vehicleRangeSection = document.getElementById('vehicleRangeSection');
+ const vehicleRangeSection = document.getElementById('vehicleRangeSection');
 const vehicleRangeRows = document.getElementById('vehicleRangeRows');
 
 if (vehicleRangeSection && vehicleRangeRows) {
-  if (results.variableSimulationEnabled && results.vehicleRangeMiles !== null) {
-    vehicleRangeSection.hidden = false;
-
-    vehicleRangeRows.innerHTML =
-  valueRow('Estimated range', `${fmt(results.vehicleRangeMiles, 1)} miles`)
-  + valueRow('Average simulated speed', `${fmt(results.variableAverageSpeedMph, 1)} mph`)
-  + valueRow('Consumption', `${fmt(results.vehicleConsumptionKWhPer100Miles, 1)} kWh / 100 miles`)
-  + valueRow('Efficiency', `${fmt(results.vehicleConsumptionMilesPerKWh, 2)} miles / kWh`)
-+ `<p class="muted range-note">Range estimate is calculated from the simulated 30-minute drive cycle, measured simulation energy use, and usable pack energy.</p>`;
-  } else {
-    vehicleRangeSection.hidden = true;
-    vehicleRangeRows.innerHTML = "";
-  }
+  vehicleRangeSection.hidden = true;
+  vehicleRangeRows.innerHTML = "";
 }
  const simulationSettingsSection = document.getElementById('simulationSettingsSection');
 const simulationSettingsRows = document.getElementById('simulationSettingsRows');
