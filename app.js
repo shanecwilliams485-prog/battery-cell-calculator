@@ -1995,8 +1995,12 @@ updateCalculatedRegenEfficiencyInput();
 updateAppliedAccessoryLoadInput();
 refreshResultsIfVisible();
 initMobileInputSections();
-initMobileResultSections(); 
-  document.getElementById('calculatorPage').hidden = false;
+initMobileResultSections();
+
+window.addEventListener('orientationchange', handleMobileGraphOrientation);
+window.addEventListener('resize', handleMobileGraphOrientation);
+
+document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
   hideLoading();
 }
