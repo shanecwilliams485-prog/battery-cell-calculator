@@ -1899,6 +1899,156 @@ function animateToResultsPage() {
     }, 900);
   }, 850);
 }
+function downloadSpecSheetPdf() {
+  if (!lastResults) {
+    alert("Please calculate the battery pack first.");
+    return;
+  }
+
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert("PDF library has not loaded yet. Please refresh and try again.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 14;
+  let y = 16;
+
+  function addTitle(text) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(text, margin, y);
+    y += 10;
+  }
+
+  function addSection(title) {
+    if (y > 260) {
+      doc.addPage();
+      y = 16;
+    }
+
+    y += 4;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text(title, margin, y);
+    y += 7;
+
+    doc.setDrawColor(60, 60, 60);
+    doc.line(margin, y - 3, pageWidth - margin, y - 3);
+  }
+
+  function addRow(label, value) {
+    if (y > 280) {
+      doc.addPage();
+      y = 16;
+    }
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(String(label), margin, y);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(String(value), pageWidth - margin, y, { align: "right" });
+
+    y += 6;
+  }
+
+  function safe(value, suffix = "", decimals = 1) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+      return "N/A";
+    }
+
+    return `${fmt(number, decimals)}${suffix}`;
+  }
+
+  addTitle("Battery Pack Specification Sheet");
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Generated from Battery Cell Calculator", margin, y);
+  y += 6;
+  doc.text(`Date: ${new Date().toLocaleDateString()}`, margin, y);
+  y += 8;
+
+  addSection("1. Pack Overview");
+  addRow("Pack configuration", `${lastResults.seriesCount}S${lastResults.parallelCount}P`);
+  addRow("Cell count", safe(lastResults.numberOfCells, "", 0));
+  addRow("Nominal voltage", safe(lastResults.nominalVoltageV, " V", 1));
+  addRow("Maximum voltage", safe(lastResults.maxVoltageV, " V", 1));
+  addRow("Minimum voltage", safe(lastResults.minVoltageV, " V", 1));
+  addRow("Pack capacity", safe(lastResults.packCapacityAh, " Ah", 1));
+  addRow("Pack energy", safe(lastResults.packEnergyKWh, " kWh", 2));
+  addRow("Usable energy", safe(lastResults.usableEnergyKWh, " kWh", 2));
+  addRow("Estimated cell mass", safe(lastResults.totalCellWeightKG, " kg", 1));
+
+  addSection("2. Cell Specification");
+  addRow("Nominal cell voltage", safe(lastResults.cellNominalVoltage, " V", 2));
+  addRow("Maximum cell voltage", safe(lastResults.cellMaxVoltage, " V", 2));
+  addRow("Minimum cell voltage", safe(lastResults.cellMinVoltage, " V", 2));
+  addRow("Cell capacity", safe(lastResults.cellCapacityAh, " Ah", 2));
+  addRow("Cell energy", safe(lastResults.cellEnergyWh, " Wh", 2));
+  addRow("Max discharge current", safe(lastResults.cellMaxDischargeCurrentA, " A", 1));
+  addRow("Continuous discharge current", safe(lastResults.cellContinuousDischargeCurrentA, " A", 1));
+  addRow("Max charge current", safe(lastResults.cellMaxChargeCurrentA, " A", 1));
+  addRow("Cell weight", safe(lastResults.cellWeightG, " g", 1));
+
+  addSection("3. Module 1 Specification");
+  addRow("Module configuration", lastResults.module1Config || "N/A");
+  addRow("Module count", safe(lastResults.moduleCount1, "", 0));
+  addRow("Module nominal voltage", safe(lastResults.moduleNominalVoltageV, " V", 1));
+  addRow("Module voltage range", `${safe(lastResults.moduleMinVoltageV, " V", 1)} to ${safe(lastResults.moduleMaxVoltageV, " V", 1)}`);
+  addRow("Module capacity", safe(lastResults.moduleCapacityAh, " Ah", 1));
+  addRow("Module energy", safe(lastResults.moduleEnergyKWh, " kWh", 2));
+  addRow("Module cell count", safe(lastResults.moduleCellCount, "", 0));
+  addRow("Module mass", safe(lastResults.moduleWeightKG, " kg", 1));
+  addRow("Module max discharge", safe(lastResults.moduleMaxDischargeCurrentA, " A", 0));
+  addRow("Module continuous discharge", safe(lastResults.moduleContinuousDischargeCurrentA, " A", 0));
+  addRow("Module max charge", safe(lastResults.moduleMaxChargeCurrentA, " A", 0));
+
+  if (lastResults.hasSecondModule) {
+    addSection("4. Module 2 Specification");
+    addRow("Module configuration", lastResults.module2Config || "N/A");
+    addRow("Module count", safe(lastResults.moduleCount2, "", 0));
+    addRow("Module nominal voltage", safe(lastResults.module2NominalVoltageV, " V", 1));
+    addRow("Module voltage range", `${safe(lastResults.module2MinVoltageV, " V", 1)} to ${safe(lastResults.module2MaxVoltageV, " V", 1)}`);
+    addRow("Module capacity", safe(lastResults.module2CapacityAh, " Ah", 1));
+    addRow("Module energy", safe(lastResults.module2EnergyKWh, " kWh", 2));
+    addRow("Module cell count", safe(lastResults.module2CellCount, "", 0));
+    addRow("Module mass", safe(lastResults.module2WeightKG, " kg", 1));
+  }
+
+  addSection("5. Vehicle Simulation");
+  addRow("Vehicle simulation enabled", lastResults.variableSimulationRows?.length ? "Yes" : "No");
+  addRow("Estimated range", safe(lastResults.estimatedRangeMiles, " miles", 1));
+  addRow("Estimated consumption", safe(lastResults.estimatedConsumptionWhPerMile, " Wh/mile", 0));
+  addRow("Drive cycle", lastResults.driveCycleLabel || "N/A");
+  addRow("Vehicle mass", safe(lastResults.vehicleMassKg, " kg", 0));
+  addRow("Accessory load", safe(lastResults.assumedLoadKW, " kW", 2));
+  addRow("Regen recovered", safe(lastResults.regenRecoveredKWh, " kWh", 2));
+
+  addSection("6. Notes");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+
+  const notes = [
+    "Figures are calculated estimates based on the input values supplied.",
+    "The document should be reviewed before being used as a formal engineering specification.",
+    "Electrical, thermal, mechanical, safety and compliance checks are still required."
+  ];
+
+  notes.forEach(note => {
+    const wrapped = doc.splitTextToSize(note, pageWidth - margin * 2);
+    doc.text(wrapped, margin, y);
+    y += wrapped.length * 5 + 2;
+  });
+
+  doc.save("battery-pack-spec-sheet.pdf");
+}
 function handleCalculate(event) {
   event?.preventDefault();
 
@@ -1944,6 +2094,7 @@ function init() {
   document.getElementById('calculatorForm').addEventListener('submit', handleCalculate);
   document.getElementById('resetBtn').addEventListener('click', resetAll);
   document.getElementById('backBtn').addEventListener('click', showCalculatorPage);
+  document.getElementById('downloadPdfBtn')?.addEventListener('click', downloadSpecSheetPdf);
   document.getElementById('variableCurrentSimulationEnabled').addEventListener('change', toggleSimulationOptions);
   document.getElementById('advancedVehicleRealismEnabled')?.addEventListener('change', () => {
   saveInputs(getInputs());
