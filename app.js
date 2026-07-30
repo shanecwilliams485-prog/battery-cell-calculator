@@ -1472,7 +1472,13 @@ if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null
   runtime += `<p class="muted">Tick Vehicle runtime simulation to calculate current draw from vehicle weight, speed, drag, rolling resistance and drivetrain efficiency.</p>`;
 }
 
-document.getElementById('runtimeRows').innerHTML = runtime;
+const runtimeRows =
+  document.getElementById('runtimeRows') ||
+  document.getElementById('runtimeEstimates');
+
+if (runtimeRows) {
+  runtimeRows.innerHTML = runtime;
+}
  const vehicleRangeSection = document.getElementById('vehicleRangeSection');
 const vehicleRangeRows = document.getElementById('vehicleRangeRows');
 
