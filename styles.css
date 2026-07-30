@@ -1724,3 +1724,22 @@ input[readonly] {
     grid-template-columns: 1fr !important;
   }
 }
+@media (max-width: 760px) {
+  .mobile-results-menu {
+    margin-top: 18px;
+  }
+
+  .mobile-result-section[hidden],
+  .mobile-results-menu[hidden],
+  .mobile-section-toolbar[hidden] {
+    display: none !important;
+  }
+
+  body.mobile-results-menu-open .mobile-result-section {
+    display: none !important;
+  }
+
+  body.mobile-results-section-open .mobile-results-menu {
+    display: none !important;
+  }
+}
