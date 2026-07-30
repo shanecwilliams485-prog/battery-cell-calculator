@@ -1325,7 +1325,20 @@ updateCalculatedRegenEfficiencyInput();
     valueRow('Discharge C rating', `${fmt(results.maxDischargeCRating, 0)} C`),
     valueRow('Charge C rating', `${fmt(results.maxChargeCRating, 0)} C`)
   ].join('');
-  
+const cellSpecRows = document.getElementById('cellSpecRows');
+
+if (cellSpecRows) {
+  cellSpecRows.innerHTML = [
+    valueRow('Nominal voltage', `${fmt(results.cellNominalVoltage, 1)} V`),
+    valueRow('Max voltage', `${fmt(results.cellMaxVoltage, 1)} V`),
+    valueRow('Min voltage', `${fmt(results.cellMinVoltage, 1)} V`),
+    valueRow('Capacity', `${fmt(results.cellCapacityAh, 2)} Ah`),
+    valueRow('Max discharge', `${fmt(results.cellMaxDischargeCurrentA, 1)} A`),
+    valueRow('Continuous discharge', `${fmt(results.cellContinuousDischargeCurrentA, 1)} A`),
+    valueRow('Max charge', `${fmt(results.cellMaxChargeCurrentA, 1)} A`),
+    valueRow('Cell weight', `${fmt(results.cellWeightG, 1)} g`)
+  ].join('');
+}  
 const moduleConfigEl = document.getElementById("moduleResultConfig");
 const moduleVoltageEl = document.getElementById("moduleResultVoltage");
 const moduleCapacityEl = document.getElementById("moduleResultCapacity");
