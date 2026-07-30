@@ -1670,64 +1670,25 @@ function drawChart(rows, count = rows.length) {
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
-for (let index = 1; index < visible.length; index++) {
-  const previousRow = visible[index - 1];
-  const row = visible[index];
-
-  const previousRegenA = previousRow.regenCurrentA || 0;
-  const regenA = row.regenCurrentA || 0;
-
-  const previousBatteryCurrentA = previousRegenA > 0.1
-    ? -previousRegenA
-    : previousRow.averageCurrentA || 0;
-
-  const batteryCurrentA = regenA > 0.1
-    ? -regenA
-    : row.averageCurrentA || 0;
-
-  ctx.strokeStyle = batteryCurrentA < 0 ? '#8df0ff' : '#ff4d4d';
-
-  ctx.beginPath();
-  ctx.moveTo(x(index - 1), yCurrent(previousBatteryCurrentA));
-  ctx.lineTo(x(index), yCurrent(batteryCurrentA));
-  ctx.stroke();
+ctx.lineWidth = 3;
 }
 
- const last = visible[visible.length - 1];
+const last = visible[visible.length - 1];
 const lastIndex = visible.length - 1;
 const lastX = x(lastIndex);
+const lastCurrentY = yCurrent(last.averageCurrentA || 0);
+const lastRegenY = yCurrent(-(last.regenCurrentA || 0));
 
-const lastBatteryCurrentA = (last.regenCurrentA || 0) > 0.1
-  ? -(last.regenCurrentA || 0)
-  : last.averageCurrentA || 0;
-
-const lastCurrentY = yCurrent(lastBatteryCurrentA);
-
-ctx.fillStyle = lastBatteryCurrentA < 0 ? '#8df0ff' : '#d7ffe2';
+ctx.fillStyle = '#d7ffe2';
 ctx.beginPath();
 ctx.arc(lastX, lastCurrentY, 5, 0, Math.PI * 2);
 ctx.fill();
-ctx.fillStyle = '#3fe875';
-ctx.font = 'bold 13px system-ui';
-ctx.fillText('Battery current:', pad.left, 20);
 
-ctx.fillStyle = '#ff4d4d';
-ctx.fillText('discharge', pad.left + 112, 20);
-ctx.fillStyle = '#8df0ff';
-ctx.fillText('regen', pad.left + 190, 20);
-
-ctx.fillStyle = 'rgba(255,255,255,.75)';
-ctx.fillText('Speed profile', pad.left + 250, 20);
-
-  updateDriverLiveData(last);
-
-  const totalRegenKWh = rows[rows.length - 1]?.cumulativeRegenRecoveredKWh || 0;
-  const chartStats = document.getElementById('chartStats');
-
-  if (chartStats) {
-chartStats.textContent =
-  `Vehicle energy simulation • one battery-current line • red = discharge • blue = regen • grey = speed • recovered ${fmt(totalRegenKWh, 2)} kWh`;
-  }
+if ((last.regenCurrentA || 0) > 0.1) {
+  ctx.fillStyle = '#8df0ff';
+  ctx.beginPath();
+  ctx.arc(lastX, lastRegenY, 5, 0, Math.PI * 2);
+  ctx.fill();
 }
 function animateChart() {
   if (!lastResults?.variableSimulationRows?.length) return;
