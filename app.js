@@ -2071,6 +2071,32 @@ function initMobileInputSections() {
 
   window.showMobileInputMenu = showMenu;
 }
+function handleMobileGraphOrientation() {
+  const message = document.getElementById('rotatePhoneMessage');
+  const graphSection = document.getElementById('simulationSection');
+
+  if (!message || !graphSection || graphSection.hidden) return;
+
+  const isMobile = window.matchMedia('(max-width: 760px)').matches;
+  const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+
+  if (!isMobile) {
+    message.hidden = true;
+    return;
+  }
+
+  if (isLandscape) {
+    message.hidden = true;
+
+    window.setTimeout(() => {
+      if (typeof animateChart === 'function') {
+        animateChart();
+      }
+    }, 300);
+  } else {
+    message.hidden = false;
+  }
+}
 function initMobileResultSections() {
   const menu = document.getElementById('mobileResultsMenu');
   const toolbar = document.getElementById('mobileResultsToolbar');
