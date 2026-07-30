@@ -1908,8 +1908,8 @@ function handleCalculate(event) {
 window.setTimeout(() => {
   renderResults(lastResults);
 
-  if (window.showMobileResultSection) {
-    window.showMobileResultSection('overviewResults');
+  if (window.showMobileResultsMenu) {
+    window.showMobileResultsMenu();
   }
 }, 900);
   } catch (error) {
