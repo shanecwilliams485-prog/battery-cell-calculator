@@ -1992,5 +1992,73 @@ refreshResultsIfVisible();
   document.getElementById('resultsPage').hidden = true;
   hideLoading();
 }
+function initMobileInputSections() {
+  const menu = document.getElementById('mobileInputMenu');
+  const toolbar = document.getElementById('mobileInputToolbar');
+  const backBtn = document.getElementById('mobileInputBack');
+  const title = document.getElementById('mobileInputTitle');
 
+  const sections = [
+    { id: 'inputCellData', title: 'Cell Data' },
+    { id: 'inputPackLayout', title: 'Pack Layout' },
+    { id: 'inputVehicleSimulation', title: 'Vehicle Simulation' }
+  ];
+
+  const mobileQuery = window.matchMedia('(max-width: 760px)');
+
+  function showMenu() {
+    if (!mobileQuery.matches) {
+      document.body.classList.remove('mobile-input-menu-open', 'mobile-input-section-open');
+      if (menu) menu.hidden = true;
+      if (toolbar) toolbar.hidden = true;
+      sections.forEach(section => {
+        const el = document.getElementById(section.id);
+        if (el) el.hidden = false;
+      });
+      return;
+    }
+
+    document.body.classList.add('mobile-input-menu-open');
+    document.body.classList.remove('mobile-input-section-open');
+
+    if (menu) menu.hidden = false;
+    if (toolbar) toolbar.hidden = true;
+
+    sections.forEach(section => {
+      const el = document.getElementById(section.id);
+      if (el) el.hidden = true;
+    });
+  }
+
+  function showSection(sectionId) {
+    const selected = sections.find(section => section.id === sectionId);
+
+    document.body.classList.remove('mobile-input-menu-open');
+    document.body.classList.add('mobile-input-section-open');
+
+    if (menu) menu.hidden = true;
+    if (toolbar) toolbar.hidden = false;
+    if (title) title.textContent = selected?.title || 'Section';
+
+    sections.forEach(section => {
+      const el = document.getElementById(section.id);
+      if (el) el.hidden = section.id !== sectionId;
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.querySelectorAll('[data-open-input]').forEach(button => {
+    button.addEventListener('click', () => {
+      showSection(button.dataset.openInput);
+    });
+  });
+
+  if (backBtn) {
+    backBtn.addEventListener('click', showMenu);
+  }
+
+  mobileQuery.addEventListener('change', showMenu);
+  showMenu();
+}
 document.addEventListener('DOMContentLoaded', init);
