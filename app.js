@@ -1057,9 +1057,9 @@ let weightedCurrentSeconds = 0;
 let weightedPowerSeconds = 0;
 let simulatedDistanceMiles = 0;
 let simulatedEnergyUsedKWh = 0;
+let cumulativeRegenRecoveredKWh = 0;
 let measuredSeconds = 0;
-  let previousCurrentA = 0;
-
+let previousCurrentA = 0;
   while (elapsedSeconds < graphDurationSeconds && segmentIndex < cycle.length) {
     const segment = cycle[segmentIndex];
     const remainingSegmentSeconds = Math.max(1, segment.seconds - segmentElapsedSeconds);
@@ -1081,7 +1081,7 @@ let measuredSeconds = 0;
       random
     );
 
-    const rawPowerKW = calculateVehiclePowerKW(
+const powerBreakdown = calculateVehiclePowerBreakdownKW(
   input,
   speedMph,
   nextSpeedMph,
@@ -1089,6 +1089,8 @@ let measuredSeconds = 0;
   elapsedSeconds,
   nominalVoltageV
 );
+
+const rawPowerKW = powerBreakdown.powerKW;
 const rawCurrentA = nominalVoltageV > 0 ? rawPowerKW * 1000 / nominalVoltageV : 0;
 
 const mode = String(segment.mode || "").toLowerCase();
@@ -1165,8 +1167,11 @@ let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * c
     averageCurrentA = Math.max(0, averageCurrentA + roadSurfaceRipple + sensorNoise);
     previousCurrentA = averageCurrentA;
 
-    const powerKW = nominalVoltageV * averageCurrentA / 1000;
-    const energyUsedKWh = powerKW * (durationSeconds / 3600);
+const powerKW = nominalVoltageV * averageCurrentA / 1000;
+const energyUsedKWh = powerKW * (durationSeconds / 3600);
+
+const regenRecoveredKWh = powerBreakdown.regenPowerKW * (durationSeconds / 3600);
+cumulativeRegenRecoveredKWh += regenRecoveredKWh;
 
     elapsedSeconds += durationSeconds;
     cumulativeEnergyUsedKWh += energyUsedKWh;
@@ -1187,10 +1192,23 @@ measuredSeconds += durationSeconds;
       averageCurrentA,
       currentLimitA,
       powerKW,
-      energyUsedKWh,
-      cumulativeEnergyUsedKWh,
-      remainingEnergyKWh,
-      socPercent
+energyUsedKWh,
+cumulativeEnergyUsedKWh,
+remainingEnergyKWh,
+socPercent,
+
+regenPowerKW: powerBreakdown.regenPowerKW,
+regenCurrentA: powerBreakdown.regenCurrentA,
+regenRecoveredKWh,
+cumulativeRegenRecoveredKWh,
+
+propulsionPowerKW: powerBreakdown.propulsionPowerKW,
+rollingPowerKW: powerBreakdown.rollingPowerKW,
+aeroPowerKW: powerBreakdown.aeroPowerKW,
+gradientPowerKW: powerBreakdown.gradientPowerKW,
+accelerationPowerKW: powerBreakdown.accelerationPowerKW,
+accessoryLoadKW: powerBreakdown.accessoryLoadKW,
+gradientPercent: powerBreakdown.gradientPercent
     });
 
     segmentElapsedSeconds += durationSeconds;
@@ -1217,6 +1235,7 @@ return {
   averageSpeedMph,
   simulatedDistanceMiles,
   simulatedEnergyUsedKWh,
+  regenRecoveredKWh: cumulativeRegenRecoveredKWh,
   runtimeMinutes,
   zeroSOCMinute: runtimeMinutes,
   profileSampleNumber: driveCycleRunId,
