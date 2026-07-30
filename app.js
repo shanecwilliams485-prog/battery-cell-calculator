@@ -1461,10 +1461,18 @@ if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null
     + valueRow('Vehicle average power', `${fmt(results.variableAveragePowerKW, 2)} kW`)
     + valueRow('Vehicle average current', `${fmt(results.variableAverageCurrentA, 1)} A`)
     + valueRow('Vehicle runtime', `${fmt(results.variableRuntimeMinutes, 1)} min`)
-    + valueRow('Vehicle 0% SOC', `${fmt(results.variableZeroSOCMinute, 0)} min`);
+    + valueRow('Estimated time to 0% SOC', `${fmt(results.variableZeroSOCMinute, 0)} min`)
+    + valueRow('Estimated range', results.vehicleRangeMiles !== null ? `${fmt(results.vehicleRangeMiles, 1)} miles` : '—')
+    + valueRow('Average simulated speed', `${fmt(results.variableAverageSpeedMph, 1)} mph`)
+    + valueRow('Consumption', results.vehicleConsumptionKWhPer100Miles !== null ? `${fmt(results.vehicleConsumptionKWhPer100Miles, 1)} kWh / 100 miles` : '—')
+    + valueRow('Efficiency', results.vehicleConsumptionMilesPerKWh !== null ? `${fmt(results.vehicleConsumptionMilesPerKWh, 2)} miles / kWh` : '—')
+    + valueRow('Regen recovered', results.variableRegenRecoveredKWh !== null ? `${fmt(results.variableRegenRecoveredKWh, 2)} kWh` : '—')
+    + `<p class="muted range-note">Vehicle results are calculated from the simulated 30-minute drive cycle, measured simulation energy use, and usable pack energy.</p>`;
 } else {
   runtime += `<p class="muted">Tick Vehicle runtime simulation to calculate current draw from vehicle weight, speed, drag, rolling resistance and drivetrain efficiency.</p>`;
 }
+
+document.getElementById('runtimeRows').innerHTML = runtime;
   document.getElementById('runtimeRows').innerHTML = runtime;
   const vehicleRangeSection = document.getElementById('vehicleRangeSection');
 const vehicleRangeRows = document.getElementById('vehicleRangeRows');
