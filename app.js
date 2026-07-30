@@ -1384,13 +1384,32 @@ if (simulationSettingsSection && simulationSettingsRows) {
     simulationSettingsRows.innerHTML = "";
   }
 } 
-  const simSection = document.getElementById('simulationSection');
-  if (results.variableSimulationEnabled && results.variableSimulationRows.length) {
-    simSection.hidden = false;
-    const profileTitle = document.getElementById('profileTitle');
-    if (profileTitle) profileTitle.textContent = 'Vehicle Energy Simulation';
-    drawChart(results.variableSimulationRows, results.variableSimulationRows.length);
-  } else { simSection.hidden = true; }
+const simSection = document.getElementById('simulationSection');
+
+if (results.variableSimulationEnabled && results.variableSimulationRows.length) {
+  simSection.hidden = false;
+
+  const profileTitle = document.getElementById('profileTitle');
+  if (profileTitle) profileTitle.textContent = 'Vehicle Energy Simulation';
+
+  const animateBtn = document.getElementById('animateBtn');
+  if (animateBtn) animateBtn.textContent = 'Show simulation';
+
+  const chartStats = document.getElementById('chartStats');
+  if (chartStats) {
+    chartStats.textContent = 'Press Show simulation to replay the simulated drive cycle.';
+  }
+
+  const timeEl = document.getElementById('liveTimeValue');
+  const currentEl = document.getElementById('liveCurrentValue');
+  const styleEl = document.getElementById('liveDriveStyleValue');
+
+  if (timeEl) timeEl.textContent = '0:00';
+  if (currentEl) currentEl.textContent = '0 A';
+  if (styleEl) styleEl.textContent = 'Ready';
+} else {
+  simSection.hidden = true;
+}
 }
 
 function driveStyleLabel(mode) {
