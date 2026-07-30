@@ -1853,6 +1853,9 @@ function showCalculatorPage() {
 function showResultsPage() {
   document.getElementById('calculatorPage').hidden = true;
   document.getElementById('resultsPage').hidden = false;
+  if (window.showMobileResultsMenu) {
+  window.showMobileResultsMenu();
+}
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
