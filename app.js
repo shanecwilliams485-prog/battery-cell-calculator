@@ -914,7 +914,7 @@ function getRegenEfficiency(input) {
 
   return clamp(clampNumber(input.regenEfficiencyPercent, 65) / 100, 0, 0.8);
 }
-function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds, elapsedSeconds = 0, nominalVoltageV = 0) {
+function calculateVehiclePowerBreakdownKW(input, speedMph, nextSpeedMph, durationSeconds, elapsedSeconds = 0, nominalVoltageV = 0) {
   const baseMassKg = Math.max(1, clampNumber(input.vehicleMassKg, 1300));
   const payloadKg = input.advancedVehicleRealismEnabled
     ? Math.max(0, clampNumber(input.payloadKg, 0))
@@ -974,10 +974,39 @@ function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds,
     ? Math.min(maxRegenPowerKW, (brakingPowerKW + downhillPowerKW) * regenEfficiency)
     : 0;
 
+  const regenCurrentA = nominalVoltageV > 0
+    ? regenPowerKW * 1000 / nominalVoltageV
+    : 0;
+
   const temperatureMultiplier = getTemperaturePowerMultiplier(input);
   const netPowerKW = propulsionPowerKW * temperatureMultiplier - regenPowerKW;
 
-  return clamp(netPowerKW, 0, input.driveCycle === "performance" ? 160 : 75);
+  const finalPowerKW = clamp(netPowerKW, 0, input.driveCycle === "performance" ? 160 : 75);
+
+  return {
+    powerKW: finalPowerKW,
+    propulsionPowerKW,
+    regenPowerKW,
+    regenCurrentA,
+    rollingPowerKW,
+    aeroPowerKW,
+    gradientPowerKW,
+    accelerationPowerKW,
+    accessoryLoadKW,
+    gradientPercent,
+    temperatureMultiplier
+  };
+}
+
+function calculateVehiclePowerKW(input, speedMph, nextSpeedMph, durationSeconds, elapsedSeconds = 0, nominalVoltageV = 0) {
+  return calculateVehiclePowerBreakdownKW(
+    input,
+    speedMph,
+    nextSpeedMph,
+    durationSeconds,
+    elapsedSeconds,
+    nominalVoltageV
+  ).powerKW;
 }
 function simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, input, maxDischargeCurrentA) {
   const currentLimitA = Math.max(0, maxDischargeCurrentA || 0);
