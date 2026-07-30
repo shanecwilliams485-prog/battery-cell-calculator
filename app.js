@@ -539,6 +539,30 @@ function calculate(input) {
   const module2CapacityAh = input.capacityAh * module2Parallel;
   const module2EnergyKWh = module2NominalVoltageV * module2CapacityAh / 1000;
   const module2CellCount = module2Series * module2Parallel;
+  const cellEnergyWh = input.nominalVoltage * input.capacityAh;
+const cellContinuousDischargeCRating = input.capacityAh > 0
+  ? input.continuousDischargeCurrentA / input.capacityAh
+  : 0;
+
+const moduleMaxVoltageV = input.maxVoltage * module1Series;
+const moduleMinVoltageV = input.minVoltage * module1Series;
+const moduleWeightKG = input.cellWeightG * moduleCellCount / 1000;
+const moduleMaxDischargeCurrentA = input.maxDischargeCurrentA * module1Parallel;
+const moduleContinuousDischargeCurrentA = input.continuousDischargeCurrentA * module1Parallel;
+const moduleMaxChargeCurrentA = input.maxChargeCurrentA * module1Parallel;
+const moduleMaxDischargePowerKW = moduleNominalVoltageV * moduleMaxDischargeCurrentA / 1000;
+const moduleContinuousDischargePowerKW = moduleNominalVoltageV * moduleContinuousDischargeCurrentA / 1000;
+const moduleMaxChargePowerKW = moduleNominalVoltageV * moduleMaxChargeCurrentA / 1000;
+
+const module2MaxVoltageV = input.maxVoltage * module2Series;
+const module2MinVoltageV = input.minVoltage * module2Series;
+const module2WeightKG = input.cellWeightG * module2CellCount / 1000;
+const module2MaxDischargeCurrentA = input.maxDischargeCurrentA * module2Parallel;
+const module2ContinuousDischargeCurrentA = input.continuousDischargeCurrentA * module2Parallel;
+const module2MaxChargeCurrentA = input.maxChargeCurrentA * module2Parallel;
+const module2MaxDischargePowerKW = module2NominalVoltageV * module2MaxDischargeCurrentA / 1000;
+const module2ContinuousDischargePowerKW = module2NominalVoltageV * module2ContinuousDischargeCurrentA / 1000;
+const module2MaxChargePowerKW = module2NominalVoltageV * module2MaxChargeCurrentA / 1000;
 
   const totalModuleSeries =
     moduleCount1 * module1Series +
@@ -575,7 +599,7 @@ function calculate(input) {
    ? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, simulationInput, maxDischargeCurrentA)
    : null;
 
-  const sohRows = [100, 95, 90, 85, 80].map(percentage => ({
+ const sohRows = [100, 95, 90, 85, 80, 70].map(percentage => ({
     percentage,
     usableEnergyKWh: usableEnergyKWh * percentage / 100.0
   }));
@@ -585,10 +609,14 @@ function calculate(input) {
 cellMaxVoltage: input.maxVoltage,
 cellMinVoltage: input.minVoltage,
 cellCapacityAh: input.capacityAh,
+cellEnergyWh,
 cellMaxDischargeCurrentA: input.maxDischargeCurrentA,
 cellContinuousDischargeCurrentA: input.continuousDischargeCurrentA,
 cellMaxChargeCurrentA: input.maxChargeCurrentA,
 cellWeightG: input.cellWeightG,
+cellMaxDischargeCRating: maxDischargeCRating,
+cellContinuousDischargeCRating,
+cellMaxChargeCRating: maxChargeCRating,
     packEnergyKWh,
     packCapacityAh,
     maxDischargeCurrentA,
@@ -609,20 +637,37 @@ cellWeightG: input.cellWeightG,
     runtimeAtContinuousDischargeMinutes,
     runtimeAtAssumedLoadMinutes,
 
-    moduleConfig: module1Config,
-    moduleCount1,
-    moduleNominalVoltageV,
-    moduleCapacityAh,
-    moduleEnergyKWh,
-    moduleCellCount,
-
+   moduleConfig: module1Config,
+moduleCount1,
+moduleNominalVoltageV,
+moduleMaxVoltageV,
+moduleMinVoltageV,
+moduleCapacityAh,
+moduleEnergyKWh,
+moduleCellCount,
+moduleWeightKG,
+moduleMaxDischargeCurrentA,
+moduleContinuousDischargeCurrentA,
+moduleMaxChargeCurrentA,
+moduleMaxDischargePowerKW,
+moduleContinuousDischargePowerKW,
+moduleMaxChargePowerKW,
     hasSecondModule,
-    module2Config,
-    moduleCount2,
-    module2NominalVoltageV,
-    module2CapacityAh,
-    module2EnergyKWh,
-    module2CellCount,
+module2Config,
+moduleCount2,
+module2NominalVoltageV,
+module2MaxVoltageV,
+module2MinVoltageV,
+module2CapacityAh,
+module2EnergyKWh,
+module2CellCount,
+module2WeightKG,
+module2MaxDischargeCurrentA,
+module2ContinuousDischargeCurrentA,
+module2MaxChargeCurrentA,
+module2MaxDischargePowerKW,
+module2ContinuousDischargePowerKW,
+module2MaxChargePowerKW,
     totalModuleSeries,
 
    variableSimulationEnabled: input.variableCurrentSimulationEnabled,
@@ -1319,34 +1364,45 @@ updateCalculatedBatteryTemperatureInput();
   const regenEfficiencyInput = document.getElementById('regenEfficiencyPercent');
 if (regenEfficiencyInput) regenEfficiencyInput.value = fmt(results.regenEfficiencyPercent, 0);
 updateCalculatedRegenEfficiencyInput();
-  document.getElementById('resultCards').innerHTML = `
+document.getElementById('resultCards').innerHTML = `
   <article class="result-card"><span>⚡</span><small>Pack energy</small><strong>${fmt(results.packEnergyKWh, 2)} kWh</strong></article>
   <article class="result-card"><span>🔋</span><small>Usable energy</small><strong>${fmt(results.usableEnergyKWh, 2)} kWh</strong></article>
-  <article class="result-card"><span>🔌</span><small>Capacity</small><strong>${fmt(results.packCapacityAh, 1)} Ah</strong></article>
-  <article class="result-card"><span>▦</span><small>Cells</small><strong>${results.numberOfCells}</strong></article>`;
-  document.getElementById('detailedResults').innerHTML = [
-    valueRow('Max discharge', `${fmt(results.maxDischargeCurrentA, 1)} A / ${fmt(results.maxDischargePowerKW, 2)} kW`),
-    valueRow('Continuous discharge', `${fmt(results.continuousDischargeCurrentA, 1)} A / ${fmt(results.continuousDischargePowerKW, 2)} kW`),
-    valueRow('Max charge', `${fmt(results.maxChargeCurrentA, 1)} A / ${fmt(results.maxChargePowerKW, 2)} kW`),
-    valueRow('Usable factor', `${fmt(results.usableEnergyFactor * 100, 0)} %`), 
-    valueRow('Voltage range', `${fmt(results.minVoltageV, 1)}–${fmt(results.maxVoltageV, 1)} V`),
-    valueRow('Cell weight', `${fmt(results.totalCellWeightKG, 2)} kg`),
-    valueRow('Discharge C rating', `${fmt(results.maxDischargeCRating, 0)} C`),
-    valueRow('Charge C rating', `${fmt(results.maxChargeCRating, 0)} C`)
-  ].join('');
+  <article class="result-card"><span>🔌</span><small>Nominal voltage</small><strong>${fmt(results.nominalVoltageV, 1)} V</strong></article>
+  <article class="result-card"><span>▦</span><small>Cell count</small><strong>${results.numberOfCells}</strong></article>
+  <article class="result-card"><span>⚖️</span><small>Cell mass</small><strong>${fmt(results.totalCellWeightKG, 2)} kg</strong></article>
+  <article class="result-card"><span>🚗</span><small>Estimated range</small><strong>${results.vehicleRangeMiles !== null ? `${fmt(results.vehicleRangeMiles, 1)} miles` : 'Simulation off'}</strong></article>`;
+ document.getElementById('detailedResults').innerHTML = [
+  valueRow('Pack configuration', `${fmt(results.numberOfCells, 0)} cells`),
+  valueRow('Nominal voltage', `${fmt(results.nominalVoltageV, 1)} V`),
+  valueRow('Voltage range', `${fmt(results.minVoltageV, 1)}–${fmt(results.maxVoltageV, 1)} V`),
+  valueRow('Pack capacity', `${fmt(results.packCapacityAh, 1)} Ah`),
+  valueRow('Pack energy', `${fmt(results.packEnergyKWh, 2)} kWh`),
+  valueRow('Usable energy', `${fmt(results.usableEnergyKWh, 2)} kWh`),
+  valueRow('Usable factor', `${fmt(results.usableEnergyFactor * 100, 0)} %`),
+  valueRow('Estimated cell mass', `${fmt(results.totalCellWeightKG, 2)} kg`),
+  valueRow('Max discharge', `${fmt(results.maxDischargeCurrentA, 1)} A / ${fmt(results.maxDischargePowerKW, 2)} kW`),
+  valueRow('Continuous discharge', `${fmt(results.continuousDischargeCurrentA, 1)} A / ${fmt(results.continuousDischargePowerKW, 2)} kW`),
+  valueRow('Max charge', `${fmt(results.maxChargeCurrentA, 1)} A / ${fmt(results.maxChargePowerKW, 2)} kW`),
+  valueRow('Max discharge C-rate', `${fmt(results.maxDischargeCRating, 2)} C`),
+  valueRow('Max charge C-rate', `${fmt(results.maxChargeCRating, 2)} C`)
+].join('');
 const cellSpecRows = document.getElementById('cellSpecRows');
 
 if (cellSpecRows) {
-  cellSpecRows.innerHTML = [
-    valueRow('Nominal voltage', `${fmt(results.cellNominalVoltage, 1)} V`),
-    valueRow('Max voltage', `${fmt(results.cellMaxVoltage, 1)} V`),
-    valueRow('Min voltage', `${fmt(results.cellMinVoltage, 1)} V`),
-    valueRow('Capacity', `${fmt(results.cellCapacityAh, 2)} Ah`),
-    valueRow('Max discharge', `${fmt(results.cellMaxDischargeCurrentA, 1)} A`),
-    valueRow('Continuous discharge', `${fmt(results.cellContinuousDischargeCurrentA, 1)} A`),
-    valueRow('Max charge', `${fmt(results.cellMaxChargeCurrentA, 1)} A`),
-    valueRow('Cell weight', `${fmt(results.cellWeightG, 1)} g`)
-  ].join('');
+ cellSpecRows.innerHTML = [
+  valueRow('Nominal voltage', `${fmt(results.cellNominalVoltage, 1)} V`),
+  valueRow('Max voltage', `${fmt(results.cellMaxVoltage, 1)} V`),
+  valueRow('Min voltage', `${fmt(results.cellMinVoltage, 1)} V`),
+  valueRow('Capacity', `${fmt(results.cellCapacityAh, 2)} Ah`),
+  valueRow('Cell energy', `${fmt(results.cellEnergyWh, 2)} Wh`),
+  valueRow('Max discharge', `${fmt(results.cellMaxDischargeCurrentA, 1)} A`),
+  valueRow('Continuous discharge', `${fmt(results.cellContinuousDischargeCurrentA, 1)} A`),
+  valueRow('Max charge', `${fmt(results.cellMaxChargeCurrentA, 1)} A`),
+  valueRow('Max discharge C-rate', `${fmt(results.cellMaxDischargeCRating, 2)} C`),
+  valueRow('Continuous discharge C-rate', `${fmt(results.cellContinuousDischargeCRating, 2)} C`),
+  valueRow('Max charge C-rate', `${fmt(results.cellMaxChargeCRating, 2)} C`),
+  valueRow('Cell weight', `${fmt(results.cellWeightG, 1)} g`)
+].join('');
 }  
 const moduleConfigEl = document.getElementById("moduleResultConfig");
 const moduleVoltageEl = document.getElementById("moduleResultVoltage");
