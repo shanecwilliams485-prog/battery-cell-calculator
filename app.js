@@ -1723,8 +1723,8 @@ ctx.fillText('Speed profile', pad.left + 250, 20);
   const chartStats = document.getElementById('chartStats');
 
   if (chartStats) {
-    chartStats.textContent =
-      `Vehicle energy simulation • green = discharge • blue = regen below zero • grey = speed • recovered ${fmt(totalRegenKWh, 2)} kWh`;
+   chartStats.textContent =
+  `Vehicle energy simulation • one battery-current line • green = discharge • blue = regen • grey = speed • recovered ${fmt(totalRegenKWh, 2)} kWh`;
   }
 }
 function animateChart() {
