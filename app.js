@@ -1441,16 +1441,7 @@ if (simulationSettingsSection && simulationSettingsRows) {
         + valueRow('Heater type', results.heatingEnabled ? heaterTypeLabel(results.heaterType) : "Off")
         + valueRow('Head lights / wipers / radio', yesNo(results.electricalAccessoriesEnabled))
         + valueRow('Weather conditions', weatherConditionLabel(results.weatherCondition))
-        function driverAggressionLabel(value) {
-  const labels = {
-    calm: "Calm",
-    normal: "Normal",
-    aggressive: "Aggressive"
-  };
-
-  return labels[value] || value || "Normal";
-}
-       + valueRow('Driver aggression', driverAggressionLabel(results.driverAggression))
+        + valueRow('Driver aggression', driverAggressionLabel(results.driverAggression))
         + valueRow('Payload', `${fmt(results.payloadKg, 0)} kg`);
     } else {
       settings += '<hr>'
