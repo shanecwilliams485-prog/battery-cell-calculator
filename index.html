@@ -440,22 +440,47 @@
               <canvas id="currentChart" aria-label="Variable discharge simulation graph"></canvas>
               <p id="chartStats" class="chart-stats">Live discharge data</p>
 
-              <div id="driverLive" class="driver-live" aria-live="polite">
-                <div class="driver-dial">
-                  <span>SIM TIME</span>
-                  <strong id="liveTimeValue">0.0 min</strong>
-                </div>
+             <div id="driverLive" class="driver-live" aria-live="polite">
+  <div class="driver-dial">
+    <span>Sim time</span>
+    <strong id="liveTimeValue">0:00</strong>
+  </div>
 
-                <div class="driver-dial current">
-                  <span>BATTERY CURRENT</span>
-                  <strong id="liveCurrentValue">0 A</strong>
-                </div>
+  <div class="driver-dial current">
+    <span>Discharge current</span>
+    <strong id="liveCurrentValue">0 A</strong>
+  </div>
 
-                  <div class="driver-dial style">
-                  <span>DRIVING EVENT</span>
-                  <strong id="liveDriveStyleValue">Ready</strong>
-                </div>
-              </div>
+  <div class="driver-dial regen">
+    <span>Regen current</span>
+    <strong id="liveRegenCurrentValue">0 A</strong>
+  </div>
+
+  <div class="driver-dial">
+    <span>Speed</span>
+    <strong id="liveSpeedValue">0 mph</strong>
+  </div>
+
+  <div class="driver-dial">
+    <span>SOC</span>
+    <strong id="liveSocValue">100 %</strong>
+  </div>
+
+  <div class="driver-dial">
+    <span>Energy used</span>
+    <strong id="liveEnergyUsedValue">0.00 kWh</strong>
+  </div>
+
+  <div class="driver-dial regen">
+    <span>Regen recovered</span>
+    <strong id="liveRegenRecoveredValue">0.00 kWh</strong>
+  </div>
+
+  <div class="driver-dial style">
+    <span>Driving event</span>
+    <strong id="liveDriveStyleValue">Ready</strong>
+  </div>
+</div>
             </section>
 
             <section id="simulationSettingsSection" class="card simulation-settings-card" hidden>
