@@ -1987,7 +1987,7 @@ updateCalculatedBatteryTemperatureInput();
 updateCalculatedRegenEfficiencyInput();
 updateAppliedAccessoryLoadInput();
 refreshResultsIfVisible();
-
+initMobileInputSections();
   document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
   hideLoading();
