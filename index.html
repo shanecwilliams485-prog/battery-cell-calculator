@@ -428,14 +428,15 @@
   <div id="vehicleRangeRows"></div>
 </section>
             <section id="simulationSection" class="card graph-card" hidden>
-              <div class="section-heading compact">
-                <div>
-                  <h3 id="profileTitle">Variable Discharge Simulation</h3>
-                  <p class="muted">Animated browser version of the current graph from the SwiftUI app.</p>
-                </div>
-                <button class="ghost-button" id="animateBtn" type="button">Replay graph</button>
-              </div>
-
+  <div class="section-heading compact">
+    <div>
+      <h3 id="profileTitle">Vehicle Energy Simulation</h3>
+      <p class="muted">
+        Shows how current draw, speed and driving events affect energy use during the simulated drive cycle.
+      </p>
+    </div>
+    <button class="ghost-button" id="animateBtn" type="button">Replay graph</button>
+  </div>
               <canvas id="currentChart" aria-label="Variable discharge simulation graph"></canvas>
               <p id="chartStats" class="chart-stats">Live discharge data</p>
 
