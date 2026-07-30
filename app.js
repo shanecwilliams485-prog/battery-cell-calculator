@@ -1524,38 +1524,44 @@ function drawChart(rows, count = rows.length) {
   const rect = canvas.getBoundingClientRect();
 
   const w = Math.max(300, rect.width);
-  const h = Math.max(240, rect.height);
+  const h = Math.max(260, rect.height);
 
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
   ctx.clearRect(0, 0, w, h);
 
   const visible = rows.slice(0, Math.max(1, count));
 
   const pad = {
-    left: 58,
-    right: 58,
-    top: 28,
-    bottom: 42
+    left: 62,
+    right: 62,
+    top: 34,
+    bottom: 48
   };
 
   const chartW = w - pad.left - pad.right;
   const chartH = h - pad.top - pad.bottom;
 
-  const maxCurrentA = Math.max(...rows.map(r => r.averageCurrentA || 0), 1);
-  const currentScaleMax = Math.ceil(maxCurrentA / 25) * 25;
+  const maxDischargeA = Math.max(...rows.map(r => r.averageCurrentA || 0), 1);
+  const maxRegenA = Math.max(...rows.map(r => r.regenCurrentA || 0), 1);
+  const currentScaleMax = Math.ceil(Math.max(maxDischargeA, maxRegenA) / 25) * 25;
 
   const maxSpeedMph = Math.max(...rows.map(r => r.speedMph || 0), 1);
   const speedScaleMax = Math.ceil(maxSpeedMph / 10) * 10;
+
+  const zeroY = pad.top + chartH / 2;
 
   const x = (index) => {
     return pad.left + (index / Math.max(rows.length - 1, 1)) * chartW;
   };
 
   const yCurrent = (amps) => {
-    return pad.top + (1 - (amps / Math.max(currentScaleMax, 1))) * chartH;
+    const halfHeight = chartH / 2;
+    return zeroY - (amps / Math.max(currentScaleMax, 1)) * halfHeight;
   };
 
   const ySpeed = (mph) => {
@@ -1565,7 +1571,7 @@ function drawChart(rows, count = rows.length) {
   ctx.fillStyle = '#050505';
   ctx.fillRect(0, 0, w, h);
 
-  ctx.strokeStyle = 'rgba(255,255,255,.11)';
+  ctx.strokeStyle = 'rgba(255,255,255,.10)';
   ctx.lineWidth = 1;
   ctx.font = '12px system-ui';
 
@@ -1576,14 +1582,21 @@ function drawChart(rows, count = rows.length) {
     ctx.moveTo(pad.left, y);
     ctx.lineTo(w - pad.right, y);
     ctx.stroke();
-
-    const currentLabel = Math.round(currentScaleMax - (currentScaleMax * i / 4));
-
-    ctx.fillStyle = 'rgba(255,255,255,.65)';
-    ctx.fillText(`${currentLabel} A`, 10, y + 4);
   }
 
-  ctx.strokeStyle = 'rgba(255,255,255,.2)';
+  ctx.strokeStyle = 'rgba(255,255,255,.45)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, zeroY);
+  ctx.lineTo(w - pad.right, zeroY);
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255,255,255,.75)';
+  ctx.fillText('0 A', 16, zeroY + 4);
+  ctx.fillText(`+${fmt(currentScaleMax, 0)} A`, 10, pad.top + 4);
+  ctx.fillText(`-${fmt(currentScaleMax, 0)} A`, 10, h - pad.bottom + 4);
+
+  ctx.strokeStyle = 'rgba(255,255,255,.22)';
   ctx.beginPath();
   ctx.moveTo(pad.left, pad.top);
   ctx.lineTo(pad.left, h - pad.bottom);
@@ -1591,20 +1604,48 @@ function drawChart(rows, count = rows.length) {
   ctx.stroke();
 
   ctx.fillStyle = 'rgba(255,255,255,.72)';
-  ctx.fillText('0 min', pad.left, h - 14);
-  ctx.fillText('30 min', w - pad.right - 42, h - 14);
+  ctx.fillText('0 min', pad.left, h - 16);
+  ctx.fillText('30 min', w - pad.right - 42, h - 16);
 
   ctx.fillStyle = 'rgba(255,255,255,.65)';
   ctx.fillText(`${Math.round(speedScaleMax)} mph`, w - pad.right + 10, pad.top + 4);
   ctx.fillText('0 mph', w - pad.right + 10, h - pad.bottom + 4);
 
-  ctx.strokeStyle = 'rgba(255,255,255,.32)';
+  ctx.fillStyle = 'rgba(71,221,255,.10)';
+  ctx.beginPath();
+  ctx.moveTo(x(0), zeroY);
+
+  visible.forEach((row, index) => {
+    const px = x(index);
+    const py = yCurrent(-(row.regenCurrentA || 0));
+    ctx.lineTo(px, py);
+  });
+
+  ctx.lineTo(x(visible.length - 1), zeroY);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(255,255,255,.34)';
   ctx.lineWidth = 2;
   ctx.beginPath();
 
   visible.forEach((row, index) => {
     const px = x(index);
     const py = ySpeed(row.speedMph || 0);
+
+    if (index === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  });
+
+  ctx.stroke();
+
+  ctx.strokeStyle = '#8df0ff';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+
+  visible.forEach((row, index) => {
+    const px = x(index);
+    const py = yCurrent(-(row.regenCurrentA || 0));
 
     if (index === 0) ctx.moveTo(px, py);
     else ctx.lineTo(px, py);
@@ -1629,25 +1670,39 @@ function drawChart(rows, count = rows.length) {
   const last = visible[visible.length - 1];
   const lastIndex = visible.length - 1;
   const lastX = x(lastIndex);
-  const lastY = yCurrent(last.averageCurrentA || 0);
+  const lastCurrentY = yCurrent(last.averageCurrentA || 0);
+  const lastRegenY = yCurrent(-(last.regenCurrentA || 0));
 
   ctx.fillStyle = '#d7ffe2';
   ctx.beginPath();
-  ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
+  ctx.arc(lastX, lastCurrentY, 5, 0, Math.PI * 2);
   ctx.fill();
+
+  if ((last.regenCurrentA || 0) > 0.1) {
+    ctx.fillStyle = '#8df0ff';
+    ctx.beginPath();
+    ctx.arc(lastX, lastRegenY, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   ctx.fillStyle = '#3fe875';
   ctx.font = 'bold 13px system-ui';
-  ctx.fillText('Battery current', pad.left, 18);
+  ctx.fillText('Discharge current', pad.left, 20);
+
+  ctx.fillStyle = '#8df0ff';
+  ctx.fillText('Regen current', pad.left + 150, 20);
 
   ctx.fillStyle = 'rgba(255,255,255,.75)';
-  ctx.fillText('Speed profile', pad.left + 130, 18);
+  ctx.fillText('Speed profile', pad.left + 275, 20);
 
   updateDriverLiveData(last);
 
+  const totalRegenKWh = rows[rows.length - 1]?.cumulativeRegenRecoveredKWh || 0;
   const chartStats = document.getElementById('chartStats');
+
   if (chartStats) {
-    chartStats.textContent = `Vehicle energy simulation • green = battery current • grey = speed profile • 0–${fmt(currentScaleMax, 0)} A current scale`;
+    chartStats.textContent =
+      `Vehicle energy simulation • green = discharge • blue = regen below zero • grey = speed • recovered ${fmt(totalRegenKWh, 2)} kWh`;
   }
 }
 function animateChart() {
