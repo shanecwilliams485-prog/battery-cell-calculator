@@ -1536,3 +1536,6 @@ input[readonly] {
     transform: perspective(1200px) rotateY(0deg) translateZ(0) scale(1);
   }
 }
+.runtime-estimate-card {
+  grid-column: 1 / -1;
+}
