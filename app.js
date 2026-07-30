@@ -2241,6 +2241,9 @@ function initMobileResultSections() {
   }
 
   function showMenu() {
+    if (mobileGraphExperienceActive) {
+  closeMobileGraphExperience(false);
+}
     if (!mobileQuery.matches) {
       document.body.classList.remove('mobile-results-menu-open', 'mobile-results-section-open');
 
@@ -2285,9 +2288,11 @@ function initMobileResultSections() {
       }
     });
 if (sectionId === 'simulationGraph') {
-  handleMobileGraphOrientation();
+  openMobileGraphExperience();
+  return;
 }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   document.querySelectorAll('[data-open-result]').forEach(button => {
