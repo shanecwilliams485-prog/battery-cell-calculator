@@ -1388,7 +1388,7 @@ if (simulationSettingsSection && simulationSettingsRows) {
   if (results.variableSimulationEnabled && results.variableSimulationRows.length) {
     simSection.hidden = false;
     const profileTitle = document.getElementById('profileTitle');
-    if (profileTitle) profileTitle.textContent = 'Vehicle Runtime Simulation';
+    if (profileTitle) profileTitle.textContent = 'Vehicle Energy Simulation';
     drawChart(results.variableSimulationRows, results.variableSimulationRows.length);
   } else { simSection.hidden = true; }
 }
@@ -1414,38 +1414,137 @@ function updateDriverLiveData(row) {
 function drawChart(rows, count = rows.length) {
   const canvas = document.getElementById('currentChart');
   if (!canvas || !rows?.length) return;
+
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  canvas.width = Math.max(300, rect.width * dpr);
-  canvas.height = Math.max(220, rect.height * dpr);
+
+  const w = Math.max(300, rect.width);
+  const h = Math.max(240, rect.height);
+
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const w = rect.width, h = rect.height;
+
   ctx.clearRect(0, 0, w, h);
-  const pad = { left: 48, right: 18, top: 20, bottom: 34 };
+
   const visible = rows.slice(0, Math.max(1, count));
-  const minA = 0;
-  const maxA = Math.max(...rows.map(r => r.averageCurrentA), 1) * 1.15;
-  // Use sample spacing on the x-axis so very short 2–8 second hard pulls are
-  // visible in the replay. The live data panel still shows the true elapsed time.
-  const x = (_row, fallbackIndex = 0) => pad.left + (fallbackIndex / Math.max(rows.length - 1, 1)) * (w - pad.left - pad.right);
-  const y = a => pad.top + (1 - ((a - minA) / Math.max(maxA - minA, 1))) * (h - pad.top - pad.bottom);
-  ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h);
-  ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 1;
+
+  const pad = {
+    left: 58,
+    right: 58,
+    top: 28,
+    bottom: 42
+  };
+
+  const chartW = w - pad.left - pad.right;
+  const chartH = h - pad.top - pad.bottom;
+
+  const maxCurrentA = Math.max(...rows.map(r => r.averageCurrentA || 0), 1);
+  const currentScaleMax = Math.ceil(maxCurrentA / 25) * 25;
+
+  const maxSpeedMph = Math.max(...rows.map(r => r.speedMph || 0), 1);
+  const speedScaleMax = Math.ceil(maxSpeedMph / 10) * 10;
+
+  const x = (index) => {
+    return pad.left + (index / Math.max(rows.length - 1, 1)) * chartW;
+  };
+
+  const yCurrent = (amps) => {
+    return pad.top + (1 - (amps / Math.max(currentScaleMax, 1))) * chartH;
+  };
+
+  const ySpeed = (mph) => {
+    return pad.top + (1 - (mph / Math.max(speedScaleMax, 1))) * chartH;
+  };
+
+  ctx.fillStyle = '#050505';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.strokeStyle = 'rgba(255,255,255,.11)';
+  ctx.lineWidth = 1;
+  ctx.font = '12px system-ui';
+
   for (let i = 0; i <= 4; i++) {
-    const yy = pad.top + i * (h - pad.top - pad.bottom) / 4;
-    ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(w - pad.right, yy); ctx.stroke();
+    const y = pad.top + (i / 4) * chartH;
+
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(w - pad.right, y);
+    ctx.stroke();
+
+    const currentLabel = Math.round(currentScaleMax - (currentScaleMax * i / 4));
+
+    ctx.fillStyle = 'rgba(255,255,255,.65)';
+    ctx.fillText(`${currentLabel} A`, 10, y + 4);
   }
-  ctx.strokeStyle = '#38e06f'; ctx.lineWidth = 3; ctx.beginPath();
-  visible.forEach((r, i) => { const px = x(r, i), py = y(r.averageCurrentA); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+
+  ctx.strokeStyle = 'rgba(255,255,255,.2)';
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top);
+  ctx.lineTo(pad.left, h - pad.bottom);
+  ctx.lineTo(w - pad.right, h - pad.bottom);
   ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255,255,255,.72)';
+  ctx.fillText('0 min', pad.left, h - 14);
+  ctx.fillText('30 min', w - pad.right - 42, h - 14);
+
+  ctx.fillStyle = 'rgba(255,255,255,.65)';
+  ctx.fillText(`${Math.round(speedScaleMax)} mph`, w - pad.right + 10, pad.top + 4);
+  ctx.fillText('0 mph', w - pad.right + 10, h - pad.bottom + 4);
+
+  ctx.strokeStyle = 'rgba(255,255,255,.32)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+
+  visible.forEach((row, index) => {
+    const px = x(index);
+    const py = ySpeed(row.speedMph || 0);
+
+    if (index === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  });
+
+  ctx.stroke();
+
+  ctx.strokeStyle = '#3fe875';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+
+  visible.forEach((row, index) => {
+    const px = x(index);
+    const py = yCurrent(row.averageCurrentA || 0);
+
+    if (index === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  });
+
+  ctx.stroke();
+
   const last = visible[visible.length - 1];
-  ctx.fillStyle = '#d7ffe2'; ctx.beginPath(); ctx.arc(x(last, visible.length - 1), y(last.averageCurrentA), 5, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,.72)'; ctx.font = '12px system-ui';
-  ctx.fillText(`${Math.round(maxA)} A`, 8, pad.top + 4); ctx.fillText(`${Math.round(minA)} A`, 8, h - pad.bottom + 4);
+  const lastIndex = visible.length - 1;
+  const lastX = x(lastIndex);
+  const lastY = yCurrent(last.averageCurrentA || 0);
+
+  ctx.fillStyle = '#d7ffe2';
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#3fe875';
+  ctx.font = 'bold 13px system-ui';
+  ctx.fillText('Battery current', pad.left, 18);
+
+  ctx.fillStyle = 'rgba(255,255,255,.75)';
+  ctx.fillText('Speed profile', pad.left + 130, 18);
+
   updateDriverLiveData(last);
+
   const chartStats = document.getElementById('chartStats');
-  if (chartStats) chartStats.textContent = `Vehicle runtime simulation • current draw based on speed, mass, drag, rolling resistance and drivetrain efficiency • 0–${fmt(maxA, 0)} A range`;
+  if (chartStats) {
+    chartStats.textContent = `Vehicle energy simulation • green = battery current • grey = speed profile • 0–${fmt(currentScaleMax, 0)} A current scale`;
+  }
 }
 function animateChart() {
   if (!lastResults?.variableSimulationRows?.length) return;
