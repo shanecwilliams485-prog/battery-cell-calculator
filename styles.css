@@ -1760,7 +1760,7 @@ input[readonly] {
   display: none;
 }
 
-@media (max-width: 760px) and (orientation: portrait) {
+@media ((max-width: 950px) or (pointer: coarse)) and (orientation: portrait) {
   .rotate-phone-message {
     display: grid;
     gap: 8px;
@@ -1783,7 +1783,7 @@ input[readonly] {
   }
 }
 
-@media (max-width: 760px) and (orientation: landscape) {
+@media ((max-width: 950px) or (pointer: coarse)) and (orientation: landscape) {
   .rotate-phone-message {
     display: none !important;
   }
