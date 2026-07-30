@@ -1654,6 +1654,8 @@ function drawChart(rows, count = rows.length) {
 
   ctx.strokeStyle = 'rgba(255,255,255,.34)';
   ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
   ctx.beginPath();
 
   visible.forEach((row, index) => {
@@ -1666,29 +1668,71 @@ function drawChart(rows, count = rows.length) {
 
   ctx.stroke();
 
-  ctx.lineWidth = 3;
-ctx.lineCap = 'round';
-ctx.lineJoin = 'round';
-
-ctx.lineWidth = 3;
-}
-
-const last = visible[visible.length - 1];
-const lastIndex = visible.length - 1;
-const lastX = x(lastIndex);
-const lastCurrentY = yCurrent(last.averageCurrentA || 0);
-const lastRegenY = yCurrent(-(last.regenCurrentA || 0));
-
-ctx.fillStyle = '#d7ffe2';
-ctx.beginPath();
-ctx.arc(lastX, lastCurrentY, 5, 0, Math.PI * 2);
-ctx.fill();
-
-if ((last.regenCurrentA || 0) > 0.1) {
-  ctx.fillStyle = '#8df0ff';
+  ctx.strokeStyle = '#8df0ff';
+  ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.arc(lastX, lastRegenY, 5, 0, Math.PI * 2);
+
+  visible.forEach((row, index) => {
+    const px = x(index);
+    const py = yCurrent(-(row.regenCurrentA || 0));
+
+    if (index === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  });
+
+  ctx.stroke();
+
+  ctx.strokeStyle = '#3fe875';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+
+  visible.forEach((row, index) => {
+    const px = x(index);
+    const py = yCurrent(row.averageCurrentA || 0);
+
+    if (index === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  });
+
+  ctx.stroke();
+
+  ctx.fillStyle = '#3fe875';
+  ctx.font = 'bold 13px system-ui';
+  ctx.fillText('Discharge current', pad.left, 20);
+
+  ctx.fillStyle = '#8df0ff';
+  ctx.fillText('Regen current', pad.left + 150, 20);
+
+  ctx.fillStyle = 'rgba(255,255,255,.75)';
+  ctx.fillText('Speed profile', pad.left + 275, 20);
+
+  const last = visible[visible.length - 1];
+  const lastIndex = visible.length - 1;
+  const lastX = x(lastIndex);
+  const lastCurrentY = yCurrent(last.averageCurrentA || 0);
+  const lastRegenY = yCurrent(-(last.regenCurrentA || 0));
+
+  ctx.fillStyle = '#d7ffe2';
+  ctx.beginPath();
+  ctx.arc(lastX, lastCurrentY, 5, 0, Math.PI * 2);
   ctx.fill();
+
+  if ((last.regenCurrentA || 0) > 0.1) {
+    ctx.fillStyle = '#8df0ff';
+    ctx.beginPath();
+    ctx.arc(lastX, lastRegenY, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  updateDriverLiveData(last);
+
+  const chartStats = document.getElementById('chartStats');
+  if (chartStats) {
+    const totalRegenKWh = last.cumulativeRegenRecoveredKWh || 0;
+
+    chartStats.textContent =
+      `Vehicle energy simulation • green = discharge • blue = regen below zero • grey = speed • recovered ${fmt(totalRegenKWh, 2)} kWh`;
+  }
 }
 function animateChart() {
   if (!lastResults?.variableSimulationRows?.length) return;
