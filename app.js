@@ -2178,46 +2178,180 @@ function stopMobileGraphLoop() {
   cancelAnimationFrame(animationFrame);
 }
 
+function moveGraphIntoFullscreenOverlay() {
+  const stage = document.getElementById('graphFullscreenStage');
+  const chart = document.getElementById('currentChart');
+  const driverLive = document.getElementById('driverLive');
+
+  if (!stage || !chart || !driverLive) return;
+
+  if (!chartPlaceholder) {
+    chartPlaceholder = document.createComment('currentChart original position');
+    chart.parentNode.insertBefore(chartPlaceholder, chart);
+  }
+
+  if (!driverLivePlaceholder) {
+    driverLivePlaceholder = document.createComment('driverLive original position');
+    driverLive.parentNode.insertBefore(driverLivePlaceholder, driverLive);
+  }
+
+  stage.appendChild(chart);
+  stage.appendChild(driverLive);
+}
+
+function moveGraphBackToResultsCard() {
+  const chart = document.getElementById('currentChart');
+  const driverLive = document.getElementById('driverLive');
+
+  if (chartPlaceholder?.parentNode && chart) {
+    chartPlaceholder.parentNode.insertBefore(chart, chartPlaceholder);
+  }
+
+  if (driverLivePlaceholder?.parentNode && driverLive) {
+    driverLivePlaceholder.parentNode.insertBefore(driverLive, driverLivePlaceholder);
+  }
+}
+
+function openMobileGraphExperience() {
+  if (!lastResults?.variableSimulationRows?.length) {
+    alert("Enable Vehicle energy simulation and calculate again before viewing the simulation graph.");
+
+    if (window.showMobileResultsMenu) {
+      window.showMobileResultsMenu();
+    }
+
+    return;
+  }
+
+  mobileGraphExperienceActive = true;
+  mobileGraphHasPlayed = false;
+
+  document.body.classList.add('mobile-graph-overlay-active');
+
+  const overlay = document.getElementById('graphFullscreenOverlay');
+  if (overlay) overlay.hidden = false;
+
+  handleMobileGraphOrientation();
+}
+
+function closeMobileGraphExperience(returnToResultsMenu = true) {
+  const overlay = document.getElementById('graphFullscreenOverlay');
+  const prompt = document.getElementById('graphRotatePrompt');
+  const stage = document.getElementById('graphFullscreenStage');
+
+  stopMobileGraphLoop();
+  moveGraphBackToResultsCard();
+
+  mobileGraphExperienceActive = false;
+  mobileGraphHasPlayed = false;
+
+  document.body.classList.remove('mobile-graph-overlay-active');
+
+  if (overlay) overlay.hidden = true;
+  if (prompt) prompt.hidden = false;
+  if (stage) stage.hidden = true;
+
+  if (returnToResultsMenu && window.showMobileResultsMenu) {
+    window.showMobileResultsMenu();
+  }
+}
+
+function startMobileGraphLoop() {
+  if (!lastResults?.variableSimulationRows?.length) return;
+
+  stopMobileGraphLoop();
+
+  mobileGraphLoopActive = true;
+  chartPointCount = 1;
+
+  let lastTime = 0;
+  let endPauseStarted = null;
+
+  function step(timestamp) {
+    if (!mobileGraphLoopActive) return;
+
+    const rows = lastResults?.variableSimulationRows || [];
+
+    if (!rows.length) {
+      stopMobileGraphLoop();
+      return;
+    }
+
+    if (timestamp - lastTime > CHART_ANIMATION_DELAY_MS) {
+      if (chartPointCount >= rows.length) {
+        if (!endPauseStarted) {
+          endPauseStarted = timestamp;
+        }
+
+        if (timestamp - endPauseStarted > 900) {
+          chartPointCount = 1;
+          endPauseStarted = null;
+        }
+      } else {
+        chartPointCount += 1;
+      }
+
+      drawChart(rows, chartPointCount);
+      lastTime = timestamp;
+    }
+
+    animationFrame = requestAnimationFrame(step);
+  }
+
+  animationFrame = requestAnimationFrame(step);
+}
+
+function stopMobileGraphLoop() {
+  mobileGraphLoopActive = false;
+  cancelAnimationFrame(animationFrame);
+}
+
 function handleMobileGraphOrientation() {
-  const message = document.getElementById('rotatePhoneMessage');
-  const graphSection = document.getElementById('simulationSection');
+  if (!mobileGraphExperienceActive) return;
 
-  if (!message || !graphSection || !mobileGraphExperienceActive) return;
+  const overlay = document.getElementById('graphFullscreenOverlay');
+  const prompt = document.getElementById('graphRotatePrompt');
+  const stage = document.getElementById('graphFullscreenStage');
 
-  const isMobile = window.matchMedia('(max-width: 950px), (pointer: coarse)').matches;
+  if (!overlay || !prompt || !stage) return;
+
   const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+  const isMobile = window.matchMedia('(max-width: 950px), (pointer: coarse)').matches;
 
   if (!isMobile) {
     closeMobileGraphExperience(true);
     return;
   }
 
-  graphSection.hidden = false;
+  overlay.hidden = false;
 
   if (isLandscape) {
-    document.body.classList.remove('mobile-graph-rotate');
-    document.body.classList.add('mobile-graph-landscape');
-
-    message.hidden = true;
     mobileGraphHasPlayed = true;
+
+    prompt.hidden = true;
+    stage.hidden = false;
+
+    moveGraphIntoFullscreenOverlay();
 
     window.setTimeout(() => {
       drawChart(lastResults.variableSimulationRows, 1);
       startMobileGraphLoop();
-    }, 350);
-  } else {
-    stopMobileGraphLoop();
+    }, 200);
 
-    if (mobileGraphHasPlayed) {
-      closeMobileGraphExperience(true);
-      return;
-    }
-
-    document.body.classList.remove('mobile-graph-landscape');
-    document.body.classList.add('mobile-graph-rotate');
-
-    message.hidden = false;
+    return;
   }
+
+  stopMobileGraphLoop();
+
+  if (mobileGraphHasPlayed) {
+    closeMobileGraphExperience(true);
+    return;
+  }
+
+  moveGraphBackToResultsCard();
+
+  prompt.hidden = false;
+  stage.hidden = true;
 }
 function initMobileResultSections() {
   const menu = document.getElementById('mobileResultsMenu');
