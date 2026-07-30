@@ -36,10 +36,30 @@
             </div>
             <button class="ghost-button" id="resetBtn" type="button">Reset</button>
           </div>
+<div id="mobileInputMenu" class="mobile-section-menu">
+  <button type="button" class="mobile-section-tile" data-open-input="inputCellData">
+    <strong>Cell Data</strong>
+    <span>Voltage, capacity, current limits and cell weight</span>
+  </button>
 
+  <button type="button" class="mobile-section-tile" data-open-input="inputPackLayout">
+    <strong>Pack Layout</strong>
+    <span>Series, parallel, modules and usable factor</span>
+  </button>
+
+  <button type="button" class="mobile-section-tile" data-open-input="inputVehicleSimulation">
+    <strong>Vehicle Simulation</strong>
+    <span>Drive cycle, vehicle data, regen and environment</span>
+  </button>
+</div>
+
+<div id="mobileInputToolbar" class="mobile-section-toolbar" hidden>
+  <button type="button" id="mobileInputBack" class="ghost-button">← Back to sections</button>
+  <strong id="mobileInputTitle">Section</strong>
+</div>
 <div class="calculator-grid">
-  <section class="card">
-    <h3>Cell Data</h3>
+  <section id="inputCellData" class="card mobile-input-section">
+  <h3>Cell Data</h3>
     <div class="form-grid">
       <label>Nominal voltage <span>V</span><input id="nominalVoltage" type="number" step="0.1" inputmode="decimal"></label>
       <label>Max voltage <span>V</span><input id="maxVoltage" type="number" step="0.1" inputmode="decimal"></label>
@@ -52,8 +72,8 @@
     </div>
   </section>
 
-  <section class="card">
-    <h3>Pack Layout</h3>
+ <section id="inputPackLayout" class="card mobile-input-section">
+  <h3>Pack Layout</h3>
 
     <div class="form-grid">
       <label>
@@ -116,7 +136,7 @@
 </div>    
   </section>
 
-<section class="card simulation-input-card">
+<section id="inputVehicleSimulation" class="card simulation-input-card mobile-input-section">
   <h3>Vehicle energy simulation</h3>
 
   <div class="vehicle-simulation-grid">
