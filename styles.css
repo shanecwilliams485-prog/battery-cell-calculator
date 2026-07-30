@@ -256,13 +256,6 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--green); 
   grid-column: span 3;
 }
 
-.soh-card,
-.cell-spec-card,
-.runtime-estimate-card,
-.vehicle-range-card {
-  grid-column: span 3;
-}
-
 .graph-card {
   grid-column: 1 / -1;
 }
