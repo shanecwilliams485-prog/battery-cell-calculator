@@ -1988,6 +1988,7 @@ updateCalculatedRegenEfficiencyInput();
 updateAppliedAccessoryLoadInput();
 refreshResultsIfVisible();
 initMobileInputSections();
+initMobileResultSections(); 
   document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
   hideLoading();
