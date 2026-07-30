@@ -1511,10 +1511,7 @@ function updateDriverLiveData(row) {
     styleEl.textContent = driveStyleLabel(row.driveMode);
   }
 }
-  if (currentEl) currentEl.textContent = `${fmt(row.averageCurrentA, 0)} A`;
-  if (styleEl) styleEl.textContent = driveStyleLabel(row.driveMode);
-}
-
+ 
 function drawChart(rows, count = rows.length) {
   const canvas = document.getElementById('currentChart');
   if (!canvas || !rows?.length) return;
