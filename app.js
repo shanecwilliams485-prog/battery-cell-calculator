@@ -617,9 +617,11 @@ cellWeightG: input.cellWeightG,
 cellMaxDischargeCRating: maxDischargeCRating,
 cellContinuousDischargeCRating,
 cellMaxChargeCRating: maxChargeCRating,
-    packEnergyKWh,
-    packCapacityAh,
-    maxDischargeCurrentA,
+   seriesCount: series,
+parallelCount: parallel,
+packEnergyKWh,
+packCapacityAh,
+maxDischargeCurrentA,
     maxDischargePowerKW,
     continuousDischargeCurrentA,
     continuousDischargePowerKW,
@@ -1372,7 +1374,8 @@ document.getElementById('resultCards').innerHTML = `
   <article class="result-card"><span>⚖️</span><small>Cell mass</small><strong>${fmt(results.totalCellWeightKG, 2)} kg</strong></article>
   <article class="result-card"><span>🚗</span><small>Estimated range</small><strong>${results.vehicleRangeMiles !== null ? `${fmt(results.vehicleRangeMiles, 1)} miles` : 'Simulation off'}</strong></article>`;
  document.getElementById('detailedResults').innerHTML = [
-  valueRow('Pack configuration', `${fmt(results.numberOfCells, 0)} cells`),
+  valueRow('Pack configuration', `${fmt(results.seriesCount, 0)}S${fmt(results.parallelCount, 0)}P`),
+  valueRow('Pack cell count', `${fmt(results.numberOfCells, 0)} cells`),
   valueRow('Nominal voltage', `${fmt(results.nominalVoltageV, 1)} V`),
   valueRow('Voltage range', `${fmt(results.minVoltageV, 1)}–${fmt(results.maxVoltageV, 1)} V`),
   valueRow('Pack capacity', `${fmt(results.packCapacityAh, 1)} Ah`),
@@ -1383,8 +1386,8 @@ document.getElementById('resultCards').innerHTML = `
   valueRow('Max discharge', `${fmt(results.maxDischargeCurrentA, 1)} A / ${fmt(results.maxDischargePowerKW, 2)} kW`),
   valueRow('Continuous discharge', `${fmt(results.continuousDischargeCurrentA, 1)} A / ${fmt(results.continuousDischargePowerKW, 2)} kW`),
   valueRow('Max charge', `${fmt(results.maxChargeCurrentA, 1)} A / ${fmt(results.maxChargePowerKW, 2)} kW`),
-  valueRow('Max discharge C-rate', `${fmt(results.maxDischargeCRating, 2)} C`),
-  valueRow('Max charge C-rate', `${fmt(results.maxChargeCRating, 2)} C`)
+  valueRow('Max discharge C-rate', `${fmt(results.maxDischargeCRating, 0)} C`),
+  valueRow('Max charge C-rate', `${fmt(results.maxChargeCRating, 0)} C`)
 ].join('');
 const cellSpecRows = document.getElementById('cellSpecRows');
 
@@ -1398,9 +1401,9 @@ if (cellSpecRows) {
   valueRow('Max discharge', `${fmt(results.cellMaxDischargeCurrentA, 1)} A`),
   valueRow('Continuous discharge', `${fmt(results.cellContinuousDischargeCurrentA, 1)} A`),
   valueRow('Max charge', `${fmt(results.cellMaxChargeCurrentA, 1)} A`),
-  valueRow('Max discharge C-rate', `${fmt(results.cellMaxDischargeCRating, 2)} C`),
-  valueRow('Continuous discharge C-rate', `${fmt(results.cellContinuousDischargeCRating, 2)} C`),
-  valueRow('Max charge C-rate', `${fmt(results.cellMaxChargeCRating, 2)} C`),
+  valueRow('Max discharge C-rate', `${fmt(results.cellMaxDischargeCRating, 0)} C`),
+  valueRow('Continuous discharge C-rate', `${fmt(results.cellContinuousDischargeCRating, 0)} C`),
+  valueRow('Max charge C-rate', `${fmt(results.cellMaxChargeCRating, 0)} C`),
   valueRow('Cell weight', `${fmt(results.cellWeightG, 1)} g`)
 ].join('');
 }  
