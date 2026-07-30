@@ -581,6 +581,14 @@ function calculate(input) {
   }));
 
   return {
+    cellNominalVoltage: input.nominalVoltage,
+cellMaxVoltage: input.maxVoltage,
+cellMinVoltage: input.minVoltage,
+cellCapacityAh: input.capacityAh,
+cellMaxDischargeCurrentA: input.maxDischargeCurrentA,
+cellContinuousDischargeCurrentA: input.continuousDischargeCurrentA,
+cellMaxChargeCurrentA: input.maxChargeCurrentA,
+cellWeightG: input.cellWeightG,
     packEnergyKWh,
     packCapacityAh,
     maxDischargeCurrentA,
