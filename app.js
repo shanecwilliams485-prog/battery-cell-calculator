@@ -1644,9 +1644,12 @@ function handleCalculate(event) {
     saveInputs(inputs);
 
     lastResults = calculate(inputs);
-    renderResults(lastResults);
 
     animateToResultsPage();
+
+    window.setTimeout(() => {
+      renderResults(lastResults);
+    }, 900);
   } catch (error) {
     alert("Calculation error: " + error.message);
     console.error(error);
