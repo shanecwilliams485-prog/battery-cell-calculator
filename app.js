@@ -2121,8 +2121,8 @@ const cellHeight = addSectionBox("Cell Specification", cellSpecRows, centerX, ce
 const moduleY = cellY + cellHeight + 6;
 
 if (lastResults.hasSecondModule) {
-  addSectionBox("Module 2 Specification", module2Rows, leftX, moduleY, columnWidth);
-  addSectionBox("Module 1 Specification", module1Rows, rightX, moduleY, columnWidth);
+  addSectionBox("Module 1 Specification", module2Rows, leftX, moduleY, columnWidth);
+  addSectionBox("Module 2 Specification", module1Rows, rightX, moduleY, columnWidth);
 } else {
   addSectionBox("Module 1 Specification", module1Rows, centerX, moduleY, columnWidth);
 }
