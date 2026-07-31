@@ -1988,10 +1988,10 @@ async function downloadSpecSheetPdf() {
 }
 
   async function addLogo() {
-    const logo = await getImageDataUrl("assets/company-logo.png");
+    const logo = await getImageDataUrl("assets/pdf-logo.png");
 
     if (logo) {
-      doc.addImage(logo, "PNG", pageWidth / 2 - 28, 6, 56, 18);
+      doc.addImage(logo, "PNG", pageWidth / 2 - 38, 6, 76, 17);
     } else {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
