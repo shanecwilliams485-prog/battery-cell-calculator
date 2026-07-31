@@ -1975,26 +1975,17 @@ async function downloadSpecSheetPdf() {
     doc.line(margin, 54, pageWidth - margin, 54);
   }
 
-  function addFooter() {
-    const footerTop = pageHeight - 25;
+ function addFooter() {
+  doc.setDrawColor(...black);
+  doc.setLineWidth(0.25);
+  doc.line(margin + 20, pageHeight - 10, pageWidth - margin - 20, pageHeight - 10);
 
-    doc.setDrawColor(...black);
-    doc.setLineWidth(0.25);
-    doc.line(margin + 20, pageHeight - 6, pageWidth - margin - 20, pageHeight - 6);
+  doc.setTextColor(...black);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
 
-    doc.setTextColor(...black);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text("Volt Energy Systems Ltd", pageWidth / 2, footerTop, { align: "center" });
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.text("Company Registration No. 17239649", pageWidth / 2, footerTop + 7, { align: "center" });
-    doc.text("Registered Office: 68 Unit, Britannia Way, Lichfield, United Kingdom, WS14 9UY", pageWidth / 2, footerTop + 12, { align: "center" });
-
-    doc.text("info@voltenergysystems.co.uk", margin + 20, pageHeight - 8, { align: "left" });
-    doc.text("www.voltenergysystems.co.uk", pageWidth - margin - 20, pageHeight - 8, { align: "right" });
-  }
+  doc.text("www.voltenergysystems.co.uk", pageWidth / 2, pageHeight - 5, { align: "center" });
+}
 
   async function addLogo() {
     const logo = await getImageDataUrl("assets/company-logo.png");
@@ -2009,8 +2000,8 @@ async function downloadSpecSheetPdf() {
   }
 
   function addSectionBox(title, rows, x, boxY, width) {
-    const rowHeight = 6.8;
-    const headerHeight = 9;
+    const rowHeight = 5.2;
+    const headerHeight = 7.5;
     const boxHeight = headerHeight + rows.length * rowHeight + 4;
 
     doc.setDrawColor(...borderGrey);
@@ -2022,7 +2013,7 @@ async function downloadSpecSheetPdf() {
 
     doc.setTextColor(...black);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
+    doc.setFontSize(8.5);
     doc.text(title, x + 3, boxY + 6);
 
     let rowY = boxY + headerHeight + 5;
@@ -2033,7 +2024,7 @@ async function downloadSpecSheetPdf() {
 
       doc.setFont("helvetica", "normal");
       doc.setTextColor(...darkGrey);
-      doc.setFontSize(8.5);
+      doc.setFontSize(7.2);
       doc.text(String(label), x + 3, rowY);
 
       doc.setFont("helvetica", "bold");
@@ -2046,26 +2037,7 @@ async function downloadSpecSheetPdf() {
     return boxHeight;
   }
 
-  function addNotes() {
-    const notesY = pageHeight - 48;
-
-    doc.setDrawColor(...borderGrey);
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(margin, notesY, contentWidth, 16, 2, 2, "FD");
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(...black);
-    doc.text("Notes", margin + 3, notesY + 5);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.setTextColor(...darkGrey);
-
-    const note = "Calculated values are based on the input data supplied. Final battery pack design requires electrical, thermal, mechanical, validation, safety and compliance review.";
-    const wrapped = doc.splitTextToSize(note, contentWidth - 6);
-    doc.text(wrapped, margin + 3, notesY + 10);
-  }
+ 
 
   await addLogo();
   addHeader();
@@ -2131,26 +2103,33 @@ async function downloadSpecSheetPdf() {
     ["Module maximum charge", fmtSafe(lastResults.module2MaxChargeCurrentA, " A", 0)]
   ];
 
-  const leftX = margin;
-  const rightX = margin + columnWidth + columnGap;
+ const leftX = margin;
+const rightX = margin + columnWidth + columnGap;
+const centerX = margin + (contentWidth - columnWidth) / 2;
 
-  const topY = 66;
-  const leftTopHeight = addSectionBox("Pack Overview", packOverviewRows, leftX, topY, columnWidth);
-  addSectionBox("Pack Current & Power Limits", powerLimitRows, rightX, topY, columnWidth);
+const topY = 62;
 
-  const secondY = topY + leftTopHeight + 8;
-  const cellHeight = addSectionBox("Cell Specification", cellSpecRows, leftX, secondY, columnWidth);
-  addSectionBox("Module 1 Specification", module1Rows, rightX, secondY, columnWidth);
+/* Top row */
+const packOverviewHeight = addSectionBox("Pack Overview", packOverviewRows, leftX, topY, columnWidth);
+const powerLimitsHeight = addSectionBox("Pack Current & Power Limits", powerLimitRows, rightX, topY, columnWidth);
 
-  if (lastResults.hasSecondModule) {
-    const thirdY = secondY + Math.max(cellHeight, 84) + 8;
-    addSectionBox("Module 2 Specification", module2Rows, leftX, thirdY, columnWidth);
-  }
+/* Middle centred cell spec */
+const cellY = topY + Math.max(packOverviewHeight, powerLimitsHeight) + 6;
+const cellHeight = addSectionBox("Cell Specification", cellSpecRows, centerX, cellY, columnWidth);
 
-  addNotes();
-  addFooter();
+/* Bottom module row */
+const moduleY = cellY + cellHeight + 6;
 
-  doc.save("battery-pack-specification.pdf");
+if (lastResults.hasSecondModule) {
+  addSectionBox("Module 2 Specification", module2Rows, leftX, moduleY, columnWidth);
+  addSectionBox("Module 1 Specification", module1Rows, rightX, moduleY, columnWidth);
+} else {
+  addSectionBox("Module 1 Specification", centerX, moduleY, columnWidth);
+}
+
+addFooter();
+
+doc.save("battery-pack-specification.pdf");
 }
 function handleCalculate(event) {
   event?.preventDefault();
