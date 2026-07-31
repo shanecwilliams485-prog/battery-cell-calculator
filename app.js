@@ -2174,7 +2174,7 @@ function init() {
   updateModuleConfigurationOptions();
 
   document.getElementById('calculatorForm').addEventListener('submit', handleCalculate);
-  document.getElementById('resetBtn').addEventListener('click', resetAll);
+  document.getElementById('resetBtn')?.addEventListener('click', resetAll);
   document.getElementById('backBtn').addEventListener('click', showCalculatorPage);
   document.getElementById('downloadPdfBtn')?.addEventListener('click', downloadSpecSheetPdf);
   document.getElementById('variableCurrentSimulationEnabled').addEventListener('change', toggleSimulationOptions);
