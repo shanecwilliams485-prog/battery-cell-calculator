@@ -2005,3 +2005,58 @@ body.mobile-graph-overlay-active {
     color: #061008;
   }
 }
+@media (max-width: 950px), (pointer: coarse) {
+  body.mobile-input-section-open .hero,
+  body.mobile-input-section-open .section-heading {
+    display: none !important;
+  }
+
+  body.mobile-input-section-open .app-shell {
+    width: 100%;
+    padding: 0;
+  }
+
+  body.mobile-input-section-open .inputs-panel {
+    min-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding-bottom: 88px;
+  }
+
+  body.mobile-input-section-open .calculator-grid {
+    display: block !important;
+  }
+
+  body.mobile-input-section-open .mobile-input-section {
+    display: block !important;
+    min-height: calc(100dvh - 88px);
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    margin: 0;
+    padding-bottom: 100px;
+  }
+
+  body.mobile-input-section-open #mobileInputToolbar {
+    display: block !important;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99999;
+    padding: 14px;
+    background: rgba(11, 15, 12, 0.98);
+    border-top: 1px solid var(--line);
+  }
+
+  body.mobile-input-menu-open #mobileInputToolbar {
+    display: none !important;
+  }
+
+  #mobileInputToolbar .ghost-button {
+    width: 100%;
+    min-height: 56px;
+    font-size: 1rem;
+  }
+}
