@@ -2042,7 +2042,6 @@ body.mobile-input-section-open .mobile-input-section[hidden] {
 }
 
   body.mobile-input-section-open #mobileInputToolbar {
-    display: block !important;
     position: fixed;
     left: 0;
     right: 0;
