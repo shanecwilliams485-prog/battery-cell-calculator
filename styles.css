@@ -2056,3 +2056,12 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
     font-size: 1rem;
   }
 }
+@media (max-width: 950px), (pointer: coarse) {
+  body.mobile-input-section-open .calculate-area {
+    display: none !important;
+  }
+
+  body.mobile-input-menu-open .calculate-area {
+    display: block;
+  }
+}
