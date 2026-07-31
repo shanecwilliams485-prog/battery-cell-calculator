@@ -2028,15 +2028,18 @@ body.mobile-graph-overlay-active {
     display: block !important;
   }
 
-  body.mobile-input-section-open .mobile-input-section {
-    display: block !important;
-    min-height: calc(100dvh - 88px);
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
-    margin: 0;
-    padding-bottom: 100px;
-  }
+ body.mobile-input-section-open .mobile-input-section {
+  min-height: calc(100dvh - 88px);
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  margin: 0;
+  padding-bottom: 100px;
+}
+
+body.mobile-input-section-open .mobile-input-section[hidden] {
+  display: none !important;
+}
 
   body.mobile-input-section-open #mobileInputToolbar {
     display: block !important;
