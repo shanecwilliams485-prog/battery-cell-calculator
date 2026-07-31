@@ -2076,7 +2076,7 @@ async function downloadSpecSheetPdf() {
   ];
 
   const module1Rows = [
-    ["Module configuration", textSafe(lastResults.module1Config)],
+    ["Module configuration", textSafe(lastResults.moduleConfig)],
     ["Module count", fmtSafe(lastResults.moduleCount1, "", 0)],
     ["Module cell count", fmtSafe(lastResults.moduleCellCount, "", 0)],
     ["Module nominal voltage", fmtSafe(lastResults.moduleNominalVoltageV, " V", 1)],
