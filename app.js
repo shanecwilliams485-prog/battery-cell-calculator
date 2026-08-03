@@ -2226,6 +2226,8 @@ function init() {
   document.getElementById('downloadPdfBtn')?.addEventListener('click', downloadSpecSheetPdf);
   document.getElementById('variableCurrentSimulationEnabled').addEventListener('change', toggleSimulationOptions);
   document.getElementById('advancedVehicleRealismEnabled')?.addEventListener('change', () => {
+  document.getElementById('designRequirementsEnabled')?.addEventListener('change', () => {
+  toggleDesignRequirementsOptions();
   saveInputs(getInputs());
   toggleAdvancedVehicleRealismOptions();
 });
