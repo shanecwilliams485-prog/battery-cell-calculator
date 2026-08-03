@@ -1921,10 +1921,6 @@ async function downloadSpecSheetPdf() {
     ? cellModelInput.trim()
     : "";
 
-  const { jsPDF } = window.jspdf;
-
-  // rest of PDF code continues below...
-
   if (!window.jspdf || !window.jspdf.jsPDF) {
     alert("PDF library has not loaded yet. Please refresh and try again.");
     return;
