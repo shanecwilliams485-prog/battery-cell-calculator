@@ -2010,7 +2010,6 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
     display: block;
   }
 }
-/* Requirement Check result card */
 
 .requirement-check-card {
   grid-column: 1 / -1;
