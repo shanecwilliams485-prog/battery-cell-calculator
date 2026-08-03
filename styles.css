@@ -2011,3 +2011,35 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   }
 }
 
+/* Requirement Check result card */
+
+.requirement-check-card {
+  grid-column: 1 / -1;
+}
+
+.requirement-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.requirement-status.pass {
+  background: rgba(44, 255, 139, 0.14);
+  border: 1px solid rgba(44, 255, 139, 0.35);
+}
+
+.requirement-status.warning {
+  background: rgba(255, 204, 66, 0.14);
+  border: 1px solid rgba(255, 204, 66, 0.35);
+}
+
+.requirement-status.fail {
+  background: rgba(255, 77, 109, 0.14);
+  border: 1px solid rgba(255, 77, 109, 0.35);
+}
