@@ -2043,3 +2043,18 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   background: rgba(255, 77, 109, 0.14);
   border: 1px solid rgba(255, 77, 109, 0.35);
 }
+
+.requirement-check-card .value-row span small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.requirement-check-card .value-row strong {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
