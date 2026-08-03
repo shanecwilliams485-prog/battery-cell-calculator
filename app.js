@@ -1481,6 +1481,79 @@ document.getElementById('resultCards').innerHTML = `
   valueRow('Max discharge C-rate', `${fmt(results.maxDischargeCRating, 0)} C`),
   valueRow('Max charge C-rate', `${fmt(results.maxChargeCRating, 0)} C`)
 ].join('');
+  const requirementCheckCard = document.getElementById('requirementCheck');
+const requirementCheckRows = document.getElementById('requirementCheckRows');
+
+if (requirementCheckCard && requirementCheckRows) {
+  if (!results.designRequirementsEnabled) {
+    requirementCheckCard.hidden = true;
+    requirementCheckRows.innerHTML = "";
+  } else {
+    const rows = [
+      requirementCheckRow(
+        "Pulse discharge current",
+        results.requiredPulseCurrentA,
+        results.maxDischargeCurrentA,
+        "A",
+        0
+      ),
+
+      requirementCheckRow(
+        "Continuous discharge current",
+        results.requiredContinuousCurrentA,
+        results.continuousDischargeCurrentA,
+        "A",
+        0
+      ),
+
+      requirementCheckRow(
+        "Max charge current",
+        results.requiredMaxChargeCurrentA,
+        results.maxChargeCurrentA,
+        "A",
+        0
+      ),
+
+      requirementCheckRow(
+        "Regen current",
+        results.requiredRegenCurrentA,
+        results.maxRegenCurrentA,
+        "A",
+        0
+      ),
+
+      requirementCheckRow(
+        "Usable energy",
+        results.requiredUsableEnergyKWh,
+        results.usableEnergyKWh,
+        "kWh",
+        1
+      ),
+
+      requirementCheckRow(
+        "Peak discharge power",
+        results.requiredPeakPowerKW,
+        results.maxDischargePowerKW,
+        "kW",
+        0
+      ),
+
+      requirementCheckRow(
+        "Continuous discharge power",
+        results.requiredContinuousPowerKW,
+        results.continuousDischargePowerKW,
+        "kW",
+        0
+      )
+    ].filter(Boolean);
+
+    requirementCheckCard.hidden = rows.length === 0;
+
+    requirementCheckRows.innerHTML = rows.length
+      ? rows.join("")
+      : `<p class="muted">Design Requirements is enabled, but no requirement values have been entered.</p>`;
+  }
+}
 const cellSpecRows = document.getElementById('cellSpecRows');
 
 if (cellSpecRows) {
