@@ -2286,6 +2286,7 @@ function initMobileInputSections() {
   const sections = [
     { id: 'inputCellData', title: 'Cell Data' },
     { id: 'inputPackLayout', title: 'Pack Layout' },
+    { id: 'inputDesignRequirements', title: 'Design Requirements' },
     { id: 'inputVehicleSimulation', title: 'Vehicle Simulation' }
   ];
 
