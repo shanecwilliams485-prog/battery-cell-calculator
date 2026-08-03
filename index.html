@@ -136,14 +136,18 @@
 </div>    
   </section>
 
-  <section id="inputDesignRequirements" class="card design-requirements-card mobile-input-section">
+<section id="inputDesignRequirements" class="card design-requirements-card mobile-input-section">
   <h3>Design Requirements</h3>
 
-  <p class="muted">
-    Optional targets used to check whether the calculated pack meets the vehicle or application requirements.
-  </p>
+  <label class="toggle-row">
+    <input id="designRequirementsEnabled" type="checkbox">
+    <span>
+      Enable Design Requirements
+      <small>Check pack capability against vehicle current, power, charge and energy targets.</small>
+    </span>
+  </label>
 
-  <div class="form-grid">
+  <div id="designRequirementInputs" class="form-grid" hidden>
     <label>
       Required pulse discharge current <span>A</span>
       <input id="requiredPulseCurrentA" type="number" step="1" min="0" inputmode="decimal">
