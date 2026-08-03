@@ -2080,7 +2080,7 @@ async function downloadSpecSheetPdf() {
   ];
 
   const cellSpecRows = [
-    ...(cellBrand ? [["Cell manufacturer", cellBrand]] : []),
+    ...(cellManufacturer ? [["Cell manufacturer", cellManufacturer]] : []),
     ...(cellModel ? [["Cell model number", cellModel]] : []),
     ["Nominal cell voltage", fmtSafe(lastResults.cellNominalVoltage, " V", 2)],
     ["Maximum cell voltage", fmtSafe(lastResults.cellMaxVoltage, " V", 2)],
