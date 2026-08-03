@@ -1436,7 +1436,7 @@ function requirementCheckRow(label, required, available, unit, decimals = 0) {
     <div class="value-row">
       <span>
         ${label}
-        <small>Required ${fmt(required, decimals)} ${unit} / Available ${fmt(available, decimals)} ${unit}</small>
+       <small>Required: ${fmt(required, decimals)} ${unit} | Pack available: ${fmt(available, decimals)} ${unit}</small>
       </span>
       <strong>
         ${fmt(status.marginPercent, 1)}% 
