@@ -1402,7 +1402,7 @@ function getRequirementStatus(required, available) {
     };
   }
 
-  const marginPercent = ((availableValue - requiredValue) / availableValue) * 100;
+  const marginPercent = ((availableValue - requiredValue) / requiredValue) * 100;
 
   if (availableValue < requiredValue) {
     return {
