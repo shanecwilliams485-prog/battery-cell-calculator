@@ -15,6 +15,14 @@ const DEFAULT_INPUTS = {
   moduleCount2: 0,
   secondModuleConfiguration: "",
   usableEnergyFactor: 0.88,
+  requiredPulseCurrentA: 0,
+  requiredPulseDurationSeconds: 10,
+  requiredContinuousCurrentA: 0,
+  requiredMaxChargeCurrentA: 0,
+  requiredRegenCurrentA: 0,
+  requiredUsableEnergyKWh: 0,
+  requiredPeakPowerKW: 0,
+  requiredContinuousPowerKW: 0,
   variableCurrentSimulationEnabled: false,
   driveCycle: 'mixed',
   vehicleMassKg: 1300,
@@ -73,7 +81,16 @@ const fields = [
   ['secondModuleConfiguration', 'text'],
 
   ['usableEnergyFactor', 'number'],
-
+  
+  ['requiredPulseCurrentA', 'number'],
+  ['requiredPulseDurationSeconds', 'number'],
+  ['requiredContinuousCurrentA', 'number'],
+  ['requiredMaxChargeCurrentA', 'number'],
+  ['requiredRegenCurrentA', 'number'],
+  ['requiredUsableEnergyKWh', 'number'],
+  ['requiredPeakPowerKW', 'number'],
+  ['requiredContinuousPowerKW', 'number'],
+  
   ['variableCurrentSimulationEnabled', 'checkbox'],
   ['driveCycle', 'text'],
   ['vehicleMassKg', 'number'],
