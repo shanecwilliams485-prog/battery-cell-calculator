@@ -15,6 +15,7 @@ const DEFAULT_INPUTS = {
   moduleCount2: 0,
   secondModuleConfiguration: "",
   usableEnergyFactor: 0.88,
+  designRequirementsEnabled: false,
   requiredPulseCurrentA: 0,
   requiredPulseDurationSeconds: 10,
   requiredContinuousCurrentA: 0,
@@ -81,7 +82,8 @@ const fields = [
   ['secondModuleConfiguration', 'text'],
 
   ['usableEnergyFactor', 'number'],
-  
+
+  ['designRequirementsEnabled', 'checkbox'],
   ['requiredPulseCurrentA', 'number'],
   ['requiredPulseDurationSeconds', 'number'],
   ['requiredContinuousCurrentA', 'number'],
