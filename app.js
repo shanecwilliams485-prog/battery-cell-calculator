@@ -164,6 +164,7 @@ function setInputs(inputs) {
     else if (type === 'text') el.value = inputs[name] || "";
     else el.value = inputs[name];
   }
+  toggleDesignRequirementsOptions();
   toggleSimulationOptions();
 }
 function toggleAdvancedVehicleRealismOptions() {
