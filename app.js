@@ -1490,22 +1490,28 @@ if (requirementCheckCard && requirementCheckRows) {
     requirementCheckRows.innerHTML = "";
   } else {
     const rows = [
-      requirementCheckRow(
-        "Pulse discharge current",
-        results.requiredPulseCurrentA,
-        results.maxDischargeCurrentA,
-        "A",
-        0
-      ),
+  requirementCheckRow(
+    "Pulse discharge current",
+    results.requiredPulseCurrentA,
+    results.maxDischargeCurrentA,
+    "A",
+    0
+  ),
 
-      requirementCheckRow(
-        "Continuous discharge current",
-        results.requiredContinuousCurrentA,
-        results.continuousDischargeCurrentA,
-        "A",
-        0
-      ),
+  results.requiredPulseDurationSeconds > 0
+    ? valueRow(
+        "Pulse duration requirement",
+        `${fmt(results.requiredPulseDurationSeconds, 0)} seconds requested — thermal validation required`
+      )
+    : "",
 
+  requirementCheckRow(
+    "Continuous discharge current",
+    results.requiredContinuousCurrentA,
+    results.continuousDischargeCurrentA,
+    "A",
+    0
+  ),
       requirementCheckRow(
         "Max charge current",
         results.requiredMaxChargeCurrentA,
