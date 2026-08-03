@@ -1378,6 +1378,63 @@ function driverAggressionLabel(value) {
 }
 
 function valueRow(label, value) { return `<div class="value-row"><span>${label}</span><strong>${value}</strong></div>`; }
+function getRequirementStatus(required, available) {
+  const requiredValue = Math.max(0, clampNumber(required, 0));
+  const availableValue = Math.max(0, clampNumber(available, 0));
+
+  if (requiredValue <= 0) return null;
+
+  if (availableValue <= 0) {
+    return {
+      label: "FAIL",
+      className: "fail",
+      marginPercent: -100
+    };
+  }
+
+  const marginPercent = ((availableValue - requiredValue) / availableValue) * 100;
+
+  if (availableValue < requiredValue) {
+    return {
+      label: "FAIL",
+      className: "fail",
+      marginPercent
+    };
+  }
+
+  if (marginPercent < 10) {
+    return {
+      label: "WARNING",
+      className: "warning",
+      marginPercent
+    };
+  }
+
+  return {
+    label: "PASS",
+    className: "pass",
+    marginPercent
+  };
+}
+
+function requirementCheckRow(label, required, available, unit, decimals = 0) {
+  const status = getRequirementStatus(required, available);
+
+  if (!status) return "";
+
+  return `
+    <div class="value-row">
+      <span>
+        ${label}
+        <small>Required ${fmt(required, decimals)} ${unit} / Available ${fmt(available, decimals)} ${unit}</small>
+      </span>
+      <strong>
+        ${fmt(status.marginPercent, 1)}% 
+        <span class="requirement-status ${status.className}">${status.label}</span>
+      </strong>
+    </div>
+  `;
+}
 function renderResults(results) {
   document.getElementById('results').hidden = false;
   const maxRegenInput = document.getElementById('maxRegenCurrentA');
