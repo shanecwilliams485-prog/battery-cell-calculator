@@ -1905,6 +1905,26 @@ async function downloadSpecSheetPdf() {
     return;
   }
 
+  const cellManufacturerInput = window.prompt(
+    "Enter cell manufacturer for the PDF.\n\nLeave blank or press Cancel to ignore."
+  );
+
+  const cellManufacturer = cellManufacturerInput && cellManufacturerInput.trim()
+    ? cellManufacturerInput.trim()
+    : "";
+
+  const cellModelInput = window.prompt(
+    "Enter cell model number for the PDF.\n\nLeave blank or press Cancel to ignore."
+  );
+
+  const cellModel = cellModelInput && cellModelInput.trim()
+    ? cellModelInput.trim()
+    : "";
+
+  const { jsPDF } = window.jspdf;
+
+  // rest of PDF code continues below...
+
   if (!window.jspdf || !window.jspdf.jsPDF) {
     alert("PDF library has not loaded yet. Please refresh and try again.");
     return;
