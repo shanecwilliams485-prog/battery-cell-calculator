@@ -1850,6 +1850,15 @@ function toggleAdvancedVehicleRealismOptions() {
   advancedInputs.hidden = !advancedToggle.checked;
 }
 
+function toggleDesignRequirementsOptions() {
+  const enabled = document.getElementById('designRequirementsEnabled')?.checked || false;
+  const designRequirementInputs = document.getElementById('designRequirementInputs');
+
+  if (designRequirementInputs) {
+    designRequirementInputs.hidden = !enabled;
+  }
+}
+
 function toggleSimulationOptions() {
   const enabled = document.getElementById('variableCurrentSimulationEnabled')?.checked || false;
 
