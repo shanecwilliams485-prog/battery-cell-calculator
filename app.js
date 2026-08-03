@@ -2224,14 +2224,19 @@ function init() {
   document.getElementById('resetBtn')?.addEventListener('click', resetAll);
   document.getElementById('backBtn').addEventListener('click', showCalculatorPage);
   document.getElementById('downloadPdfBtn')?.addEventListener('click', downloadSpecSheetPdf);
-  document.getElementById('variableCurrentSimulationEnabled').addEventListener('change', toggleSimulationOptions);
-  document.getElementById('advancedVehicleRealismEnabled')?.addEventListener('change', () => {
-  document.getElementById('designRequirementsEnabled')?.addEventListener('change', () => {
-  toggleDesignRequirementsOptions();
+document.getElementById('variableCurrentSimulationEnabled').addEventListener('change', toggleSimulationOptions);
+
+document.getElementById('advancedVehicleRealismEnabled')?.addEventListener('change', () => {
   saveInputs(getInputs());
   toggleAdvancedVehicleRealismOptions();
 });
-  document.getElementById('animateBtn').addEventListener('click', animateChart);
+
+document.getElementById('designRequirementsEnabled')?.addEventListener('change', () => {
+  toggleDesignRequirementsOptions();
+  saveInputs(getInputs());
+});
+
+document.getElementById('animateBtn').addEventListener('click', animateChart);
 
  for (const [name] of fields) {
   document.getElementById(name)?.addEventListener('input', () => {
