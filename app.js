@@ -755,6 +755,7 @@ assumedLoadKW: input.assumedLoadKW,
 auxiliaryLoadKW: calculatedAuxiliaryLoadKW,
 regenEnabled: input.regenEnabled,
 maxRegenCurrentA: calculatedMaxRegenCurrentA,
+simulationMaxRegenCurrentA,
 regenEfficiencyPercent: calculatedRegenEfficiencyPercent,
 regenDisableAboveSocPercent: input.regenDisableAboveSocPercent,
 batteryTemperatureC: calculatedBatteryTemperatureC,
@@ -1588,6 +1589,14 @@ if (requirementCheckCard && requirementCheckRows) {
     "Simulation discharge limit",
     `${fmt(results.simulationDischargeCurrentLimitA, 0)} A — ${getSimulationLimitReason(results)}`
   ),
+      valueRow(
+  "Simulation regen limit",
+  `${fmt(results.simulationMaxRegenCurrentA, 0)} A — ${
+    results.designRequirementsEnabled && results.requiredRegenCurrentA > 0 && results.simulationMaxRegenCurrentA === results.requiredRegenCurrentA
+      ? "Design regen current requirement"
+      : "Pack calculated regen capability"
+  }`
+),
 
   requirementCheckRow(
     "Pulse discharge current",
