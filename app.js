@@ -689,7 +689,85 @@ const simulationInput = {
     percentage,
     usableEnergyKWh: usableEnergyKWh * percentage / 100.0
   }));
+  const degradationEnabled = !!input.degradationEnabled;
 
+  const degradationBolUsableEnergyKWh = input.degradationBolUsableEnergyKWh > 0
+    ? input.degradationBolUsableEnergyKWh
+    : usableEnergyKWh;
+
+  const degradationEolCapacityPercent = clamp(
+    clampNumber(input.degradationEolCapacityPercent, 70),
+    0,
+    100
+  );
+
+  const degradationEolUsableEnergyKWh =
+    degradationBolUsableEnergyKWh * degradationEolCapacityPercent / 100;
+
+  const degradationEnergyLostKWh =
+    degradationBolUsableEnergyKWh - degradationEolUsableEnergyKWh;
+
+  const degradationServiceLifeYears =
+    Math.max(0, clampNumber(input.degradationServiceLifeYears, 0));
+
+  const degradationTargetMileageMiles =
+    Math.max(0, clampNumber(input.degradationTargetMileageMiles, 0));
+
+  const degradationAnnualMileageMiles =
+    Math.max(0, clampNumber(input.degradationAnnualMileageMiles, 0));
+
+  const degradationMileageFromAnnual =
+    degradationServiceLifeYears * degradationAnnualMileageMiles;
+
+  const degradationEnergyLossPerYearKWh =
+    degradationServiceLifeYears > 0
+      ? degradationEnergyLostKWh / degradationServiceLifeYears
+      : null;
+
+  const degradationEnergyLossPer10000MilesKWh =
+    degradationTargetMileageMiles > 0
+      ? degradationEnergyLostKWh / degradationTargetMileageMiles * 10000
+      : null;
+
+  const degradationEnergyConsumptionKWhPerMile =
+    Math.max(0, clampNumber(input.degradationEnergyConsumptionKWhPerMile, 0));
+
+  const degradationBolRangeMiles =
+    degradationEnergyConsumptionKWhPerMile > 0
+      ? degradationBolUsableEnergyKWh / degradationEnergyConsumptionKWhPerMile
+      : null;
+
+  const degradationEolRangeMiles =
+    degradationEnergyConsumptionKWhPerMile > 0
+      ? degradationEolUsableEnergyKWh / degradationEnergyConsumptionKWhPerMile
+      : null;
+
+  const degradationSocWindowMinPercent =
+    clamp(clampNumber(input.degradationSocWindowMinPercent, 10), 0, 100);
+
+  const degradationSocWindowMaxPercent =
+    clamp(clampNumber(input.degradationSocWindowMaxPercent, 90), 0, 100);
+
+  const degradationSocWindowPercent =
+    Math.max(0, degradationSocWindowMaxPercent - degradationSocWindowMinPercent);
+
+  const degradationEolPackPulseCurrentA =
+    Math.max(0, clampNumber(input.degradationEolCellPulseCurrentA, 0)) * parallel;
+
+  const degradationEolPackContinuousCurrentA =
+    Math.max(0, clampNumber(input.degradationEolCellContinuousCurrentA, 0)) * parallel;
+
+  const degradationEolPackChargeCurrentA =
+    Math.max(0, clampNumber(input.degradationEolCellChargeCurrentA, 0)) * parallel;
+
+  const degradationEolPulsePowerKW =
+    nominalVoltageV * degradationEolPackPulseCurrentA / 1000;
+
+  const degradationEolContinuousPowerKW =
+    nominalVoltageV * degradationEolPackContinuousCurrentA / 1000;
+
+  const degradationEolChargePowerKW =
+    nominalVoltageV * degradationEolPackChargeCurrentA / 1000;
   return {
     cellNominalVoltage: input.nominalVoltage,
 cellMaxVoltage: input.maxVoltage,
