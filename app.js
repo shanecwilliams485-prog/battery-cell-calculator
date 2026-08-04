@@ -2658,14 +2658,6 @@ const simulationSettingRows = [
   ["Road gradient", roadGradientLabel(lastResults.roadGradientProfile)],
   ["Driver mode", driverAggressionLabel(lastResults.driverAggression)]
 ];
-  const summaryRows = [
-  ["Pack configuration", `${lastResults.seriesCount}S${lastResults.parallelCount}P`],
-  ["Nominal voltage", fmtSafe(lastResults.nominalVoltageV, " V", 1)],
-  ["Maximum voltage", fmtSafe(lastResults.maxVoltageV, " V", 1)],
-  ["Usable energy", fmtSafe(lastResults.usableEnergyKWh, " kWh", 2)],
-  ["Total cell count", fmtSafe(lastResults.numberOfCells, "", 0)],
-  ["Estimated cell mass", fmtSafe(lastResults.totalCellWeightKG, " kg", 1)]
-];
 
 const summaryRows = [
   ["Pack configuration", `${lastResults.seriesCount}S${lastResults.parallelCount}P`],
