@@ -2528,7 +2528,6 @@ const cellModel = pdfOptions.cellSpecification
   }
 
   await addLogo();
-  await addLogo();
   addHeader();
 
   const packOverviewRows = [
