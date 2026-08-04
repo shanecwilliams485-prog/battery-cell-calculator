@@ -2568,7 +2568,7 @@ function init() {
   document.getElementById('calculatorForm').addEventListener('submit', handleCalculate);
   document.getElementById('resetBtn')?.addEventListener('click', resetAll);
   document.getElementById('backBtn').addEventListener('click', showCalculatorPage);
-  document.getElementById('downloadPdfBtn')?.addEventListener('click', downloadSpecSheetPdf);
+  document.getElementById('downloadPdfBtn')?.addEventListener('click', openPdfOptionsModal);
 document.getElementById('variableCurrentSimulationEnabled').addEventListener('change', toggleSimulationOptions);
 
 document.getElementById('advancedVehicleRealismEnabled')?.addEventListener('change', () => {
