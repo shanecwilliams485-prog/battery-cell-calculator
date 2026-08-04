@@ -2264,3 +2264,24 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
     grid-template-columns: 1fr;
   }
 }
+/* Pack Results full-width two-column layout */
+#packResults {
+  grid-column: 1 / -1;
+}
+
+#packRows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 34px;
+  row-gap: 0;
+}
+
+#packRows .value-row {
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  #packRows {
+    grid-template-columns: 1fr;
+  }
+}
