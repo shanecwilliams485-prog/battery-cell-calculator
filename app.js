@@ -2243,9 +2243,17 @@ function getPdfCheckboxValue(inputId) {
 }
 
 function getPdfExportOptions() {
+  const cellSpecificationEnabled = getPdfCheckboxValue("pdfCellSpecification");
+
   return {
     packOverview: getPdfCheckboxValue("pdfPackOverview"),
-    cellSpecification: getPdfCheckboxValue("pdfCellSpecification"),
+    cellSpecification: cellSpecificationEnabled,
+    cellManufacturer: cellSpecificationEnabled
+      ? document.getElementById("pdfCellManufacturer")?.value?.trim() || ""
+      : "",
+    cellModel: cellSpecificationEnabled
+      ? document.getElementById("pdfCellModel")?.value?.trim() || ""
+      : "",
     module1: getPdfCheckboxValue("pdfModule1"),
     module2: getPdfCheckboxValue("pdfModule2") && !!lastResults?.hasSecondModule,
     packResults: getPdfCheckboxValue("pdfPackResults"),
@@ -2264,6 +2272,14 @@ function togglePdfNotesInput() {
 
   if (notesWrap) {
     notesWrap.hidden = !notesEnabled;
+  }
+}
+function togglePdfCellDetailsInput() {
+  const cellSpecificationEnabled = getPdfCheckboxValue("pdfCellSpecification");
+  const cellDetailsWrap = document.getElementById("pdfCellDetailsWrap");
+
+  if (cellDetailsWrap) {
+    cellDetailsWrap.hidden = !cellSpecificationEnabled;
   }
 }
 
