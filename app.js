@@ -2443,8 +2443,6 @@ const cellModel = pdfOptions.cellSpecification
 
     return boxHeight;
   }
-    return boxHeight;
-  }
 
   function getSectionHeight(rows) {
     const rowHeight = 5.2;
