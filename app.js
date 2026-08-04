@@ -1283,6 +1283,18 @@ let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * c
     previousCurrentA = averageCurrentA;
 
 const powerKW = nominalVoltageV * averageCurrentA / 1000;
+
+let effectiveSpeedMph = speedMph;
+
+if (rawPowerKW > 0 && powerKW < rawPowerKW && speedMph > 0) {
+  const powerRatio = clamp(powerKW / rawPowerKW, 0, 1);
+
+  // Power-limited speed correction:
+  // if the battery cannot supply the requested power,
+  // the vehicle cannot maintain the requested drive-cycle speed.
+  effectiveSpeedMph = speedMph * Math.sqrt(powerRatio);
+}
+
 const energyUsedKWh = powerKW * (durationSeconds / 3600);
 
 const regenRecoveredKWh = powerBreakdown.regenPowerKW * (durationSeconds / 3600);
