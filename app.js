@@ -597,6 +597,28 @@ const module2MaxChargePowerKW = module2NominalVoltageV * module2MaxChargeCurrent
   const maxDischargeCurrentA = input.maxDischargeCurrentA * parallel;
   const continuousDischargeCurrentA = input.continuousDischargeCurrentA * parallel;
   const maxChargeCurrentA = input.maxChargeCurrentA * parallel;
+  const designRequirementsActive = !!input.designRequirementsEnabled;
+
+const requiredPulseCurrentA = designRequirementsActive
+  ? Math.max(0, clampNumber(input.requiredPulseCurrentA, 0))
+  : 0;
+
+const requiredPeakPowerCurrentA =
+  designRequirementsActive &&
+  input.requiredPeakPowerKW > 0 &&
+  nominalVoltage > 0
+    ? (input.requiredPeakPowerKW * 1000) / nominalVoltage
+    : 0;
+
+const dischargeCurrentCaps = [
+  maxDischargeCurrentA,
+  requiredPulseCurrentA > 0 ? requiredPulseCurrentA : null,
+  requiredPeakPowerCurrentA > 0 ? requiredPeakPowerCurrentA : null
+].filter(value => Number.isFinite(value) && value > 0);
+
+const simulationDischargeCurrentLimitA = dischargeCurrentCaps.length
+  ? Math.min(...dischargeCurrentCaps)
+  : maxDischargeCurrentA;
   const calculatedMaxRegenCurrentA = maxChargeCurrentA * 0.8;
   const calculatedBatteryTemperatureC = getEstimatedBatteryTemperatureC(input);
   const calculatedRegenEfficiencyPercent = getCalculatedRegenEfficiencyPercent(input);
