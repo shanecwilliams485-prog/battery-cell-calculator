@@ -621,15 +621,16 @@ const simulationDischargeCurrentLimitA = dischargeCurrentCaps.length
   : maxDischargeCurrentA;
 const calculatedMaxRegenCurrentA = maxChargeCurrentA * 0.8;
 
-const requiredRegenCurrentA =
-  input.designRequirementsEnabled && input.requiredRegenCurrentA > 0
-    ? Math.max(0, clampNumber(input.requiredRegenCurrentA, 0))
-    : 0;
+const designRequirementsActive = !!input.designRequirementsEnabled;
 
-const simulationMaxRegenCurrentA = requiredRegenCurrentA > 0
+const requiredRegenCurrentA = designRequirementsActive
+  ? Math.max(0, clampNumber(input.requiredRegenCurrentA, 0))
+  : null;
+
+const simulationMaxRegenCurrentA = designRequirementsActive
   ? Math.min(calculatedMaxRegenCurrentA, requiredRegenCurrentA)
   : calculatedMaxRegenCurrentA;
-
+  
 const calculatedBatteryTemperatureC = getEstimatedBatteryTemperatureC(input);
 const calculatedRegenEfficiencyPercent = getCalculatedRegenEfficiencyPercent(input);
 
@@ -1592,7 +1593,7 @@ if (requirementCheckCard && requirementCheckRows) {
       valueRow(
   "Simulation regen limit",
   `${fmt(results.simulationMaxRegenCurrentA, 0)} A — ${
-    results.designRequirementsEnabled && results.requiredRegenCurrentA > 0 && results.simulationMaxRegenCurrentA === results.requiredRegenCurrentA
+    results.designRequirementsEnabled
       ? "Design regen current requirement"
       : "Pack calculated regen capability"
   }`
