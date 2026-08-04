@@ -2211,3 +2211,34 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   padding: 12px;
   font: inherit;
 }
+.degradation-result-groups {
+  display: grid;
+  gap: 18px;
+}
+
+.degradation-result-group {
+  display: grid;
+  gap: 8px;
+}
+
+.degradation-result-group h4 {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.degradation-result-group .value-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+}
+
+.degradation-result-group .value-row span:first-child {
+  min-width: 0;
+}
+
+.degradation-result-group .value-row strong {
+  text-align: right;
+  white-space: normal;
+}
