@@ -2443,9 +2443,93 @@ const cellModel = pdfOptions.cellSpecification
 
     return boxHeight;
   }
+    return boxHeight;
+  }
 
- 
+  function getSectionHeight(rows) {
+    const rowHeight = 5.2;
+    const headerHeight = 7.5;
 
+    return headerHeight + rows.length * rowHeight + 4;
+  }
+
+  function addNewPdfPage() {
+    addFooter();
+    doc.addPage();
+    addHeader();
+  }
+
+  function addFlowSection(title, rows) {
+    if (!rows || !rows.length) return;
+
+    const sectionHeight = getSectionHeight(rows);
+
+    if (flowY + sectionHeight > pageHeight - 18) {
+      if (flowColumn === 0) {
+        flowColumn = 1;
+        flowY = 62;
+      } else {
+        flowColumn = 0;
+        flowY = 62;
+        addNewPdfPage();
+      }
+    }
+
+    const x = flowColumn === 0 ? leftX : rightX;
+
+    addSectionBox(title, rows, x, flowY, columnWidth);
+
+    flowY += sectionHeight + 6;
+  }
+
+  function addNotesSection(notesText) {
+    if (!notesText) return;
+
+    const lines = doc.splitTextToSize(notesText, columnWidth - 8);
+    const rowHeight = 4.5;
+    const headerHeight = 7.5;
+    const boxHeight = headerHeight + lines.length * rowHeight + 8;
+
+    if (flowY + boxHeight > pageHeight - 18) {
+      if (flowColumn === 0) {
+        flowColumn = 1;
+        flowY = 62;
+      } else {
+        flowColumn = 0;
+        flowY = 62;
+        addNewPdfPage();
+      }
+    }
+
+    const x = flowColumn === 0 ? leftX : rightX;
+
+    doc.setDrawColor(...borderGrey);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(x, flowY, columnWidth, boxHeight, 2, 2, "FD");
+
+    doc.setFillColor(...lightGrey);
+    doc.rect(x, flowY, columnWidth, headerHeight, "F");
+
+    doc.setTextColor(...black);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text("Notes / Assumptions", x + 3, flowY + 6);
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...darkGrey);
+    doc.setFontSize(7.2);
+
+    let noteY = flowY + headerHeight + 6;
+
+    lines.forEach(line => {
+      doc.text(line, x + 4, noteY);
+      noteY += rowHeight;
+    });
+
+    flowY += boxHeight + 6;
+  }
+
+  await addLogo();
   await addLogo();
   addHeader();
 
