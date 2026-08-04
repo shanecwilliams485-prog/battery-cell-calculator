@@ -189,7 +189,40 @@
     </label>
   </div>
 </section>
+<section id="inputPackDegradation" class="card mobile-input-section">
+  <h3>Pack Degradation / End-of-Life</h3>
 
+  <label class="toggle-row">
+    <input id="degradationEnabled" type="checkbox">
+    <span>
+      Enable Pack Degradation / EOL
+      <small>Estimate usable energy, range and power capability at end of life.</small>
+    </span>
+  </label>
+
+  <div id="degradationInputs" class="form-grid" hidden>
+    <label>Service life target <span>years</span><input id="degradationServiceLifeYears" type="number" step="1" min="0" inputmode="decimal"></label>
+    <label>Target mileage <span>miles</span><input id="degradationTargetMileageMiles" type="number" step="1000" min="0" inputmode="decimal"></label>
+    <label>Annual mileage <span>miles/year</span><input id="degradationAnnualMileageMiles" type="number" step="1000" min="0" inputmode="decimal"></label>
+    <label>BOL usable energy override <span>kWh</span><input id="degradationBolUsableEnergyKWh" type="number" step="0.1" min="0" inputmode="decimal"></label>
+    <label>EOL capacity target <span>%</span><input id="degradationEolCapacityPercent" type="number" step="1" min="0" max="100" inputmode="decimal"></label>
+    <label>SOC window minimum <span>%</span><input id="degradationSocWindowMinPercent" type="number" step="1" min="0" max="100" inputmode="decimal"></label>
+    <label>SOC window maximum <span>%</span><input id="degradationSocWindowMaxPercent" type="number" step="1" min="0" max="100" inputmode="decimal"></label>
+    <label>Energy consumption <span>kWh/mile</span><input id="degradationEnergyConsumptionKWhPerMile" type="number" step="0.01" min="0" inputmode="decimal"></label>
+
+    <label>EOL cell pulse discharge <span>A</span><input id="degradationEolCellPulseCurrentA" type="number" step="0.1" min="0" inputmode="decimal"></label>
+    <label>EOL cell continuous discharge <span>A</span><input id="degradationEolCellContinuousCurrentA" type="number" step="0.1" min="0" inputmode="decimal"></label>
+    <label>EOL cell maximum charge <span>A</span><input id="degradationEolCellChargeCurrentA" type="number" step="0.1" min="0" inputmode="decimal"></label>
+
+    <label>Charging method <span>type</span>
+      <select id="degradationChargingMethod">
+        <option value="acOnly">AC charging only</option>
+        <option value="dcRapid">DC rapid charging</option>
+        <option value="acDcRapid">AC and DC rapid charging</option>
+      </select>
+    </label>
+  </div>
+</section>
 <section id="inputVehicleSimulation" class="card simulation-input-card mobile-input-section">
   <h3>Vehicle energy simulation</h3>
 
