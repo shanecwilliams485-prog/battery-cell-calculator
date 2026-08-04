@@ -1438,10 +1438,13 @@ function requirementCheckRow(label, required, available, unit, decimals = 0) {
         ${label}
        <small>Required: ${fmt(required, decimals)} ${unit} | Pack available: ${fmt(available, decimals)} ${unit}</small>
       </span>
-      <strong>
-        ${fmt(status.marginPercent, 1)}% 
-        <span class="requirement-status ${status.className}">${status.label}</span>
-      </strong>
+     <strong>
+  ${status.marginPercent < 0
+    ? `${fmt(Math.abs(status.marginPercent), 1)}% shortfall`
+    : `${fmt(status.marginPercent, 1)}% margin`
+  }
+  <span class="requirement-status ${status.className}">${status.label}</span>
+</strong>
     </div>
   `;
 }
