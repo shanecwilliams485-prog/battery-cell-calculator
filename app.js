@@ -1305,7 +1305,7 @@ cumulativeRegenRecoveredKWh += regenRecoveredKWh;
 
 weightedCurrentSeconds += averageCurrentA * durationSeconds;
 weightedPowerSeconds += powerKW * durationSeconds;
-simulatedDistanceMiles += speedMph * (durationSeconds / 3600);
+simulatedDistanceMiles += effectiveSpeedMph * (durationSeconds / 3600);
 simulatedEnergyUsedKWh += powerKW * (durationSeconds / 3600);
 measuredSeconds += durationSeconds;
     
@@ -1315,7 +1315,8 @@ measuredSeconds += durationSeconds;
     rows.push({
       minute: elapsedSeconds / 60,
       driveMode: segment.mode,
-      speedMph,
+      speedMph: effectiveSpeedMph,
+      targetSpeedMph: speedMph,
       averageCurrentA,
       currentLimitA,
       powerKW,
