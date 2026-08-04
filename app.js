@@ -2133,7 +2133,14 @@ function toggleAdvancedVehicleRealismOptions() {
 
   advancedInputs.hidden = !advancedToggle.checked;
 }
+function toggleDegradationOptions() {
+  const enabled = document.getElementById('degradationEnabled')?.checked || false;
+  const degradationInputs = document.getElementById('degradationInputs');
 
+  if (degradationInputs) {
+    degradationInputs.hidden = !enabled;
+  }
+}
 function toggleDesignRequirementsOptions() {
   const enabled = document.getElementById('designRequirementsEnabled')?.checked || false;
   const designRequirementInputs = document.getElementById('designRequirementInputs');
