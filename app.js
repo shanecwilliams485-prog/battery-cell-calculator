@@ -2216,6 +2216,13 @@ function openPdfOptionsModal() {
   setPdfCheckboxValue("pdfPackOverview", true);
   setPdfCheckboxValue("pdfCellSpecification", true);
   setPdfCheckboxValue("pdfModule1", true);
+  togglePdfCellDetailsInput();
+
+const cellManufacturerInput = document.getElementById("pdfCellManufacturer");
+const cellModelInput = document.getElementById("pdfCellModel");
+
+if (cellManufacturerInput) cellManufacturerInput.value = "";
+if (cellModelInput) cellModelInput.value = "";
   setPdfCheckboxValue("pdfModule2", hasModule2);
   setPdfCheckboxValue("pdfPackResults", true);
   setPdfCheckboxValue("pdfDesignRequirements", hasDesignRequirements);
