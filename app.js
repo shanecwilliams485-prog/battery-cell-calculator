@@ -2185,7 +2185,94 @@ function animateToResultsPage() {
       resultsPage.classList.remove('page-spin-in');
     }, 900);
   }, 850);
+}function setPdfOptionVisible(optionId, visible) {
+  const option = document.getElementById(optionId);
+  if (option) option.hidden = !visible;
 }
+
+function setPdfCheckboxValue(inputId, checked) {
+  const input = document.getElementById(inputId);
+  if (input) input.checked = !!checked;
+}
+
+function openPdfOptionsModal() {
+  if (!lastResults) {
+    alert("Please calculate the battery pack first.");
+    return;
+  }
+
+  const modal = document.getElementById("pdfOptionsModal");
+  if (!modal) return;
+
+  const hasModule2 = !!lastResults.hasSecondModule;
+  const hasDesignRequirements = !!lastResults.designRequirementsEnabled;
+  const hasVehicleSimulation = !!lastResults.variableSimulationEnabled;
+
+  setPdfOptionVisible("pdfModule2Option", hasModule2);
+  setPdfOptionVisible("pdfDesignRequirementsOption", hasDesignRequirements);
+  setPdfOptionVisible("pdfVehicleResultsOption", hasVehicleSimulation);
+  setPdfOptionVisible("pdfSimulationSettingsOption", hasVehicleSimulation);
+
+  setPdfCheckboxValue("pdfPackOverview", true);
+  setPdfCheckboxValue("pdfCellSpecification", true);
+  setPdfCheckboxValue("pdfModule1", true);
+  setPdfCheckboxValue("pdfModule2", hasModule2);
+  setPdfCheckboxValue("pdfPackResults", true);
+  setPdfCheckboxValue("pdfDesignRequirements", hasDesignRequirements);
+  setPdfCheckboxValue("pdfSoh", true);
+  setPdfCheckboxValue("pdfVehicleResults", hasVehicleSimulation);
+  setPdfCheckboxValue("pdfSimulationSettings", hasVehicleSimulation);
+  setPdfCheckboxValue("pdfNotesEnabled", false);
+
+  const notesWrap = document.getElementById("pdfNotesWrap");
+  const notesText = document.getElementById("pdfNotesText");
+
+  if (notesWrap) notesWrap.hidden = true;
+  if (notesText) notesText.value = "";
+
+  modal.hidden = false;
+}
+
+function closePdfOptionsModal() {
+  const modal = document.getElementById("pdfOptionsModal");
+  if (modal) modal.hidden = true;
+}
+
+function getPdfCheckboxValue(inputId) {
+  return !!document.getElementById(inputId)?.checked;
+}
+
+function getPdfExportOptions() {
+  return {
+    packOverview: getPdfCheckboxValue("pdfPackOverview"),
+    cellSpecification: getPdfCheckboxValue("pdfCellSpecification"),
+    module1: getPdfCheckboxValue("pdfModule1"),
+    module2: getPdfCheckboxValue("pdfModule2") && !!lastResults?.hasSecondModule,
+    packResults: getPdfCheckboxValue("pdfPackResults"),
+    designRequirements: getPdfCheckboxValue("pdfDesignRequirements") && !!lastResults?.designRequirementsEnabled,
+    soh: getPdfCheckboxValue("pdfSoh"),
+    vehicleResults: getPdfCheckboxValue("pdfVehicleResults") && !!lastResults?.variableSimulationEnabled,
+    simulationSettings: getPdfCheckboxValue("pdfSimulationSettings") && !!lastResults?.variableSimulationEnabled,
+    notesEnabled: getPdfCheckboxValue("pdfNotesEnabled"),
+    notesText: document.getElementById("pdfNotesText")?.value?.trim() || ""
+  };
+}
+
+function togglePdfNotesInput() {
+  const notesEnabled = getPdfCheckboxValue("pdfNotesEnabled");
+  const notesWrap = document.getElementById("pdfNotesWrap");
+
+  if (notesWrap) {
+    notesWrap.hidden = !notesEnabled;
+  }
+}
+
+function confirmPdfOptionsAndDownload() {
+  lastPdfExportOptions = getPdfExportOptions();
+  closePdfOptionsModal();
+  downloadSpecSheetPdf();
+}
+
 async function downloadSpecSheetPdf() {
   if (!lastResults) {
     alert("Please calculate the battery pack first.");
