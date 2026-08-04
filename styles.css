@@ -2215,6 +2215,10 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   grid-column: span 1;
 }
 
+.soh-card {
+  grid-column: span 1;
+}
+
 #degradationResults {
   grid-column: span 1;
 }
@@ -2258,5 +2262,9 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   .soh-card,
   #degradationResults {
     grid-column: span 1;
+  }
+
+  .degradation-result-groups {
+    grid-template-columns: 1fr;
   }
 }
