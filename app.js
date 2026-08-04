@@ -192,7 +192,9 @@ function setInputs(inputs) {
     else el.value = inputs[name];
   }
   toggleDesignRequirementsOptions();
+  toggleDegradationOptions();
   toggleSimulationOptions();
+  
 }
 function toggleAdvancedVehicleRealismOptions() {
   const advancedToggle = document.getElementById('advancedVehicleRealismEnabled');
