@@ -2269,19 +2269,19 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   grid-column: 1 / -1;
 }
 
-#packRows {
+#packResults #detailedResults {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 34px;
   row-gap: 0;
 }
 
-#packRows .value-row {
+#packResults #detailedResults .value-row {
   min-width: 0;
 }
 
 @media (max-width: 760px) {
-  #packRows {
+  #packResults #detailedResults {
     grid-template-columns: 1fr;
   }
 }
