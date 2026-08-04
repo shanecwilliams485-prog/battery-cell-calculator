@@ -2211,14 +2211,18 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   padding: 12px;
   font: inherit;
 }
+.soh-card {
+  grid-column: span 1;
+}
+
 #degradationResults {
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
 .degradation-result-groups {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 22px 28px;
+  grid-template-columns: 1fr;
+  gap: 18px;
 }
 
 .degradation-result-group {
@@ -2251,11 +2255,8 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
 }
 
 @media (max-width: 700px) {
+  .soh-card,
   #degradationResults {
     grid-column: span 1;
-  }
-
-  .degradation-result-groups {
-    grid-template-columns: 1fr;
   }
 }
