@@ -2460,87 +2460,83 @@ function addFooter() {
     addHeader();
   }
 
-  function addFlowSection(title, rows) {
+  function addFullWidthSection(title, rows) {
     if (!rows || !rows.length) return;
 
     const sectionHeight = getSectionHeight(rows);
 
     if (flowY + sectionHeight > pageHeight - 18) {
-      if (flowColumn === 0) {
-        flowColumn = 1;
-        flowY = 62;
-      } else {
-        flowColumn = 0;
-        flowY = 62;
-        addNewPdfPage();
-      }
+      flowY = 62;
+      addNewPdfPage();
     }
 
-    const x = flowColumn === 0 ? leftX : rightX;
+    addSectionBox(title, rows, margin, flowY, contentWidth);
 
-    addSectionBox(title, rows, x, flowY, columnWidth);
+    flowY += sectionHeight + 8;
+  }
 
-    flowY += sectionHeight + 6;
+  function addTwoColumnRow(leftTitle, leftRows, showLeft, rightTitle, rightRows, showRight) {
+    if (!showLeft && !showRight) return;
+
+    const leftHeight = showLeft ? getSectionHeight(leftRows) : 0;
+    const rightHeight = showRight ? getSectionHeight(rightRows) : 0;
+    const rowHeight = Math.max(leftHeight, rightHeight);
+
+    if (flowY + rowHeight > pageHeight - 18) {
+      flowY = 62;
+      addNewPdfPage();
+    }
+
+    if (showLeft) {
+      addSectionBox(leftTitle, leftRows, leftX, flowY, columnWidth);
+    }
+
+    if (showRight) {
+      addSectionBox(rightTitle, rightRows, rightX, flowY, columnWidth);
+    }
+
+    flowY += rowHeight + 8;
+  }
+
+  function addNotesSection(notesText) {
+    if (!notesText) return;
+
+    const lines = doc.splitTextToSize(notesText, contentWidth - 8);
+    const rowHeight = 4.5;
+    const headerHeight = 7.5;
+    const boxHeight = headerHeight + lines.length * rowHeight + 8;
+
+    if (flowY + boxHeight > pageHeight - 18) {
+      flowY = 62;
+      addNewPdfPage();
+    }
+
+    doc.setDrawColor(...borderGrey);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(margin, flowY, contentWidth, boxHeight, 2, 2, "FD");
+
+    doc.setFillColor(...lightGrey);
+    doc.rect(margin, flowY, contentWidth, headerHeight, "F");
+
+    doc.setTextColor(...black);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text("Notes / Assumptions", margin + 3, flowY + 6);
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...darkGrey);
+    doc.setFontSize(7.2);
+
+    let noteY = flowY + headerHeight + 6;
+
+    lines.forEach(line => {
+      doc.text(line, margin + 4, noteY);
+      noteY += rowHeight;
+    });
+
+    flowY += boxHeight + 8;
   }
   
-function addFullWidthSection(title, rows) {
-  if (!rows || !rows.length) return;
-
-  const sectionHeight = getSectionHeight(rows);
-
-  if (flowColumn === 1 || flowY + sectionHeight > pageHeight - 18) {
-    flowColumn = 0;
-    flowY = 62;
-    addNewPdfPage();
-  }
-
-  addSectionBox(title, rows, margin, flowY, contentWidth);
-
-  flowY += sectionHeight + 8;
-  flowColumn = 0;
-}
-  
-function addNotesSection(notesText) {
-  if (!notesText) return;
-
-  const lines = doc.splitTextToSize(notesText, contentWidth - 8);
-  const rowHeight = 4.5;
-  const headerHeight = 7.5;
-  const boxHeight = headerHeight + lines.length * rowHeight + 8;
-
-  if (flowColumn === 1 || flowY + boxHeight > pageHeight - 18) {
-    flowColumn = 0;
-    flowY = 62;
-    addNewPdfPage();
-  }
-
-  doc.setDrawColor(...borderGrey);
-  doc.setFillColor(255, 255, 255);
-  doc.roundedRect(margin, flowY, contentWidth, boxHeight, 2, 2, "FD");
-
-  doc.setFillColor(...lightGrey);
-  doc.rect(margin, flowY, contentWidth, headerHeight, "F");
-
-  doc.setTextColor(...black);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
-  doc.text("Notes / Assumptions", margin + 3, flowY + 6);
-
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...darkGrey);
-  doc.setFontSize(7.2);
-
-  let noteY = flowY + headerHeight + 6;
-
-  lines.forEach(line => {
-    doc.text(line, margin + 4, noteY);
-    noteY += rowHeight;
-  });
-
-  flowY += boxHeight + 8;
-  flowColumn = 0;
-}
-
   await addLogo();
   addHeader();
 
@@ -2671,55 +2667,77 @@ const simulationSettingRows = [
   ["Estimated cell mass", fmtSafe(lastResults.totalCellWeightKG, " kg", 1)]
 ];
 
+const summaryRows = [
+  ["Pack configuration", `${lastResults.seriesCount}S${lastResults.parallelCount}P`],
+  ["Nominal voltage", fmtSafe(lastResults.nominalVoltageV, " V", 1)],
+  ["Maximum voltage", fmtSafe(lastResults.maxVoltageV, " V", 1)],
+  ["Usable energy", fmtSafe(lastResults.usableEnergyKWh, " kWh", 2)],
+  ["Total cell count", fmtSafe(lastResults.numberOfCells, "", 0)],
+  ["Estimated cell mass", fmtSafe(lastResults.totalCellWeightKG, " kg", 1)]
+];
+
 const leftX = margin;
 const rightX = margin + columnWidth + columnGap;
 
-let flowColumn = 0;
 let flowY = 62;
 
+/* Summary full width */
 addFullWidthSection("Summary", summaryRows);
 
-if (pdfOptions.packOverview) {
-  addFlowSection("Pack Overview", packOverviewRows);
-  addFlowSection("Pack Current & Power Limits", powerLimitRows);
-}
+/* Row 1 */
+addTwoColumnRow(
+  "Pack Overview",
+  packOverviewRows,
+  pdfOptions.packOverview,
+  "Pack Current & Power Limits",
+  powerLimitRows,
+  pdfOptions.packOverview
+);
 
-if (pdfOptions.cellSpecification) {
-  addFlowSection("Cell Specification", cellSpecRows);
-}
+/* Row 2 */
+addTwoColumnRow(
+  "Pack Results",
+  packResultRows,
+  pdfOptions.packResults,
+  "Cell Specification",
+  cellSpecRows,
+  pdfOptions.cellSpecification
+);
 
-if (pdfOptions.module1) {
-  addFlowSection("Module 1 Specification", module1Rows);
-}
+/* Row 3 */
+addTwoColumnRow(
+  "Module 1 Specification",
+  module1Rows,
+  pdfOptions.module1,
+  "Module 2 Specification",
+  module2Rows,
+  pdfOptions.module2 && lastResults.hasSecondModule
+);
 
-if (pdfOptions.module2 && lastResults.hasSecondModule) {
-  addFlowSection("Module 2 Specification", module2Rows);
-}
+/* Row 4 */
+addTwoColumnRow(
+  "Usable Energy vs SOH",
+  pdfSohRows,
+  pdfOptions.soh,
+  "Simulation Settings",
+  simulationSettingRows,
+  pdfOptions.simulationSettings && lastResults.variableSimulationEnabled
+);
 
-if (pdfOptions.packResults) {
-  addFlowSection("Pack Results", packResultRows);
-}
+/* Row 5 */
+addTwoColumnRow(
+  "Design Requirements Check",
+  designRequirementRows,
+  pdfOptions.designRequirements && lastResults.designRequirementsEnabled,
+  "Vehicle Simulation Results",
+  vehicleResultRows,
+  pdfOptions.vehicleResults && lastResults.variableSimulationEnabled
+);
 
-if (pdfOptions.designRequirements && lastResults.designRequirementsEnabled) {
-  addFlowSection("Design Requirements Check", designRequirementRows);
-}
-
-if (pdfOptions.soh) {
-  addFlowSection("Usable Energy vs SOH", pdfSohRows);
-}
-
-if (pdfOptions.vehicleResults && lastResults.variableSimulationEnabled) {
-  addFlowSection("Vehicle Results", vehicleResultRows);
-}
-
-if (pdfOptions.simulationSettings && lastResults.variableSimulationEnabled) {
-  addFlowSection("Simulation Settings", simulationSettingRows);
-}
-
+/* Notes full width at the end */
 if (pdfOptions.notesEnabled && pdfOptions.notesText) {
   addNotesSection(pdfOptions.notesText);
 }
-
 addFooter();
 
 doc.save("battery-pack-specification.pdf");
