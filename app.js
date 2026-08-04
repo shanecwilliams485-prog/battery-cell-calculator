@@ -2596,28 +2596,107 @@ const cellModel = pdfOptions.cellSpecification
     ["Module maximum charge", fmtSafe(lastResults.module2MaxChargeCurrentA, " A", 0)]
   ];
 
- const leftX = margin;
+const packResultRows = [
+  ["Pack configuration", `${lastResults.seriesCount}S${lastResults.parallelCount}P`],
+  ["Total cell count", fmtSafe(lastResults.numberOfCells, "", 0)],
+  ["Nominal voltage", fmtSafe(lastResults.nominalVoltageV, " V", 1)],
+  ["Maximum voltage", fmtSafe(lastResults.maxVoltageV, " V", 1)],
+  ["Minimum voltage", fmtSafe(lastResults.minVoltageV, " V", 1)],
+  ["Capacity", fmtSafe(lastResults.packCapacityAh, " Ah", 1)],
+  ["Nominal energy", fmtSafe(lastResults.packEnergyKWh, " kWh", 2)],
+  ["Usable energy", fmtSafe(lastResults.usableEnergyKWh, " kWh", 2)],
+  ["Cell mass estimate", fmtSafe(lastResults.totalCellWeightKG, " kg", 1)]
+];
+
+const designRequirementRows = [
+  ["Simulation discharge limit", fmtSafe(lastResults.simulationDischargeCurrentLimitA, " A", 0)],
+  ["Simulation regen limit", fmtSafe(lastResults.simulationMaxRegenCurrentA, " A", 0)],
+  ["Required pulse current", fmtSafe(lastResults.requiredPulseCurrentA, " A", 0)],
+  ["Required pulse duration", fmtSafe(lastResults.requiredPulseDurationSeconds, " s", 0)],
+  ["Required continuous current", fmtSafe(lastResults.requiredContinuousCurrentA, " A", 0)],
+  ["Required max charge current", fmtSafe(lastResults.requiredMaxChargeCurrentA, " A", 0)],
+  ["Required regen current", fmtSafe(lastResults.requiredRegenCurrentA, " A", 0)],
+  ["Required usable energy", fmtSafe(lastResults.requiredUsableEnergyKWh, " kWh", 1)],
+  ["Required peak power", fmtSafe(lastResults.requiredPeakPowerKW, " kW", 0)],
+  ["Required continuous power", fmtSafe(lastResults.requiredContinuousPowerKW, " kW", 0)]
+];
+
+const pdfSohRows = (lastResults.sohRows || []).map(row => [
+  `${fmtSafe(row.percentage, "%", 0)} SOH`,
+  fmtSafe(row.usableEnergyKWh, " kWh", 2)
+]);
+
+const vehicleResultRows = [
+  ["Drive cycle", driveCycleLabel(lastResults.driveCycle)],
+  ["Average current", fmtSafe(lastResults.variableAverageCurrentA, " A", 0)],
+  ["Average power", fmtSafe(lastResults.variableAveragePowerKW, " kW", 1)],
+  ["Average speed", fmtSafe(lastResults.variableAverageSpeedMph, " mph", 1)],
+  ["Estimated runtime", fmtSafe(lastResults.variableRuntimeMinutes, " min", 1)],
+  ["Estimated range", fmtSafe(lastResults.vehicleRangeMiles, " miles", 1)],
+  ["Consumption", fmtSafe(lastResults.vehicleConsumptionMilesPerKWh, " miles/kWh", 2)],
+  ["Regen recovered", fmtSafe(lastResults.variableRegenRecoveredKWh, " kWh", 2)]
+];
+
+const simulationSettingRows = [
+  ["Simulation enabled", yesNo(lastResults.variableSimulationEnabled)],
+  ["Advanced realism", yesNo(lastResults.advancedVehicleRealismEnabled)],
+  ["Vehicle mass", fmtSafe(lastResults.vehicleMassKg, " kg", 0)],
+  ["Payload", fmtSafe(lastResults.payloadKg, " kg", 0)],
+  ["Drag coefficient", fmtSafe(lastResults.dragCoefficient, "", 2)],
+  ["Frontal area", fmtSafe(lastResults.frontalAreaM2, " m²", 2)],
+  ["Rolling resistance", fmtSafe(lastResults.rollingResistanceCoefficient, "", 3)],
+  ["Drivetrain efficiency", fmtSafe(lastResults.drivetrainEfficiencyPercent, "%", 0)],
+  ["Auxiliary load", fmtSafe(lastResults.auxiliaryLoadKW, " kW", 2)],
+  ["Weather", weatherConditionLabel(lastResults.weatherCondition)],
+  ["Road gradient", roadGradientLabel(lastResults.roadGradientProfile)],
+  ["Driver mode", driverAggressionLabel(lastResults.driverAggression)]
+];
+
+const leftX = margin;
 const rightX = margin + columnWidth + columnGap;
-const centerX = margin + (contentWidth - columnWidth) / 2;
 
-const topY = 62;
+let flowColumn = 0;
+let flowY = 62;
 
-/* Top row */
-const packOverviewHeight = addSectionBox("Pack Overview", packOverviewRows, leftX, topY, columnWidth);
-const powerLimitsHeight = addSectionBox("Pack Current & Power Limits", powerLimitRows, rightX, topY, columnWidth);
+if (pdfOptions.packOverview) {
+  addFlowSection("Pack Overview", packOverviewRows);
+  addFlowSection("Pack Current & Power Limits", powerLimitRows);
+}
 
-/* Middle centred cell spec */
-const cellY = topY + Math.max(packOverviewHeight, powerLimitsHeight) + 6;
-const cellHeight = addSectionBox("Cell Specification", cellSpecRows, centerX, cellY, columnWidth);
+if (pdfOptions.cellSpecification) {
+  addFlowSection("Cell Specification", cellSpecRows);
+}
 
-/* Bottom module row */
-const moduleY = cellY + cellHeight + 6;
+if (pdfOptions.module1) {
+  addFlowSection("Module 1 Specification", module1Rows);
+}
 
-if (lastResults.hasSecondModule) {
-  addSectionBox("Module 1 Specification", module1Rows, leftX, moduleY, columnWidth);
-  addSectionBox("Module 2 Specification", module2Rows, rightX, moduleY, columnWidth);
-} else {
-  addSectionBox("Module 1 Specification", module1Rows, centerX, moduleY, columnWidth);
+if (pdfOptions.module2 && lastResults.hasSecondModule) {
+  addFlowSection("Module 2 Specification", module2Rows);
+}
+
+if (pdfOptions.packResults) {
+  addFlowSection("Pack Results", packResultRows);
+}
+
+if (pdfOptions.designRequirements && lastResults.designRequirementsEnabled) {
+  addFlowSection("Design Requirements Check", designRequirementRows);
+}
+
+if (pdfOptions.soh) {
+  addFlowSection("Usable Energy vs SOH", pdfSohRows);
+}
+
+if (pdfOptions.vehicleResults && lastResults.variableSimulationEnabled) {
+  addFlowSection("Vehicle Results", vehicleResultRows);
+}
+
+if (pdfOptions.simulationSettings && lastResults.variableSimulationEnabled) {
+  addFlowSection("Simulation Settings", simulationSettingRows);
+}
+
+if (pdfOptions.notesEnabled && pdfOptions.notesText) {
+  addNotesSection(pdfOptions.notesText);
 }
 
 addFooter();
