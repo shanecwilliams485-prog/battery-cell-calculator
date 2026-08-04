@@ -893,7 +893,32 @@ vehicleRangeMiles: variableSimulation && variableSimulation.simulatedEnergyUsedK
   : null,
 variableProfileSampleNumber: variableSimulation?.profileSampleNumber ?? null,
 variableSimulationRows: variableSimulation?.rows ?? [],
-sohRows
+sohRows,
+
+degradationEnabled,
+degradationServiceLifeYears,
+degradationTargetMileageMiles,
+degradationAnnualMileageMiles,
+degradationMileageFromAnnual,
+degradationBolUsableEnergyKWh,
+degradationEolCapacityPercent,
+degradationEolUsableEnergyKWh,
+degradationEnergyLostKWh,
+degradationEnergyLossPerYearKWh,
+degradationEnergyLossPer10000MilesKWh,
+degradationEnergyConsumptionKWhPerMile,
+degradationBolRangeMiles,
+degradationEolRangeMiles,
+degradationSocWindowMinPercent,
+degradationSocWindowMaxPercent,
+degradationSocWindowPercent,
+degradationEolPackPulseCurrentA,
+degradationEolPackContinuousCurrentA,
+degradationEolPackChargeCurrentA,
+degradationEolPulsePowerKW,
+degradationEolContinuousPowerKW,
+degradationEolChargePowerKW,
+degradationChargingMethod: input.degradationChargingMethod
   };
 }
 function clamp(value, min, max) {
