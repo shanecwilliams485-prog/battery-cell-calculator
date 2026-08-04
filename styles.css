@@ -2212,17 +2212,17 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   font: inherit;
 }
 .soh-card {
-  grid-column: span 1;
+  grid-column: span 2;
 }
 
 #degradationResults {
-  grid-column: span 2;
+  grid-column: span 4;
 }
 
 .degradation-result-groups {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 22px;
 }
 
 .degradation-result-group {
@@ -2254,10 +2254,10 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   line-height: 1.35;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1180px) {
   .soh-card,
   #degradationResults {
-    grid-column: span 1;
+    grid-column: 1 / -1;
   }
 
   .degradation-result-groups {
