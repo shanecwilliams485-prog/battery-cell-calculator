@@ -2215,17 +2215,13 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   grid-column: span 1;
 }
 
-.soh-card {
-  grid-column: span 1;
-}
-
 #degradationResults {
-  grid-column: span 1;
+  grid-column: span 2;
 }
 
 .degradation-result-groups {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
 
