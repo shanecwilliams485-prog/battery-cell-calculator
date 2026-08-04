@@ -2565,9 +2565,9 @@ function init() {
   setInputs(loadInputs());
   updateModuleConfigurationOptions();
 
-  document.getElementById('calculatorForm').addEventListener('submit', handleCalculate);
+  document.getElementById('calculatorForm')?.addEventListener('submit', handleCalculate);
   document.getElementById('resetBtn')?.addEventListener('click', resetAll);
-  document.getElementById('backBtn').addEventListener('click', showCalculatorPage);
+  document.getElementById('backBtn')?.addEventListener('click', showCalculatorPage);
   document.getElementById('downloadPdfBtn')?.addEventListener('click', openPdfOptionsModal);
 
   document.getElementById("closePdfOptionsBtn")?.addEventListener("click", closePdfOptionsModal);
@@ -2581,107 +2581,84 @@ function init() {
     }
   });
 
-  document.getElementById('variableCurrentSimulationEnabled')?.addEventListener('change', toggleSimulationOptions);
+  document.getElementById('variableCurrentSimulationEnabled')?.addEventListener('change', () => {
+    toggleSimulationOptions();
+    saveInputs(getInputs());
+    refreshResultsIfVisible();
+  });
 
   document.getElementById('advancedVehicleRealismEnabled')?.addEventListener('change', () => {
     saveInputs(getInputs());
     toggleAdvancedVehicleRealismOptions();
+    updateCalculatedMaxRegenCurrentInput();
+    updateCalculatedBatteryTemperatureInput();
+    updateCalculatedRegenEfficiencyInput();
+    updateAppliedAccessoryLoadInput();
+    refreshResultsIfVisible();
   });
 
   document.getElementById('designRequirementsEnabled')?.addEventListener('change', () => {
     toggleDesignRequirementsOptions();
     saveInputs(getInputs());
+    refreshResultsIfVisible();
   });
 
   document.getElementById('animateBtn')?.addEventListener('click', animateChart);
 
-  ['seriesCount', 'parallelCount'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', updateModuleConfigurationOptions);
-  });
+  for (const [name] of fields) {
+    document.getElementById(name)?.addEventListener('input', () => {
+      if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
+        updateModuleConfigurationOptions();
+      } else if (name === "moduleConfiguration") {
+        updateModuleCount1FromConfiguration();
+      } else if (name === "secondModuleConfiguration") {
+        updateSecondModuleConfigurationOptions();
+      } else if (name === "moduleCount1" || name === "moduleCount2") {
+        updateSecondModuleConfigurationOptions(name);
+      } else {
+        saveInputs(getInputs());
+      }
 
-  document.getElementById('moduleConfiguration')?.addEventListener('change', updateModuleCount1FromConfiguration);
+      updateCalculatedMaxRegenCurrentInput();
+      updateCalculatedBatteryTemperatureInput();
+      updateCalculatedRegenEfficiencyInput();
+      updateAppliedAccessoryLoadInput();
+      refreshResultsIfVisible();
+    });
 
-  document.getElementById('useSecondModuleConfiguration')?.addEventListener('change', () => {
-    updateSecondModuleConfigurationOptions();
-    saveInputs(getInputs());
-  });
+    document.getElementById(name)?.addEventListener('change', () => {
+      if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
+        updateModuleConfigurationOptions();
+      } else if (name === "moduleConfiguration") {
+        updateModuleCount1FromConfiguration();
+      } else if (name === "secondModuleConfiguration") {
+        updateSecondModuleConfigurationOptions();
+      } else if (name === "moduleCount1" || name === "moduleCount2") {
+        updateSecondModuleConfigurationOptions(name);
+      }
 
-  document.getElementById('secondModuleConfiguration')?.addEventListener('change', () => {
-    updateSecondModuleConfigurationOptions();
-    saveInputs(getInputs());
-  });
-
-  document.getElementById('moduleCount1')?.addEventListener('change', () => {
-    updateSecondModuleConfigurationOptions("moduleCount1");
-    saveInputs(getInputs());
-  });
-
-  document.getElementById('moduleCount2')?.addEventListener('change', () => {
-    updateSecondModuleConfigurationOptions("moduleCount2");
-    saveInputs(getInputs());
-  });
-
-  document.querySelectorAll('input, select').forEach(el => {
-    el.addEventListener('input', () => saveInputs(getInputs()));
-    el.addEventListener('change', () => saveInputs(getInputs()));
-  });
-}
-
- for (const [name] of fields) {
-  document.getElementById(name)?.addEventListener('input', () => {
-    if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
-      updateModuleConfigurationOptions();
-    } else if (name === "moduleConfiguration") {
-      updateModuleCount1FromConfiguration();
-    } else if (name === "secondModuleConfiguration") {
-      updateSecondModuleConfigurationOptions();
       saveInputs(getInputs());
-    } else if (name === "moduleCount1" || name === "moduleCount2") {
-      updateSecondModuleConfigurationOptions(name);
-      saveInputs(getInputs());
-    } else {
-      saveInputs(getInputs());
-    }
+      updateCalculatedMaxRegenCurrentInput();
+      updateCalculatedBatteryTemperatureInput();
+      updateCalculatedRegenEfficiencyInput();
+      updateAppliedAccessoryLoadInput();
+      refreshResultsIfVisible();
+    });
+  }
 
-updateCalculatedMaxRegenCurrentInput();
-updateCalculatedBatteryTemperatureInput();
-updateCalculatedRegenEfficiencyInput();
-updateAppliedAccessoryLoadInput();
-refreshResultsIfVisible();
-  });
+  updateCalculatedMaxRegenCurrentInput();
+  updateCalculatedBatteryTemperatureInput();
+  updateCalculatedRegenEfficiencyInput();
+  updateAppliedAccessoryLoadInput();
+  refreshResultsIfVisible();
 
-  document.getElementById(name)?.addEventListener('change', () => {
-    if (name === "seriesCount" || name === "parallelCount" || name === "useSecondModuleConfiguration") {
-      updateModuleConfigurationOptions();
-    } else if (name === "moduleConfiguration") {
-      updateModuleCount1FromConfiguration();
-    } else if (name === "secondModuleConfiguration") {
-      updateSecondModuleConfigurationOptions();
-    } else if (name === "moduleCount1" || name === "moduleCount2") {
-      updateSecondModuleConfigurationOptions(name);
-    }
+  initMobileInputSections();
+  initMobileResultSections();
 
-saveInputs(getInputs());
-updateCalculatedMaxRegenCurrentInput();
-updateCalculatedBatteryTemperatureInput();
-updateCalculatedRegenEfficiencyInput();
-updateAppliedAccessoryLoadInput();
-refreshResultsIfVisible();
-  });
-}
+  window.addEventListener('orientationchange', handleMobileGraphOrientation);
+  window.addEventListener('resize', handleMobileGraphOrientation);
 
-updateCalculatedMaxRegenCurrentInput();
-updateCalculatedBatteryTemperatureInput();
-updateCalculatedRegenEfficiencyInput();
-updateAppliedAccessoryLoadInput();
-refreshResultsIfVisible();
-initMobileInputSections();
-initMobileResultSections();
-
-window.addEventListener('orientationchange', handleMobileGraphOrientation);
-window.addEventListener('resize', handleMobileGraphOrientation);
-
-document.getElementById('calculatorPage').hidden = false;
+  document.getElementById('calculatorPage').hidden = false;
   document.getElementById('resultsPage').hidden = true;
   hideLoading();
 }
