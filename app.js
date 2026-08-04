@@ -2569,19 +2569,63 @@ function init() {
   document.getElementById('resetBtn')?.addEventListener('click', resetAll);
   document.getElementById('backBtn').addEventListener('click', showCalculatorPage);
   document.getElementById('downloadPdfBtn')?.addEventListener('click', openPdfOptionsModal);
-document.getElementById('variableCurrentSimulationEnabled').addEventListener('change', toggleSimulationOptions);
 
-document.getElementById('advancedVehicleRealismEnabled')?.addEventListener('change', () => {
-  saveInputs(getInputs());
-  toggleAdvancedVehicleRealismOptions();
-});
+  document.getElementById("closePdfOptionsBtn")?.addEventListener("click", closePdfOptionsModal);
+  document.getElementById("cancelPdfOptionsBtn")?.addEventListener("click", closePdfOptionsModal);
+  document.getElementById("confirmPdfOptionsBtn")?.addEventListener("click", confirmPdfOptionsAndDownload);
+  document.getElementById("pdfNotesEnabled")?.addEventListener("change", togglePdfNotesInput);
 
-document.getElementById('designRequirementsEnabled')?.addEventListener('change', () => {
-  toggleDesignRequirementsOptions();
-  saveInputs(getInputs());
-});
+  document.getElementById("pdfOptionsModal")?.addEventListener("click", event => {
+    if (event.target.id === "pdfOptionsModal") {
+      closePdfOptionsModal();
+    }
+  });
 
-document.getElementById('animateBtn').addEventListener('click', animateChart);
+  document.getElementById('variableCurrentSimulationEnabled')?.addEventListener('change', toggleSimulationOptions);
+
+  document.getElementById('advancedVehicleRealismEnabled')?.addEventListener('change', () => {
+    saveInputs(getInputs());
+    toggleAdvancedVehicleRealismOptions();
+  });
+
+  document.getElementById('designRequirementsEnabled')?.addEventListener('change', () => {
+    toggleDesignRequirementsOptions();
+    saveInputs(getInputs());
+  });
+
+  document.getElementById('animateBtn')?.addEventListener('click', animateChart);
+
+  ['seriesCount', 'parallelCount'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updateModuleConfigurationOptions);
+  });
+
+  document.getElementById('moduleConfiguration')?.addEventListener('change', updateModuleCount1FromConfiguration);
+
+  document.getElementById('useSecondModuleConfiguration')?.addEventListener('change', () => {
+    updateSecondModuleConfigurationOptions();
+    saveInputs(getInputs());
+  });
+
+  document.getElementById('secondModuleConfiguration')?.addEventListener('change', () => {
+    updateSecondModuleConfigurationOptions();
+    saveInputs(getInputs());
+  });
+
+  document.getElementById('moduleCount1')?.addEventListener('change', () => {
+    updateSecondModuleConfigurationOptions("moduleCount1");
+    saveInputs(getInputs());
+  });
+
+  document.getElementById('moduleCount2')?.addEventListener('change', () => {
+    updateSecondModuleConfigurationOptions("moduleCount2");
+    saveInputs(getInputs());
+  });
+
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', () => saveInputs(getInputs()));
+    el.addEventListener('change', () => saveInputs(getInputs()));
+  });
+}
 
  for (const [name] of fields) {
   document.getElementById(name)?.addEventListener('input', () => {
