@@ -1477,7 +1477,36 @@ function getRequirementStatus(required, available) {
     marginPercent
   };
 }
+function getSimulationLimitReason(results) {
+  const packLimit = results.maxDischargeCurrentA;
+  const simulationLimit = results.simulationDischargeCurrentLimitA;
 
+  if (!results.designRequirementsEnabled) {
+    return "Pack max discharge current";
+  }
+
+  const pulseLimit = results.requiredPulseCurrentA > 0
+    ? results.requiredPulseCurrentA
+    : null;
+
+  const peakPowerLimit = results.requiredPeakPowerCurrentA > 0
+    ? results.requiredPeakPowerCurrentA
+    : null;
+
+  if (pulseLimit && Math.abs(simulationLimit - pulseLimit) < 0.5) {
+    return "Design pulse current requirement";
+  }
+
+  if (peakPowerLimit && Math.abs(simulationLimit - peakPowerLimit) < 0.5) {
+    return "Design peak power requirement";
+  }
+
+  if (Math.abs(simulationLimit - packLimit) < 0.5) {
+    return "Pack max discharge current";
+  }
+
+  return "Lowest available current limit";
+}
 function requirementCheckRow(label, required, available, unit, decimals = 0) {
   const status = getRequirementStatus(required, available);
 
@@ -1544,6 +1573,11 @@ if (requirementCheckCard && requirementCheckRows) {
     requirementCheckRows.innerHTML = "";
   } else {
     const rows = [
+  valueRow(
+    "Simulation discharge limit",
+    `${fmt(results.simulationDischargeCurrentLimitA, 0)} A — ${getSimulationLimitReason(results)}`
+  ),
+
   requirementCheckRow(
     "Pulse discharge current",
     results.requiredPulseCurrentA,
