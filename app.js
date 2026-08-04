@@ -3053,10 +3053,11 @@ function initMobileInputSections() {
   const backBtn = document.getElementById('mobileInputBack');
   const title = document.getElementById('mobileInputTitle');
 
-  const sections = [
+   const sections = [
     { id: 'inputCellData', title: 'Cell Data' },
     { id: 'inputPackLayout', title: 'Pack Layout' },
     { id: 'inputDesignRequirements', title: 'Design Requirements' },
+    { id: 'inputPackDegradation', title: 'Pack Degradation / EOL' },
     { id: 'inputVehicleSimulation', title: 'Vehicle Simulation' }
   ];
 
