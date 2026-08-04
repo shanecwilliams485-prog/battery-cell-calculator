@@ -606,7 +606,7 @@ const requiredPulseCurrentA = designRequirementsActive
 const requiredPeakPowerCurrentA =
   designRequirementsActive &&
   input.requiredPeakPowerKW > 0 &&
-  nominalVoltage > 0
+  nominalVoltageV > 0
     ? (input.requiredPeakPowerKW * 1000) / nominalVoltage
     : 0;
 
