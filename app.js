@@ -2983,7 +2983,11 @@ function init() {
     saveInputs(getInputs());
     refreshResultsIfVisible();
   });
-
+  document.getElementById('degradationEnabled')?.addEventListener('change', () => {
+    toggleDegradationOptions();
+    saveInputs(getInputs());
+    refreshResultsIfVisible();
+  });
   document.getElementById('animateBtn')?.addEventListener('click', animateChart);
 
   for (const [name] of fields) {
