@@ -1280,7 +1280,12 @@ let averageCurrentA = previousCurrentA + (cappedCurrentA - previousCurrentA) * c
     const sensorNoise = (random() - 0.5) * 0.9;
 
     averageCurrentA = Math.max(0, averageCurrentA + roadSurfaceRipple + sensorNoise);
-    previousCurrentA = averageCurrentA;
+
+if (currentLimitA > 0) {
+  averageCurrentA = clamp(averageCurrentA, 0, currentLimitA);
+}
+
+previousCurrentA = averageCurrentA;
 
 const powerKW = nominalVoltageV * averageCurrentA / 1000;
 
