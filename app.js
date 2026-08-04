@@ -47,6 +47,19 @@ const DEFAULT_INPUTS = {
   weatherCondition: "dryWarm",
   driverAggression: "normal",
   payloadKg: 0,
+  degradationEnabled: false,
+  degradationServiceLifeYears: 10,
+  degradationTargetMileageMiles: 100000,
+  degradationAnnualMileageMiles: 10000,
+  degradationBolUsableEnergyKWh: 0,
+  degradationEolCapacityPercent: 70,
+  degradationSocWindowMinPercent: 10,
+  degradationSocWindowMaxPercent: 90,
+  degradationEnergyConsumptionKWhPerMile: 0.30,
+  degradationEolCellPulseCurrentA: 20,
+  degradationEolCellContinuousCurrentA: 9,
+  degradationEolCellChargeCurrentA: 5.5,
+  degradationChargingMethod: "acDcRapid",
 };
 
 const STORAGE_KEY = 'batteryCellCalculator.inputs.v1';
@@ -120,6 +133,19 @@ const fields = [
 
   ['driverAggression', 'text'],
   ['payloadKg', 'number'],
+  ['degradationEnabled', 'checkbox'],
+  ['degradationServiceLifeYears', 'number'],
+  ['degradationTargetMileageMiles', 'number'],
+  ['degradationAnnualMileageMiles', 'number'],
+  ['degradationBolUsableEnergyKWh', 'number'],
+  ['degradationEolCapacityPercent', 'number'],
+  ['degradationSocWindowMinPercent', 'number'],
+  ['degradationSocWindowMaxPercent', 'number'],
+  ['degradationEnergyConsumptionKWhPerMile', 'number'],
+  ['degradationEolCellPulseCurrentA', 'number'],
+  ['degradationEolCellContinuousCurrentA', 'number'],
+  ['degradationEolCellChargeCurrentA', 'number'],
+  ['degradationChargingMethod', 'text'],
   ];
 
 function fmt(value, decimals = 1) {
