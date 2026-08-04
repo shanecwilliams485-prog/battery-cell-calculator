@@ -1298,10 +1298,16 @@ if (currentLimitA > 0 && speedMph > 0) {
   if (requestedPowerKW > availablePowerKW) {
     const powerRatio = clamp(availablePowerKW / requestedPowerKW, 0, 1);
 
-    // Stronger correction than sqrt:
-    // low available power should heavily reduce possible road speed.
-    effectiveSpeedMph = speedMph * Math.pow(powerRatio, 0.75);
+    effectiveSpeedMph = speedMph * Math.pow(powerRatio, 0.9);
   }
+
+  // Final hard speed ceiling from available battery power.
+  // This prevents unrealistic 60-70 mph blips at very low current limits.
+  const powerLimitedSpeedCapMph = availablePowerKW > 0
+    ? 12 + Math.sqrt(availablePowerKW) * 9
+    : 0;
+
+  effectiveSpeedMph = Math.min(effectiveSpeedMph, powerLimitedSpeedCapMph);
 }
 const energyUsedKWh = powerKW * (durationSeconds / 3600);
 
