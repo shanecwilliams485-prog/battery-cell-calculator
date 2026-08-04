@@ -1819,39 +1819,44 @@ if (degradationResultsSection && degradationRows) {
   } else {
     degradationResultsSection.hidden = false;
 
-    degradationRows.innerHTML = `
-  <div class="result-grid">
-    ${[
-      valueRow('BOL usable energy', `${fmt(results.degradationBolUsableEnergyKWh, 2)} kWh`),
-      valueRow('EOL usable energy', `${fmt(results.degradationEolUsableEnergyKWh, 2)} kWh`),
-      valueRow('EOL capacity target', `${fmt(results.degradationEolCapacityPercent, 0)} %`),
-      valueRow('Energy lost over life', `${fmt(results.degradationEnergyLostKWh, 2)} kWh`),
-      valueRow('Estimated BOL range', results.degradationBolRangeMiles !== null ? `${fmt(results.degradationBolRangeMiles, 1)} miles` : '—'),
-      valueRow('Estimated EOL range', results.degradationEolRangeMiles !== null ? `${fmt(results.degradationEolRangeMiles, 1)} miles` : '—')
-    ].join('')}
-  </div>
+degradationRows.innerHTML = `
+  <div class="degradation-result-groups">
+    <div class="degradation-result-group">
+      <h4>Energy / range</h4>
+      ${[
+        valueRow('BOL usable energy', `${fmt(results.degradationBolUsableEnergyKWh, 2)} kWh`),
+        valueRow('EOL usable energy', `${fmt(results.degradationEolUsableEnergyKWh, 2)} kWh`),
+        valueRow('EOL capacity target', `${fmt(results.degradationEolCapacityPercent, 0)} %`),
+        valueRow('Energy lost over life', `${fmt(results.degradationEnergyLostKWh, 2)} kWh`),
+        valueRow('Estimated BOL range', results.degradationBolRangeMiles !== null ? `${fmt(results.degradationBolRangeMiles, 1)} miles` : '—'),
+        valueRow('Estimated EOL range', results.degradationEolRangeMiles !== null ? `${fmt(results.degradationEolRangeMiles, 1)} miles` : '—')
+      ].join('')}
+    </div>
 
-  <div class="result-grid">
-    ${[
-      valueRow('Service life target', `${fmt(results.degradationServiceLifeYears, 0)} years`),
-      valueRow('Target mileage', `${fmt(results.degradationTargetMileageMiles, 0)} miles`),
-      valueRow('Annual mileage', `${fmt(results.degradationAnnualMileageMiles, 0)} miles/year`),
-      valueRow('Mileage from years × annual mileage', `${fmt(results.degradationMileageFromAnnual, 0)} miles`),
-      valueRow('Energy loss per year', results.degradationEnergyLossPerYearKWh !== null ? `${fmt(results.degradationEnergyLossPerYearKWh, 2)} kWh/year` : '—'),
-      valueRow('Energy loss per 10,000 miles', results.degradationEnergyLossPer10000MilesKWh !== null ? `${fmt(results.degradationEnergyLossPer10000MilesKWh, 2)} kWh` : '—')
-    ].join('')}
-  </div>
+    <div class="degradation-result-group">
+      <h4>Mileage / ageing</h4>
+      ${[
+        valueRow('Service life target', `${fmt(results.degradationServiceLifeYears, 0)} years`),
+        valueRow('Target mileage', `${fmt(results.degradationTargetMileageMiles, 0)} miles`),
+        valueRow('Annual mileage', `${fmt(results.degradationAnnualMileageMiles, 0)} miles/year`),
+        valueRow('Mileage from years × annual mileage', `${fmt(results.degradationMileageFromAnnual, 0)} miles`),
+        valueRow('Energy loss per year', results.degradationEnergyLossPerYearKWh !== null ? `${fmt(results.degradationEnergyLossPerYearKWh, 2)} kWh/year` : '—'),
+        valueRow('Energy loss per 10,000 miles', results.degradationEnergyLossPer10000MilesKWh !== null ? `${fmt(results.degradationEnergyLossPer10000MilesKWh, 2)} kWh` : '—')
+      ].join('')}
+    </div>
 
-  <div class="result-grid">
-    ${[
-      valueRow('SOC window', `${fmt(results.degradationSocWindowMinPercent, 0)}–${fmt(results.degradationSocWindowMaxPercent, 0)} %`),
-      valueRow('SOC window size', `${fmt(results.degradationSocWindowPercent, 0)} %`),
-      valueRow('Energy consumption assumption', `${fmt(results.degradationEnergyConsumptionKWhPerMile, 2)} kWh/mile`),
-      valueRow('EOL pulse discharge', `${fmt(results.degradationEolPackPulseCurrentA, 0)} A / ${fmt(results.degradationEolPulsePowerKW, 1)} kW`),
-      valueRow('EOL continuous discharge', `${fmt(results.degradationEolPackContinuousCurrentA, 0)} A / ${fmt(results.degradationEolContinuousPowerKW, 1)} kW`),
-      valueRow('EOL maximum charge', `${fmt(results.degradationEolPackChargeCurrentA, 0)} A / ${fmt(results.degradationEolChargePowerKW, 1)} kW`),
-      valueRow('Charging method', degradationChargingMethodLabel(results.degradationChargingMethod))
-    ].join('')}
+    <div class="degradation-result-group">
+      <h4>SOC / EOL power</h4>
+      ${[
+        valueRow('SOC window', `${fmt(results.degradationSocWindowMinPercent, 0)}–${fmt(results.degradationSocWindowMaxPercent, 0)} %`),
+        valueRow('SOC window size', `${fmt(results.degradationSocWindowPercent, 0)} %`),
+        valueRow('Energy consumption assumption', `${fmt(results.degradationEnergyConsumptionKWhPerMile, 2)} kWh/mile`),
+        valueRow('EOL pulse discharge', `${fmt(results.degradationEolPackPulseCurrentA, 0)} A / ${fmt(results.degradationEolPulsePowerKW, 1)} kW`),
+        valueRow('EOL continuous discharge', `${fmt(results.degradationEolPackContinuousCurrentA, 0)} A / ${fmt(results.degradationEolContinuousPowerKW, 1)} kW`),
+        valueRow('EOL maximum charge', `${fmt(results.degradationEolPackChargeCurrentA, 0)} A / ${fmt(results.degradationEolChargePowerKW, 1)} kW`),
+        valueRow('Charging method', degradationChargingMethodLabel(results.degradationChargingMethod))
+      ].join('')}
+    </div>
   </div>
 `;
   }
