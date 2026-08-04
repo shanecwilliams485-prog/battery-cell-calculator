@@ -2382,7 +2382,9 @@ const cellModel = pdfOptions.cellSpecification
     doc.line(margin, 54, pageWidth - margin, 54);
   }
 
- function addFooter() {
+function addFooter() {
+  const pageNumber = doc.internal.getNumberOfPages();
+
   doc.setDrawColor(...black);
   doc.setLineWidth(0.25);
   doc.line(margin + 20, pageHeight - 10, pageWidth - margin - 20, pageHeight - 10);
@@ -2392,6 +2394,7 @@ const cellModel = pdfOptions.cellSpecification
   doc.setFontSize(8);
 
   doc.text("www.voltenergysystems.co.uk", pageWidth / 2, pageHeight - 5, { align: "center" });
+  doc.text(`Page ${pageNumber}`, pageWidth - margin, pageHeight - 5, { align: "right" });
 }
 
   async function addLogo() {
@@ -2479,53 +2482,64 @@ const cellModel = pdfOptions.cellSpecification
 
     flowY += sectionHeight + 6;
   }
+  
+function addFullWidthSection(title, rows) {
+  if (!rows || !rows.length) return;
 
-  function addNotesSection(notesText) {
-    if (!notesText) return;
+  const sectionHeight = getSectionHeight(rows);
 
-    const lines = doc.splitTextToSize(notesText, columnWidth - 8);
-    const rowHeight = 4.5;
-    const headerHeight = 7.5;
-    const boxHeight = headerHeight + lines.length * rowHeight + 8;
-
-    if (flowY + boxHeight > pageHeight - 18) {
-      if (flowColumn === 0) {
-        flowColumn = 1;
-        flowY = 62;
-      } else {
-        flowColumn = 0;
-        flowY = 62;
-        addNewPdfPage();
-      }
-    }
-
-    const x = flowColumn === 0 ? leftX : rightX;
-
-    doc.setDrawColor(...borderGrey);
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(x, flowY, columnWidth, boxHeight, 2, 2, "FD");
-
-    doc.setFillColor(...lightGrey);
-    doc.rect(x, flowY, columnWidth, headerHeight, "F");
-
-    doc.setTextColor(...black);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.text("Notes / Assumptions", x + 3, flowY + 6);
-
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...darkGrey);
-    doc.setFontSize(7.2);
-
-    let noteY = flowY + headerHeight + 6;
-
-    lines.forEach(line => {
-      doc.text(line, x + 4, noteY);
-      noteY += rowHeight;
-    });
-
-    flowY += boxHeight + 6;
+  if (flowColumn === 1 || flowY + sectionHeight > pageHeight - 18) {
+    flowColumn = 0;
+    flowY = 62;
+    addNewPdfPage();
   }
+
+  addSectionBox(title, rows, margin, flowY, contentWidth);
+
+  flowY += sectionHeight + 8;
+  flowColumn = 0;
+}
+  
+function addNotesSection(notesText) {
+  if (!notesText) return;
+
+  const lines = doc.splitTextToSize(notesText, contentWidth - 8);
+  const rowHeight = 4.5;
+  const headerHeight = 7.5;
+  const boxHeight = headerHeight + lines.length * rowHeight + 8;
+
+  if (flowColumn === 1 || flowY + boxHeight > pageHeight - 18) {
+    flowColumn = 0;
+    flowY = 62;
+    addNewPdfPage();
+  }
+
+  doc.setDrawColor(...borderGrey);
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(margin, flowY, contentWidth, boxHeight, 2, 2, "FD");
+
+  doc.setFillColor(...lightGrey);
+  doc.rect(margin, flowY, contentWidth, headerHeight, "F");
+
+  doc.setTextColor(...black);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.text("Notes / Assumptions", margin + 3, flowY + 6);
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...darkGrey);
+  doc.setFontSize(7.2);
+
+  let noteY = flowY + headerHeight + 6;
+
+  lines.forEach(line => {
+    doc.text(line, margin + 4, noteY);
+    noteY += rowHeight;
+  });
+
+  flowY += boxHeight + 8;
+  flowColumn = 0;
+}
 
   await addLogo();
   addHeader();
@@ -2648,12 +2662,22 @@ const simulationSettingRows = [
   ["Road gradient", roadGradientLabel(lastResults.roadGradientProfile)],
   ["Driver mode", driverAggressionLabel(lastResults.driverAggression)]
 ];
+  const summaryRows = [
+  ["Pack configuration", `${lastResults.seriesCount}S${lastResults.parallelCount}P`],
+  ["Nominal voltage", fmtSafe(lastResults.nominalVoltageV, " V", 1)],
+  ["Maximum voltage", fmtSafe(lastResults.maxVoltageV, " V", 1)],
+  ["Usable energy", fmtSafe(lastResults.usableEnergyKWh, " kWh", 2)],
+  ["Total cell count", fmtSafe(lastResults.numberOfCells, "", 0)],
+  ["Estimated cell mass", fmtSafe(lastResults.totalCellWeightKG, " kg", 1)]
+];
 
 const leftX = margin;
 const rightX = margin + columnWidth + columnGap;
 
 let flowColumn = 0;
 let flowY = 62;
+
+addFullWidthSection("Summary", summaryRows);
 
 if (pdfOptions.packOverview) {
   addFlowSection("Pack Overview", packOverviewRows);
