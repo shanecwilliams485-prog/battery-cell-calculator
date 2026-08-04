@@ -2615,10 +2615,9 @@ function init() {
         updateSecondModuleConfigurationOptions();
       } else if (name === "moduleCount1" || name === "moduleCount2") {
         updateSecondModuleConfigurationOptions(name);
-      } else {
-        saveInputs(getInputs());
       }
 
+      saveInputs(getInputs());
       updateCalculatedMaxRegenCurrentInput();
       updateCalculatedBatteryTemperatureInput();
       updateCalculatedRegenEfficiencyInput();
@@ -2662,6 +2661,7 @@ function init() {
   document.getElementById('resultsPage').hidden = true;
   hideLoading();
 }
+
 function initMobileInputSections() {
   const menu = document.getElementById('mobileInputMenu');
   const toolbar = document.getElementById('mobileInputToolbar');
