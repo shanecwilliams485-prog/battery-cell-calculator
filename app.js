@@ -2597,6 +2597,7 @@ function init() {
   document.getElementById("cancelPdfOptionsBtn")?.addEventListener("click", closePdfOptionsModal);
   document.getElementById("confirmPdfOptionsBtn")?.addEventListener("click", confirmPdfOptionsAndDownload);
   document.getElementById("pdfNotesEnabled")?.addEventListener("change", togglePdfNotesInput);
+  document.getElementById("pdfCellSpecification")?.addEventListener("change", togglePdfCellDetailsInput);
 
   document.getElementById("pdfOptionsModal")?.addEventListener("click", event => {
     if (event.target.id === "pdfOptionsModal") {
