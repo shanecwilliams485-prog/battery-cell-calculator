@@ -52,6 +52,7 @@ const DEFAULT_INPUTS = {
 const STORAGE_KEY = 'batteryCellCalculator.inputs.v1';
 const inputEls = {};
 let lastResults = null;
+let lastPdfExportOptions = null;
 let animationFrame = null;
 let chartPointCount = 1;
 let driveCycleRunId = 0;
