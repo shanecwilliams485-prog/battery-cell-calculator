@@ -2213,7 +2213,7 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
 }
 .degradation-result-groups {
   display: grid;
-  gap: 18px;
+  gap: 22px;
 }
 
 .degradation-result-group {
@@ -2222,23 +2222,25 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
 }
 
 .degradation-result-group h4 {
-  margin: 0 0 4px;
+  margin: 0 0 8px;
   font-size: 0.95rem;
   color: var(--text);
 }
 
 .degradation-result-group .value-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
+  grid-template-columns: minmax(90px, 1fr) minmax(90px, auto);
+  gap: 12px;
   align-items: start;
 }
 
 .degradation-result-group .value-row span:first-child {
   min-width: 0;
+  line-height: 1.35;
 }
 
 .degradation-result-group .value-row strong {
   text-align: right;
   white-space: normal;
+  line-height: 1.35;
 }
