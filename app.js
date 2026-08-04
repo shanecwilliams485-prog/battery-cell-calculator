@@ -2302,22 +2302,16 @@ async function downloadSpecSheetPdf() {
     return;
   }
 
-  const cellManufacturerInput = window.prompt(
-    "Enter cell manufacturer for the PDF.\n\nLeave blank or press Cancel to ignore."
-  );
+  const pdfOptions = lastPdfExportOptions || getPdfExportOptions();
 
-  const cellManufacturer = cellManufacturerInput && cellManufacturerInput.trim()
-    ? cellManufacturerInput.trim()
-    : "";
+const cellManufacturer = pdfOptions.cellSpecification
+  ? pdfOptions.cellManufacturer
+  : "";
 
-  const cellModelInput = window.prompt(
-    "Enter cell model number for the PDF.\n\nLeave blank or press Cancel to ignore."
-  );
-
-  const cellModel = cellModelInput && cellModelInput.trim()
-    ? cellModelInput.trim()
-    : "";
-
+const cellModel = pdfOptions.cellSpecification
+  ? pdfOptions.cellModel
+  : "";
+  
   if (!window.jspdf || !window.jspdf.jsPDF) {
     alert("PDF library has not loaded yet. Please refresh and try again.");
     return;
