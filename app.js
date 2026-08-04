@@ -619,15 +619,26 @@ const dischargeCurrentCaps = [
 const simulationDischargeCurrentLimitA = dischargeCurrentCaps.length
   ? Math.min(...dischargeCurrentCaps)
   : maxDischargeCurrentA;
-  const calculatedMaxRegenCurrentA = maxChargeCurrentA * 0.8;
-  const calculatedBatteryTemperatureC = getEstimatedBatteryTemperatureC(input);
-  const calculatedRegenEfficiencyPercent = getCalculatedRegenEfficiencyPercent(input);
-  const simulationInput = {
-    ...input,
-    maxRegenCurrentA: calculatedMaxRegenCurrentA,
-    batteryTemperatureC: calculatedBatteryTemperatureC,
-    regenEfficiencyPercent: calculatedRegenEfficiencyPercent
-  };
+const calculatedMaxRegenCurrentA = maxChargeCurrentA * 0.8;
+
+const requiredRegenCurrentA =
+  input.designRequirementsEnabled && input.requiredRegenCurrentA > 0
+    ? Math.max(0, clampNumber(input.requiredRegenCurrentA, 0))
+    : 0;
+
+const simulationMaxRegenCurrentA = requiredRegenCurrentA > 0
+  ? Math.min(calculatedMaxRegenCurrentA, requiredRegenCurrentA)
+  : calculatedMaxRegenCurrentA;
+
+const calculatedBatteryTemperatureC = getEstimatedBatteryTemperatureC(input);
+const calculatedRegenEfficiencyPercent = getCalculatedRegenEfficiencyPercent(input);
+
+const simulationInput = {
+  ...input,
+  maxRegenCurrentA: simulationMaxRegenCurrentA,
+  batteryTemperatureC: calculatedBatteryTemperatureC,
+  regenEfficiencyPercent: calculatedRegenEfficiencyPercent
+};
 
   const calculatedAuxiliaryLoadKW = getAuxiliaryLoadKW(simulationInput);
   const maxDischargePowerKW = (input.nominalVoltage * series * input.maxDischargeCurrentA * parallel) / 1000.0;
