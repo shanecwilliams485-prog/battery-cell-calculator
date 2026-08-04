@@ -621,8 +621,6 @@ const simulationDischargeCurrentLimitA = dischargeCurrentCaps.length
   : maxDischargeCurrentA;
 const calculatedMaxRegenCurrentA = maxChargeCurrentA * 0.8;
 
-const designRequirementsActive = !!input.designRequirementsEnabled;
-
 const requiredRegenCurrentA = designRequirementsActive
   ? Math.max(0, clampNumber(input.requiredRegenCurrentA, 0))
   : null;
