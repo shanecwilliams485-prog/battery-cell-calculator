@@ -1286,15 +1286,18 @@ const powerKW = nominalVoltageV * averageCurrentA / 1000;
 
 let effectiveSpeedMph = speedMph;
 
-if (rawPowerKW > 0 && powerKW < rawPowerKW && speedMph > 0) {
-  const powerRatio = clamp(powerKW / rawPowerKW, 0, 1);
+if (currentLimitA > 0 && speedMph > 0) {
+  const availablePowerKW = Math.max(0, nominalVoltageV * currentLimitA / 1000);
+  const requestedPowerKW = Math.max(0, rawPowerKW);
 
-  // Power-limited speed correction:
-  // if the battery cannot supply the requested power,
-  // the vehicle cannot maintain the requested drive-cycle speed.
-  effectiveSpeedMph = speedMph * Math.sqrt(powerRatio);
+  if (requestedPowerKW > availablePowerKW) {
+    const powerRatio = clamp(availablePowerKW / requestedPowerKW, 0, 1);
+
+    // Stronger correction than sqrt:
+    // low available power should heavily reduce possible road speed.
+    effectiveSpeedMph = speedMph * Math.pow(powerRatio, 0.75);
+  }
 }
-
 const energyUsedKWh = powerKW * (durationSeconds / 3600);
 
 const regenRecoveredKWh = powerBreakdown.regenPowerKW * (durationSeconds / 3600);
