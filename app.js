@@ -643,7 +643,7 @@ const simulationDischargeCurrentLimitA = dischargeCurrentCaps.length
   const runtimeAtAssumedLoadMinutes = input.assumedLoadKW > 0 ? usableEnergyKWh / input.assumedLoadKW * 60.0 : null;
 
   const variableSimulation = input.variableCurrentSimulationEnabled
-   ? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, simulationInput, maxDischargeCurrentA)
+   ? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, simulationInput, simulationDischargeCurrentLimitA)
    : null;
 
  const sohRows = [100, 95, 90, 85, 80, 70].map(percentage => ({
