@@ -1860,9 +1860,13 @@ function updateDriverLiveData(row) {
     currentEl.textContent = `${fmt(row.averageCurrentA || 0, 0)} A`;
   }
 
-  if (regenCurrentEl) {
-    regenCurrentEl.textContent = `${fmt(row.regenCurrentA || 0, 0)} A`;
-  }
+ if (regenCurrentEl) {
+  const liveRegenCurrentA = row.regenCurrentA > 0
+    ? -row.regenCurrentA
+    : 0;
+
+  regenCurrentEl.textContent = `${fmt(liveRegenCurrentA, 0)} A`;
+}
 
   if (speedEl) {
     speedEl.textContent = `${fmt(row.speedMph || 0, 0)} mph`;
