@@ -608,7 +608,7 @@ const requiredPeakPowerCurrentA =
   designRequirementsActive &&
   input.requiredPeakPowerKW > 0 &&
   nominalVoltageV > 0
-    ? (input.requiredPeakPowerKW * 1000) / nominalVoltage
+    ? (input.requiredPeakPowerKW * 1000) / nominalVoltageV
     : 0;
 
 const dischargeCurrentCaps = [
