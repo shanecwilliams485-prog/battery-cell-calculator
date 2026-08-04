@@ -1581,6 +1581,16 @@ function driverAggressionLabel(value) {
   return labels[value] || value || "Normal";
 }
 
+function degradationChargingMethodLabel(value) {
+  const labels = {
+    acOnly: "AC charging only",
+    dcRapid: "DC rapid charging",
+    acDcRapid: "AC and DC rapid charging"
+  };
+
+  return labels[value] || value || "AC and DC rapid charging";
+}
+
 function valueRow(label, value) { return `<div class="value-row"><span>${label}</span><strong>${value}</strong></div>`; }
 function getRequirementStatus(required, available) {
   const requiredValue = Math.max(0, clampNumber(required, 0));
@@ -1799,6 +1809,39 @@ if (requirementCheckCard && requirementCheckRows) {
       : `<p class="muted">Design Requirements is enabled, but no requirement values have been entered.</p>`;
   }
 }
+const degradationResultsSection = document.getElementById('degradationResults');
+const degradationRows = document.getElementById('degradationRows');
+
+if (degradationResultsSection && degradationRows) {
+  if (!results.degradationEnabled) {
+    degradationResultsSection.hidden = true;
+    degradationRows.innerHTML = "";
+  } else {
+    degradationResultsSection.hidden = false;
+
+    degradationRows.innerHTML = [
+      valueRow('Service life target', `${fmt(results.degradationServiceLifeYears, 0)} years`),
+      valueRow('Target mileage', `${fmt(results.degradationTargetMileageMiles, 0)} miles`),
+      valueRow('Annual mileage', `${fmt(results.degradationAnnualMileageMiles, 0)} miles/year`),
+      valueRow('Mileage from years × annual mileage', `${fmt(results.degradationMileageFromAnnual, 0)} miles`),
+      valueRow('BOL usable energy', `${fmt(results.degradationBolUsableEnergyKWh, 2)} kWh`),
+      valueRow('EOL capacity target', `${fmt(results.degradationEolCapacityPercent, 0)} %`),
+      valueRow('EOL usable energy', `${fmt(results.degradationEolUsableEnergyKWh, 2)} kWh`),
+      valueRow('Energy lost over life', `${fmt(results.degradationEnergyLostKWh, 2)} kWh`),
+      valueRow('Energy loss per year', results.degradationEnergyLossPerYearKWh !== null ? `${fmt(results.degradationEnergyLossPerYearKWh, 2)} kWh/year` : '—'),
+      valueRow('Energy loss per 10,000 miles', results.degradationEnergyLossPer10000MilesKWh !== null ? `${fmt(results.degradationEnergyLossPer10000MilesKWh, 2)} kWh` : '—'),
+      valueRow('SOC window', `${fmt(results.degradationSocWindowMinPercent, 0)}–${fmt(results.degradationSocWindowMaxPercent, 0)} %`),
+      valueRow('SOC window size', `${fmt(results.degradationSocWindowPercent, 0)} %`),
+      valueRow('Energy consumption assumption', `${fmt(results.degradationEnergyConsumptionKWhPerMile, 2)} kWh/mile`),
+      valueRow('Estimated BOL range', results.degradationBolRangeMiles !== null ? `${fmt(results.degradationBolRangeMiles, 1)} miles` : '—'),
+      valueRow('Estimated EOL range', results.degradationEolRangeMiles !== null ? `${fmt(results.degradationEolRangeMiles, 1)} miles` : '—'),
+      valueRow('EOL pulse discharge', `${fmt(results.degradationEolPackPulseCurrentA, 0)} A / ${fmt(results.degradationEolPulsePowerKW, 1)} kW`),
+      valueRow('EOL continuous discharge', `${fmt(results.degradationEolPackContinuousCurrentA, 0)} A / ${fmt(results.degradationEolContinuousPowerKW, 1)} kW`),
+      valueRow('EOL maximum charge', `${fmt(results.degradationEolPackChargeCurrentA, 0)} A / ${fmt(results.degradationEolChargePowerKW, 1)} kW`),
+      valueRow('Charging method', degradationChargingMethodLabel(results.degradationChargingMethod))
+    ].join('');
+  }
+}  
 const cellSpecRows = document.getElementById('cellSpecRows');
 
 if (cellSpecRows) {
