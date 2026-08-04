@@ -3390,7 +3390,17 @@ function handleMobileGraphOrientation() {
 
   moveGraphBackToResultsCard();
 
-  prompt.hidden = false;
+  prompt.hidden = false;  const sections = [
+    { id: 'overviewResults', title: 'Overview' },
+    { id: 'cellSpec', title: 'Cell Specification' },
+    { id: 'modules', title: 'Modules' },
+    { id: 'packResults', title: 'Pack Results' },
+    { id: 'sohResults', title: 'Usable Energy vs SOH' },
+    { id: 'degradationResults', title: 'Pack Degradation / EOL' },
+    { id: 'vehicleResults', title: 'Vehicle Results' },
+    { id: 'simulationGraph', title: 'Simulation Graph' },
+    { id: 'simulationSettings', title: 'Simulation Settings' }
+  ];
   stage.hidden = true;
 }
 function initMobileResultSections() {
