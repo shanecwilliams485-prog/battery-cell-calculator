@@ -2183,3 +2183,31 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
     width: 100%;
   }
 }
+.pdf-cell-details-wrap {
+  display: grid;
+  gap: 8px;
+  margin-top: -2px;
+}
+
+.pdf-cell-details-wrap[hidden] {
+  display: none;
+}
+
+.pdf-cell-details-wrap label {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.pdf-cell-details-wrap input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--input-bg, rgba(255, 255, 255, 0.04));
+  color: var(--text);
+  padding: 12px;
+  font: inherit;
+}
