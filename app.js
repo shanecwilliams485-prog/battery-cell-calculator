@@ -660,6 +660,11 @@ const requiredPeakPowerCurrentA =
     ? (requiredPeakPowerKW * 1000) / nominalVoltageV
     : 0;
 
+const requiredContinuousPowerCurrentA =
+  requiredContinuousPowerKW > 0 && nominalVoltageV > 0
+    ? (requiredContinuousPowerKW * 1000) / nominalVoltageV
+    : 0;
+
 const dischargeCurrentCaps = [
   maxDischargeCurrentA,
   requiredPulseCurrentA > 0 ? requiredPulseCurrentA : null,
