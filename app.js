@@ -1728,9 +1728,22 @@ function requirementCheckRow(label, required, available, unit, decimals = 0) {
 }
 function renderResults(results) {
   document.getElementById('results').hidden = false;
+  
   const maxRegenInput = document.getElementById('maxRegenCurrentA');
 if (maxRegenInput) maxRegenInput.value = fmt(results.maxRegenCurrentA, 0);
-  updateCalculatedMaxRegenCurrentInput();
+  updateCalculatedMaxRegenCurrentInput();  function setOptionalResultVisible(sectionId, visible) {
+    const section = document.querySelector(`[data-result-section="${sectionId}"]`);
+    const menuButton = document.querySelector(`[data-open-result="${sectionId}"]`);
+
+    if (section) section.hidden = !visible;
+    if (menuButton) menuButton.hidden = !visible;
+  }
+
+  setOptionalResultVisible('requirementCheck', !!results.designRequirementsEnabled);
+  setOptionalResultVisible('degradationResults', !!results.degradationEnabled);
+  setOptionalResultVisible('vehicleResults', !!results.variableSimulationEnabled);
+  setOptionalResultVisible('simulationGraph', !!results.variableSimulationEnabled);
+  setOptionalResultVisible('simulationSettings', !!results.variableSimulationEnabled);
   updateCalculatedBatteryTemperatureInput();
   updateCalculatedRegenEfficiencyInput();
   const batteryTemperatureInput = document.getElementById('batteryTemperatureC');
