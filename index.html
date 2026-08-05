@@ -178,11 +178,17 @@
     </div>
   </label>
 
-  <label>
-    Required max charge current <span>A</span>
-    <input id="requiredMaxChargeCurrentA" type="number" step="1" min="0" inputmode="decimal">
-  </label>
-
+ <label class="design-requirement-combo">
+  Required max charge <span>value / unit</span>
+  <div class="requirement-input-combo">
+    <input id="requiredMaxChargeValue" type="number" step="1" min="0" inputmode="decimal">
+    <select id="requiredMaxChargeUnit">
+      <option value="A">A</option>
+      <option value="kW">kW</option>
+    </select>
+  </div>
+</label>
+   
   <label>
     Required regen current <span>A</span>
     <input id="requiredRegenCurrentA" type="number" step="1" min="0" inputmode="decimal">
