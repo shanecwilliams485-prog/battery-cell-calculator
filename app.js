@@ -16,10 +16,12 @@ const DEFAULT_INPUTS = {
   secondModuleConfiguration: "",
   usableEnergyFactor: 0.88,
   designRequirementsEnabled: false,
-  requiredPulseCurrentA: 0,
-  requiredPulseDurationSeconds: 10,
-  requiredContinuousCurrentA: 0,
-  requiredMaxChargeCurrentA: 0,
+  requiredPulseDischargeValue: 0,
+requiredPulseDischargeUnit: "A",
+requiredPulseDurationSeconds: 10,
+requiredContinuousDischargeValue: 0,
+requiredContinuousDischargeUnit: "A",
+requiredMaxChargeCurrentA: 0,
   requiredRegenCurrentA: 0,
   requiredUsableEnergyKWh: 0,
   requiredPeakPowerKW: 0,
@@ -91,10 +93,12 @@ const fields = [
   ['usableEnergyFactor', 'number'],
 
   ['designRequirementsEnabled', 'checkbox'],
-  ['requiredPulseCurrentA', 'number'],
-  ['requiredPulseDurationSeconds', 'number'],
-  ['requiredContinuousCurrentA', 'number'],
-  ['requiredMaxChargeCurrentA', 'number'],
+  ['requiredPulseDischargeValue', 'number'],
+['requiredPulseDischargeUnit', 'text'],
+['requiredPulseDurationSeconds', 'number'],
+['requiredContinuousDischargeValue', 'number'],
+['requiredContinuousDischargeUnit', 'text'],
+['requiredMaxChargeCurrentA', 'number'],
   ['requiredRegenCurrentA', 'number'],
   ['requiredUsableEnergyKWh', 'number'],
   ['requiredPeakPowerKW', 'number'],
@@ -614,58 +618,44 @@ const module2MaxChargePowerKW = module2NominalVoltageV * module2MaxChargeCurrent
   const maxChargeCurrentA = input.maxChargeCurrentA * parallel;
 const designRequirementsActive = !!input.designRequirementsEnabled;
 
-const rawRequiredPulseCurrentA = designRequirementsActive
-  ? Math.max(0, clampNumber(input.requiredPulseCurrentA, 0))
+const requiredPulseDischargeValue = designRequirementsActive
+  ? Math.max(0, clampNumber(input.requiredPulseDischargeValue, 0))
   : 0;
 
-const rawRequiredPeakPowerKW = designRequirementsActive
-  ? Math.max(0, clampNumber(input.requiredPeakPowerKW, 0))
+const requiredContinuousDischargeValue = designRequirementsActive
+  ? Math.max(0, clampNumber(input.requiredContinuousDischargeValue, 0))
   : 0;
 
-const rawRequiredContinuousCurrentA = designRequirementsActive
-  ? Math.max(0, clampNumber(input.requiredContinuousCurrentA, 0))
-  : 0;
-
-const rawRequiredContinuousPowerKW = designRequirementsActive
-  ? Math.max(0, clampNumber(input.requiredContinuousPowerKW, 0))
-  : 0;
+const requiredPulseDischargeUnit = input.requiredPulseDischargeUnit || "A";
+const requiredContinuousDischargeUnit = input.requiredContinuousDischargeUnit || "A";
 
 const requiredPulseCurrentA =
-  rawRequiredPulseCurrentA > 0
-    ? rawRequiredPulseCurrentA
-    : rawRequiredPeakPowerKW > 0 && nominalVoltageV > 0
-      ? (rawRequiredPeakPowerKW * 1000) / nominalVoltageV
-      : 0;
+  requiredPulseDischargeUnit === "kW" && nominalVoltageV > 0
+    ? (requiredPulseDischargeValue * 1000) / nominalVoltageV
+    : requiredPulseDischargeValue;
 
 const requiredPeakPowerKW =
-  rawRequiredPeakPowerKW > 0
-    ? rawRequiredPeakPowerKW
-    : rawRequiredPulseCurrentA > 0 && nominalVoltageV > 0
-      ? (rawRequiredPulseCurrentA * nominalVoltageV) / 1000
+  requiredPulseDischargeUnit === "kW"
+    ? requiredPulseDischargeValue
+    : nominalVoltageV > 0
+      ? (requiredPulseDischargeValue * nominalVoltageV) / 1000
       : 0;
 
 const requiredContinuousCurrentA =
-  rawRequiredContinuousCurrentA > 0
-    ? rawRequiredContinuousCurrentA
-    : rawRequiredContinuousPowerKW > 0 && nominalVoltageV > 0
-      ? (rawRequiredContinuousPowerKW * 1000) / nominalVoltageV
-      : 0;
+  requiredContinuousDischargeUnit === "kW" && nominalVoltageV > 0
+    ? (requiredContinuousDischargeValue * 1000) / nominalVoltageV
+    : requiredContinuousDischargeValue;
 
 const requiredContinuousPowerKW =
-  rawRequiredContinuousPowerKW > 0
-    ? rawRequiredContinuousPowerKW
-    : rawRequiredContinuousCurrentA > 0 && nominalVoltageV > 0
-      ? (rawRequiredContinuousCurrentA * nominalVoltageV) / 1000
+  requiredContinuousDischargeUnit === "kW"
+    ? requiredContinuousDischargeValue
+    : nominalVoltageV > 0
+      ? (requiredContinuousDischargeValue * nominalVoltageV) / 1000
       : 0;
 
 const requiredPeakPowerCurrentA =
   requiredPeakPowerKW > 0 && nominalVoltageV > 0
     ? (requiredPeakPowerKW * 1000) / nominalVoltageV
-    : 0;
-
-const requiredContinuousPowerCurrentA =
-  requiredContinuousPowerKW > 0 && nominalVoltageV > 0
-    ? (requiredContinuousPowerKW * 1000) / nominalVoltageV
     : 0;
 
 const dischargeCurrentCaps = [
@@ -838,8 +828,12 @@ maxDischargeCurrentA,
 usableEnergyFactor: input.usableEnergyFactor,
 
 designRequirementsEnabled: input.designRequirementsEnabled,
+requiredPulseDischargeValue,
+requiredPulseDischargeUnit,
 requiredPulseCurrentA,
 requiredPulseDurationSeconds: input.requiredPulseDurationSeconds,
+requiredContinuousDischargeValue,
+requiredContinuousDischargeUnit,
 requiredContinuousCurrentA,
 requiredMaxChargeCurrentA,
 requiredRegenCurrentA,
