@@ -2285,3 +2285,26 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
     grid-template-columns: 1fr;
   }
 }
+.design-requirements-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+.requirement-input-combo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 86px;
+  gap: 10px;
+  align-items: center;
+}
+
+.requirement-input-combo input,
+.requirement-input-combo select {
+  width: 100%;
+}
+
+@media (max-width: 760px) {
+  .design-requirements-grid {
+    grid-template-columns: 1fr;
+  }
+}
