@@ -612,17 +612,60 @@ const module2MaxChargePowerKW = module2NominalVoltageV * module2MaxChargeCurrent
   const maxDischargeCurrentA = input.maxDischargeCurrentA * parallel;
   const continuousDischargeCurrentA = input.continuousDischargeCurrentA * parallel;
   const maxChargeCurrentA = input.maxChargeCurrentA * parallel;
-  const designRequirementsActive = !!input.designRequirementsEnabled;
+const designRequirementsActive = !!input.designRequirementsEnabled;
 
-const requiredPulseCurrentA = designRequirementsActive
+const rawRequiredPulseCurrentA = designRequirementsActive
   ? Math.max(0, clampNumber(input.requiredPulseCurrentA, 0))
   : 0;
 
+const rawRequiredPeakPowerKW = designRequirementsActive
+  ? Math.max(0, clampNumber(input.requiredPeakPowerKW, 0))
+  : 0;
+
+const rawRequiredContinuousCurrentA = designRequirementsActive
+  ? Math.max(0, clampNumber(input.requiredContinuousCurrentA, 0))
+  : 0;
+
+const rawRequiredContinuousPowerKW = designRequirementsActive
+  ? Math.max(0, clampNumber(input.requiredContinuousPowerKW, 0))
+  : 0;
+
+const requiredPulseCurrentA =
+  rawRequiredPulseCurrentA > 0
+    ? rawRequiredPulseCurrentA
+    : rawRequiredPeakPowerKW > 0 && nominalVoltageV > 0
+      ? (rawRequiredPeakPowerKW * 1000) / nominalVoltageV
+      : 0;
+
+const requiredPeakPowerKW =
+  rawRequiredPeakPowerKW > 0
+    ? rawRequiredPeakPowerKW
+    : rawRequiredPulseCurrentA > 0 && nominalVoltageV > 0
+      ? (rawRequiredPulseCurrentA * nominalVoltageV) / 1000
+      : 0;
+
+const requiredContinuousCurrentA =
+  rawRequiredContinuousCurrentA > 0
+    ? rawRequiredContinuousCurrentA
+    : rawRequiredContinuousPowerKW > 0 && nominalVoltageV > 0
+      ? (rawRequiredContinuousPowerKW * 1000) / nominalVoltageV
+      : 0;
+
+const requiredContinuousPowerKW =
+  rawRequiredContinuousPowerKW > 0
+    ? rawRequiredContinuousPowerKW
+    : rawRequiredContinuousCurrentA > 0 && nominalVoltageV > 0
+      ? (rawRequiredContinuousCurrentA * nominalVoltageV) / 1000
+      : 0;
+
 const requiredPeakPowerCurrentA =
-  designRequirementsActive &&
-  input.requiredPeakPowerKW > 0 &&
-  nominalVoltageV > 0
-    ? (input.requiredPeakPowerKW * 1000) / nominalVoltageV
+  requiredPeakPowerKW > 0 && nominalVoltageV > 0
+    ? (requiredPeakPowerKW * 1000) / nominalVoltageV
+    : 0;
+
+const requiredContinuousPowerCurrentA =
+  requiredContinuousPowerKW > 0 && nominalVoltageV > 0
+    ? (requiredContinuousPowerKW * 1000) / nominalVoltageV
     : 0;
 
 const dischargeCurrentCaps = [
@@ -634,15 +677,21 @@ const dischargeCurrentCaps = [
 const simulationDischargeCurrentLimitA = dischargeCurrentCaps.length
   ? Math.min(...dischargeCurrentCaps)
   : maxDischargeCurrentA;
+
 const calculatedMaxRegenCurrentA = maxChargeCurrentA * 0.8;
+
+const requiredMaxChargeCurrentA = designRequirementsActive
+  ? Math.max(0, clampNumber(input.requiredMaxChargeCurrentA, 0))
+  : 0;
 
 const requiredRegenCurrentA = designRequirementsActive
   ? Math.max(0, clampNumber(input.requiredRegenCurrentA, 0))
-  : null;
+  : 0;
 
-const simulationMaxRegenCurrentA = designRequirementsActive
-  ? Math.min(calculatedMaxRegenCurrentA, requiredRegenCurrentA)
-  : calculatedMaxRegenCurrentA;
+const simulationMaxRegenCurrentA =
+  designRequirementsActive && requiredRegenCurrentA > 0
+    ? Math.min(calculatedMaxRegenCurrentA, requiredRegenCurrentA)
+    : calculatedMaxRegenCurrentA;
   
 const calculatedBatteryTemperatureC = getEstimatedBatteryTemperatureC(input);
 const calculatedRegenEfficiencyPercent = getCalculatedRegenEfficiencyPercent(input);
@@ -789,14 +838,15 @@ maxDischargeCurrentA,
 usableEnergyFactor: input.usableEnergyFactor,
 
 designRequirementsEnabled: input.designRequirementsEnabled,
-requiredPulseCurrentA: input.requiredPulseCurrentA,
+requiredPulseCurrentA,
 requiredPulseDurationSeconds: input.requiredPulseDurationSeconds,
-requiredContinuousCurrentA: input.requiredContinuousCurrentA,
-requiredMaxChargeCurrentA: input.requiredMaxChargeCurrentA,
-requiredRegenCurrentA: input.requiredRegenCurrentA,
+requiredContinuousCurrentA,
+requiredMaxChargeCurrentA,
+requiredRegenCurrentA,
 requiredUsableEnergyKWh: input.requiredUsableEnergyKWh,
-requiredPeakPowerKW: input.requiredPeakPowerKW,
-requiredContinuousPowerKW: input.requiredContinuousPowerKW,
+requiredPeakPowerKW,
+requiredContinuousPowerKW,
+requiredContinuousPowerCurrentA,
 
 runtimeAtContinuousDischargeMinutes,
 runtimeAtAssumedLoadMinutes,
