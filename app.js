@@ -668,8 +668,13 @@ const simulationInput = {
   const runtimeAtAssumedLoadMinutes = input.assumedLoadKW > 0 ? usableEnergyKWh / input.assumedLoadKW * 60.0 : null;
 
   const variableSimulation = input.variableCurrentSimulationEnabled
-   ? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, simulationInput, simulationDischargeCurrentLimitA)
-   : null;
+ ? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, simulationInput, simulationDischargeCurrentLimitA)
+ : null;
+
+const calculatedVehicleRangeMiles =
+  variableSimulation && variableSimulation.simulatedEnergyUsedKWh > 0
+    ? usableEnergyKWh * (variableSimulation.simulatedDistanceMiles / variableSimulation.simulatedEnergyUsedKWh)
+    : null;
 
  const sohRows = [100, 95, 90, 85, 80, 70].map(percentage => ({
     percentage,
@@ -688,10 +693,15 @@ const degradationAnnualMileageMiles =
     ? degradationTargetMileageMiles / degradationServiceLifeYears
     : 0;
 
-const degradationEnergyConsumptionKWhPerMile =
+const degradationBolUsableEnergyKWh = usableEnergyKWh;
+
+const manualDegradationEnergyConsumptionKWhPerMile =
   Math.max(0, clampNumber(input.degradationEnergyConsumptionKWhPerMile, 0));
 
-const degradationBolUsableEnergyKWh = usableEnergyKWh;
+const degradationEnergyConsumptionKWhPerMile =
+  calculatedVehicleRangeMiles !== null && calculatedVehicleRangeMiles > 0
+    ? degradationBolUsableEnergyKWh / calculatedVehicleRangeMiles
+    : manualDegradationEnergyConsumptionKWhPerMile;
 
 const degradationEolCapacityPercent = clamp(
   clampNumber(input.degradationEolCapacityPercent, 70),
@@ -724,9 +734,11 @@ const degradationEquivalentFullCycles =
     : null;
 
 const degradationBolRangeMiles =
-  degradationEnergyConsumptionKWhPerMile > 0
-    ? degradationBolUsableEnergyKWh / degradationEnergyConsumptionKWhPerMile
-    : null;
+  calculatedVehicleRangeMiles !== null && calculatedVehicleRangeMiles > 0
+    ? calculatedVehicleRangeMiles
+    : degradationEnergyConsumptionKWhPerMile > 0
+      ? degradationBolUsableEnergyKWh / degradationEnergyConsumptionKWhPerMile
+      : null;
 
 const degradationEolRangeMiles =
   degradationEnergyConsumptionKWhPerMile > 0
@@ -861,9 +873,7 @@ vehicleConsumptionMilesPerKWh: variableSimulation && variableSimulation.simulate
   ? variableSimulation.simulatedDistanceMiles / variableSimulation.simulatedEnergyUsedKWh
   : null,
 
-vehicleRangeMiles: variableSimulation && variableSimulation.simulatedEnergyUsedKWh > 0
-  ? usableEnergyKWh * (variableSimulation.simulatedDistanceMiles / variableSimulation.simulatedEnergyUsedKWh)
-  : null,
+vehicleRangeMiles: calculatedVehicleRangeMiles,
 variableProfileSampleNumber: variableSimulation?.profileSampleNumber ?? null,
 variableSimulationRows: variableSimulation?.rows ?? [],
 sohRows,
