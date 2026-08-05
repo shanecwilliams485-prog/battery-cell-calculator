@@ -3916,7 +3916,7 @@ function initMobileResultSections() {
     allResultSections().forEach(section => {
       const isSelected = section.dataset.resultSection === sectionId;
 
-      if (section.id === 'secondModuleResults' && !(lastResults?.hasSecondModule)) {
+         if (!isResultSectionVisible(section.dataset.resultSection)) {
         section.hidden = true;
       } else {
         section.hidden = !isSelected;
