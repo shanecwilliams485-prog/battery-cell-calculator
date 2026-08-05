@@ -2889,6 +2889,314 @@ addFooter();
 
 doc.save("battery-pack-specification.pdf");
 }
+
+async function downloadCellTestProfilePdf() {
+  if (!lastResults) {
+    alert("Please calculate the battery pack first.");
+    return;
+  }
+
+  if (!lastResults.degradationEnabled) {
+    alert("Enable Cell Test Profile Data and calculate again before downloading this PDF.");
+    return;
+  }
+
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert("PDF library has not loaded yet. Please refresh and try again.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p", "mm", "a4");
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  const margin = 14;
+  const contentWidth = pageWidth - margin * 2;
+  const columnGap = 8;
+  const columnWidth = (contentWidth - columnGap) / 2;
+
+  const black = [20, 20, 20];
+  const darkGrey = [80, 80, 80];
+  const lightGrey = [245, 245, 245];
+  const borderGrey = [205, 205, 205];
+
+  const leftX = margin;
+  const rightX = margin + columnWidth + columnGap;
+  let flowY = 62;
+
+  function fmtSafe(value, suffix = "", decimals = 1) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+      return "N/A";
+    }
+
+    return `${fmt(number, decimals)}${suffix}`;
+  }
+
+  function textSafe(value) {
+    return value === undefined || value === null || value === "" ? "N/A" : String(value);
+  }
+
+  async function getImageDataUrl(src) {
+    try {
+      const response = await fetch(src);
+      const blob = await response.blob();
+
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  async function addLogo() {
+    const logo = await getImageDataUrl("assets/pdf-logo.png");
+
+    if (logo) {
+      doc.addImage(logo, "PNG", pageWidth / 2 - 38, 6, 76, 17);
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("VOLT ENERGY SYSTEMS", pageWidth / 2, 20, { align: "center" });
+    }
+  }
+
+  function addHeader() {
+    const today = new Date().toLocaleDateString("en-GB");
+
+    doc.setTextColor(...black);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(today, pageWidth - margin, 12, { align: "right" });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(19);
+    doc.text("Cell Degradation Test Profile Data", pageWidth / 2, 40, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...darkGrey);
+    doc.text(
+      "Use-case, pack and cell data for creating a cell ageing / degradation test profile.",
+      pageWidth / 2,
+      47,
+      { align: "center" }
+    );
+
+    doc.setDrawColor(...black);
+    doc.setLineWidth(0.3);
+    doc.line(margin, 54, pageWidth - margin, 54);
+  }
+
+  function addFooter() {
+    const pageNumber = doc.internal.getNumberOfPages();
+
+    doc.setDrawColor(...black);
+    doc.setLineWidth(0.25);
+    doc.line(margin + 20, pageHeight - 10, pageWidth - margin - 20, pageHeight - 10);
+
+    doc.setTextColor(...black);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+
+    doc.text("www.voltenergysystems.co.uk", pageWidth / 2, pageHeight - 5, { align: "center" });
+    doc.text(`Page ${pageNumber}`, pageWidth - margin, pageHeight - 5, { align: "right" });
+  }
+
+  function getSectionHeight(rows) {
+    const rowHeight = 5.2;
+    const headerHeight = 7.5;
+
+    return headerHeight + rows.length * rowHeight + 4;
+  }
+
+  function addSectionBox(title, rows, x, boxY, width) {
+    const rowHeight = 5.2;
+    const headerHeight = 7.5;
+    const boxHeight = getSectionHeight(rows);
+
+    doc.setDrawColor(...borderGrey);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(x, boxY, width, boxHeight, 2, 2, "FD");
+
+    doc.setFillColor(...lightGrey);
+    doc.rect(x, boxY, width, headerHeight, "F");
+
+    doc.setTextColor(...black);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text(title, x + 3, boxY + 6);
+
+    let rowY = boxY + headerHeight + 5;
+
+    rows.forEach(([label, value]) => {
+      doc.setDrawColor(230, 230, 230);
+      doc.line(x + 3, rowY + 2, x + width - 3, rowY + 2);
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...darkGrey);
+      doc.setFontSize(7.2);
+      doc.text(String(label), x + 3, rowY);
+
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...black);
+
+      const valueText = String(value);
+      const maxValueWidth = width * 0.44;
+      const valueLines = doc.splitTextToSize(valueText, maxValueWidth);
+
+      doc.text(valueLines, x + width - 3, rowY, { align: "right" });
+
+      rowY += rowHeight;
+    });
+
+    return boxHeight;
+  }
+
+  function addNewPdfPage() {
+    addFooter();
+    doc.addPage();
+    addHeader();
+  }
+
+  function addTwoColumnRow(leftTitle, leftRows, rightTitle, rightRows) {
+    const leftHeight = getSectionHeight(leftRows);
+    const rightHeight = getSectionHeight(rightRows);
+    const rowHeight = Math.max(leftHeight, rightHeight);
+
+    if (flowY + rowHeight > pageHeight - 18) {
+      flowY = 62;
+      addNewPdfPage();
+    }
+
+    addSectionBox(leftTitle, leftRows, leftX, flowY, columnWidth);
+    addSectionBox(rightTitle, rightRows, rightX, flowY, columnWidth);
+
+    flowY += rowHeight + 8;
+  }
+
+  await addLogo();
+  addHeader();
+
+  const applicationProfileRows = [
+    ["Service life target", fmtSafe(lastResults.degradationServiceLifeYears, " years", 0)],
+    ["Target mileage", fmtSafe(lastResults.degradationTargetMileageMiles, " miles", 0)],
+    ["Calculated annual mileage", fmtSafe(lastResults.degradationAnnualMileageMiles, " miles/year", 0)],
+    ["Energy consumption", fmtSafe(lastResults.degradationEnergyConsumptionKWhPerMile, " kWh/mile", 2)],
+    ["Charging method", degradationChargingMethodLabel(lastResults.degradationChargingMethod)],
+    ["EOL capacity target", fmtSafe(lastResults.degradationEolCapacityPercent, "%", 0)]
+  ];
+
+  const packBasisRows = [
+    ["Pack configuration", `${lastResults.seriesCount}S${lastResults.parallelCount}P`],
+    ["Total cell count", fmtSafe(lastResults.numberOfCells, "", 0)],
+    ["Nominal voltage", fmtSafe(lastResults.nominalVoltageV, " V", 1)],
+    ["Voltage range", `${fmtSafe(lastResults.minVoltageV, " V", 1)} to ${fmtSafe(lastResults.maxVoltageV, " V", 1)}`],
+    ["Pack capacity", fmtSafe(lastResults.packCapacityAh, " Ah", 1)],
+    ["Nominal energy", fmtSafe(lastResults.packEnergyKWh, " kWh", 2)],
+    ["BOL usable energy", fmtSafe(lastResults.degradationBolUsableEnergyKWh, " kWh", 2)]
+  ];
+
+  const socChargingRows = [
+    ["Usable factor", fmtSafe(lastResults.usableEnergyFactor * 100, "%", 0)],
+    ["Calculated SOC window", `${fmtSafe(lastResults.degradationSocWindowMinPercent, "%", 0)} to ${fmtSafe(lastResults.degradationSocWindowMaxPercent, "%", 0)}`],
+    ["SOC window size", fmtSafe(lastResults.degradationSocWindowPercent, "%", 0)],
+    ["Maximum charge current", fmtSafe(lastResults.maxChargeCurrentA, " A", 0)],
+    ["Maximum charge power", fmtSafe(lastResults.maxChargePowerKW, " kW", 1)],
+    ["Charging method", degradationChargingMethodLabel(lastResults.degradationChargingMethod)]
+  ];
+
+  const lifetimeDutyRows = [
+    ["Lifetime energy throughput", fmtSafe(lastResults.degradationLifetimeEnergyThroughputKWh, " kWh", 0)],
+    ["Energy throughput per year", fmtSafe(lastResults.degradationEnergyThroughputPerYearKWh, " kWh/year", 0)],
+    ["Average daily energy use", fmtSafe(lastResults.degradationAverageDailyEnergyUseKWh, " kWh/day", 2)],
+    ["Equivalent full cycles", fmtSafe(lastResults.degradationEquivalentFullCycles, " cycles", 0)],
+    ["Estimated BOL range", fmtSafe(lastResults.degradationBolRangeMiles, " miles", 1)],
+    ["Estimated EOL range target", fmtSafe(lastResults.degradationEolRangeMiles, " miles", 1)]
+  ];
+
+  const cellLevelRows = [
+    ["Nominal cell voltage", fmtSafe(lastResults.cellNominalVoltage, " V", 2)],
+    ["Maximum cell voltage", fmtSafe(lastResults.cellMaxVoltage, " V", 2)],
+    ["Minimum cell voltage", fmtSafe(lastResults.cellMinVoltage, " V", 2)],
+    ["Cell capacity", fmtSafe(lastResults.cellCapacityAh, " Ah", 2)],
+    ["Cell energy", fmtSafe(lastResults.cellEnergyWh, " Wh", 2)],
+    ["Maximum discharge current", fmtSafe(lastResults.cellMaxDischargeCurrentA, " A", 1)],
+    ["Continuous discharge current", fmtSafe(lastResults.cellContinuousDischargeCurrentA, " A", 1)],
+    ["Maximum charge current", fmtSafe(lastResults.cellMaxChargeCurrentA, " A", 1)],
+    ["Max discharge C-rate", fmtSafe(lastResults.cellMaxDischargeCRating, " C", 1)],
+    ["Continuous discharge C-rate", fmtSafe(lastResults.cellContinuousDischargeCRating, " C", 1)],
+    ["Max charge C-rate", fmtSafe(lastResults.cellMaxChargeCRating, " C", 1)],
+    ["Cell weight", fmtSafe(lastResults.cellWeightG, " g", 1)]
+  ];
+
+  const packCurrentRows = [
+    ["Maximum discharge current", fmtSafe(lastResults.maxDischargeCurrentA, " A", 0)],
+    ["Continuous discharge current", fmtSafe(lastResults.continuousDischargeCurrentA, " A", 0)],
+    ["Maximum charge current", fmtSafe(lastResults.maxChargeCurrentA, " A", 0)],
+    ["Maximum discharge power", fmtSafe(lastResults.maxDischargePowerKW, " kW", 1)],
+    ["Continuous discharge power", fmtSafe(lastResults.continuousDischargePowerKW, " kW", 1)],
+    ["Maximum charge power", fmtSafe(lastResults.maxChargePowerKW, " kW", 1)]
+  ];
+
+  const vehicleUseCaseRows = [
+    ["Vehicle simulation enabled", yesNo(lastResults.variableSimulationEnabled)],
+    ["Drive cycle", driveCycleLabel(lastResults.driveCycle)],
+    ["Advanced realism", yesNo(lastResults.advancedVehicleRealismEnabled)],
+    ["Vehicle mass", fmtSafe(lastResults.vehicleMassKg, " kg", 0)],
+    ["Payload", fmtSafe(lastResults.payloadKg, " kg", 0)],
+    ["Average simulation current", lastResults.variableAverageCurrentA !== null ? fmtSafe(lastResults.variableAverageCurrentA, " A", 1) : "N/A"],
+    ["Average simulation power", lastResults.variableAveragePowerKW !== null ? fmtSafe(lastResults.variableAveragePowerKW, " kW", 2) : "N/A"],
+    ["Weather", weatherConditionLabel(lastResults.weatherCondition)],
+    ["Driver mode", driverAggressionLabel(lastResults.driverAggression)]
+  ];
+
+  addTwoColumnRow(
+    "Application Profile",
+    applicationProfileRows,
+    "Pack Basis",
+    packBasisRows
+  );
+
+  addTwoColumnRow(
+    "Lifetime Duty",
+    lifetimeDutyRows,
+    "SOC / Charging",
+    socChargingRows
+  );
+
+  addTwoColumnRow(
+    "Cell-Level Data",
+    cellLevelRows,
+    "Pack Current / Power Basis",
+    packCurrentRows
+  );
+
+  addTwoColumnRow(
+    "Vehicle / Use Case",
+    vehicleUseCaseRows,
+    "Purpose of Data",
+    [
+      ["Document type", "Cell degradation test profile data"],
+      ["Use", "For cell test company review"],
+      ["Prediction status", "Not a degradation prediction"],
+      ["Testing responsibility", "Cell testing company to define test programme"],
+      ["Data source", "Calculated from pack, cell and use-case inputs"]
+    ]
+  );
+
+  addFooter();
+
+  doc.save("cell-degradation-test-profile-data.pdf");
+}
+
 function handleCalculate(event) {
   event?.preventDefault();
 
@@ -2935,7 +3243,7 @@ function init() {
   document.getElementById('resetBtn')?.addEventListener('click', resetAll);
   document.getElementById('backBtn')?.addEventListener('click', showCalculatorPage);
   document.getElementById('downloadPdfBtn')?.addEventListener('click', openPdfOptionsModal);
-
+  document.getElementById('downloadCellTestPdfBtn')?.addEventListener('click', downloadCellTestProfilePdf);
   document.getElementById("closePdfOptionsBtn")?.addEventListener("click", closePdfOptionsModal);
   document.getElementById("cancelPdfOptionsBtn")?.addEventListener("click", closePdfOptionsModal);
   document.getElementById("confirmPdfOptionsBtn")?.addEventListener("click", confirmPdfOptionsAndDownload);
