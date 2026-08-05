@@ -21,7 +21,8 @@ requiredPulseDischargeUnit: "A",
 requiredPulseDurationSeconds: 10,
 requiredContinuousDischargeValue: 0,
 requiredContinuousDischargeUnit: "A",
-requiredMaxChargeCurrentA: 0,
+requiredMaxChargeValue: 0,
+requiredMaxChargeUnit: "A",
   requiredRegenCurrentA: 0,
   requiredUsableEnergyKWh: 0,
   requiredPeakPowerKW: 0,
@@ -98,7 +99,8 @@ const fields = [
 ['requiredPulseDurationSeconds', 'number'],
 ['requiredContinuousDischargeValue', 'number'],
 ['requiredContinuousDischargeUnit', 'text'],
-['requiredMaxChargeCurrentA', 'number'],
+['requiredMaxChargeValue', 'number'],
+['requiredMaxChargeUnit', 'text'],
   ['requiredRegenCurrentA', 'number'],
   ['requiredUsableEnergyKWh', 'number'],
   ['requiredPeakPowerKW', 'number'],
@@ -670,10 +672,23 @@ const simulationDischargeCurrentLimitA = dischargeCurrentCaps.length
 
 const calculatedMaxRegenCurrentA = maxChargeCurrentA * 0.8;
 
-const requiredMaxChargeCurrentA = designRequirementsActive
-  ? Math.max(0, clampNumber(input.requiredMaxChargeCurrentA, 0))
+const requiredMaxChargeValue = designRequirementsActive
+  ? Math.max(0, clampNumber(input.requiredMaxChargeValue, 0))
   : 0;
 
+const requiredMaxChargeUnit = input.requiredMaxChargeUnit || "A";
+
+const requiredMaxChargeCurrentA =
+  requiredMaxChargeUnit === "kW" && nominalVoltageV > 0
+    ? (requiredMaxChargeValue * 1000) / nominalVoltageV
+    : requiredMaxChargeValue;
+
+const requiredMaxChargePowerKW =
+  requiredMaxChargeUnit === "kW"
+    ? requiredMaxChargeValue
+    : nominalVoltageV > 0
+      ? (requiredMaxChargeValue * nominalVoltageV) / 1000
+      : 0;
 const requiredRegenCurrentA = designRequirementsActive
   ? Math.max(0, clampNumber(input.requiredRegenCurrentA, 0))
   : 0;
@@ -835,7 +850,10 @@ requiredPulseDurationSeconds: input.requiredPulseDurationSeconds,
 requiredContinuousDischargeValue,
 requiredContinuousDischargeUnit,
 requiredContinuousCurrentA,
+requiredMaxChargeValue,
+requiredMaxChargeUnit,
 requiredMaxChargeCurrentA,
+requiredMaxChargePowerKW,
 requiredRegenCurrentA,
 requiredUsableEnergyKWh: input.requiredUsableEnergyKWh,
 requiredPeakPowerKW,
