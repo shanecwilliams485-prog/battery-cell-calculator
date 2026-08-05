@@ -3122,20 +3122,19 @@ async function downloadCellTestProfilePdf() {
     ["Estimated EOL range target", fmtSafe(lastResults.degradationEolRangeMiles, " miles", 1)]
   ];
 
-  const cellLevelRows = [
-    ["Nominal cell voltage", fmtSafe(lastResults.cellNominalVoltage, " V", 2)],
-    ["Maximum cell voltage", fmtSafe(lastResults.cellMaxVoltage, " V", 2)],
-    ["Minimum cell voltage", fmtSafe(lastResults.cellMinVoltage, " V", 2)],
-    ["Cell capacity", fmtSafe(lastResults.cellCapacityAh, " Ah", 2)],
-    ["Cell energy", fmtSafe(lastResults.cellEnergyWh, " Wh", 2)],
-    ["Maximum discharge current", fmtSafe(lastResults.cellMaxDischargeCurrentA, " A", 1)],
-    ["Continuous discharge current", fmtSafe(lastResults.cellContinuousDischargeCurrentA, " A", 1)],
-    ["Maximum charge current", fmtSafe(lastResults.cellMaxChargeCurrentA, " A", 1)],
-    ["Max discharge C-rate", fmtSafe(lastResults.cellMaxDischargeCRating, " C", 1)],
-    ["Continuous discharge C-rate", fmtSafe(lastResults.cellContinuousDischargeCRating, " C", 1)],
-    ["Max charge C-rate", fmtSafe(lastResults.cellMaxChargeCRating, " C", 1)],
-    ["Cell weight", fmtSafe(lastResults.cellWeightG, " g", 1)]
-  ];
+ const cellLevelRows = [
+  ["Nominal cell voltage", fmtSafe(lastResults.cellNominalVoltage, " V", 2)],
+  ["Maximum cell voltage", fmtSafe(lastResults.cellMaxVoltage, " V", 2)],
+  ["Minimum cell voltage", fmtSafe(lastResults.cellMinVoltage, " V", 2)],
+  ["Cell capacity", fmtSafe(lastResults.cellCapacityAh, " Ah", 2)],
+  ["Cell energy", fmtSafe(lastResults.cellEnergyWh, " Wh", 2)],
+  ["Maximum discharge current", fmtSafe(lastResults.cellMaxDischargeCurrentA, " A", 1)],
+  ["Continuous discharge current", fmtSafe(lastResults.cellContinuousDischargeCurrentA, " A", 1)],
+  ["Maximum charge current", fmtSafe(lastResults.cellMaxChargeCurrentA, " A", 1)],
+  ["Max discharge C-rate", fmtSafe(lastResults.cellMaxDischargeCRating, " C", 1)],
+  ["Continuous discharge C-rate", fmtSafe(lastResults.cellContinuousDischargeCRating, " C", 1)],
+  ["Max charge C-rate", fmtSafe(lastResults.cellMaxChargeCRating, " C", 1)]
+];
 
   const packCurrentRows = [
     ["Maximum discharge current", fmtSafe(lastResults.maxDischargeCurrentA, " A", 0)],
@@ -3144,18 +3143,6 @@ async function downloadCellTestProfilePdf() {
     ["Maximum discharge power", fmtSafe(lastResults.maxDischargePowerKW, " kW", 1)],
     ["Continuous discharge power", fmtSafe(lastResults.continuousDischargePowerKW, " kW", 1)],
     ["Maximum charge power", fmtSafe(lastResults.maxChargePowerKW, " kW", 1)]
-  ];
-
-  const vehicleUseCaseRows = [
-    ["Vehicle simulation enabled", yesNo(lastResults.variableSimulationEnabled)],
-    ["Drive cycle", driveCycleLabel(lastResults.driveCycle)],
-    ["Advanced realism", yesNo(lastResults.advancedVehicleRealismEnabled)],
-    ["Vehicle mass", fmtSafe(lastResults.vehicleMassKg, " kg", 0)],
-    ["Payload", fmtSafe(lastResults.payloadKg, " kg", 0)],
-    ["Average simulation current", lastResults.variableAverageCurrentA !== null ? fmtSafe(lastResults.variableAverageCurrentA, " A", 1) : "N/A"],
-    ["Average simulation power", lastResults.variableAveragePowerKW !== null ? fmtSafe(lastResults.variableAveragePowerKW, " kW", 2) : "N/A"],
-    ["Weather", weatherConditionLabel(lastResults.weatherCondition)],
-    ["Driver mode", driverAggressionLabel(lastResults.driverAggression)]
   ];
 
   addTwoColumnRow(
@@ -3177,19 +3164,6 @@ async function downloadCellTestProfilePdf() {
     cellLevelRows,
     "Pack Current / Power Basis",
     packCurrentRows
-  );
-
-  addTwoColumnRow(
-    "Vehicle / Use Case",
-    vehicleUseCaseRows,
-    "Purpose of Data",
-    [
-      ["Document type", "Cell degradation test profile data"],
-      ["Use", "For cell test company review"],
-      ["Prediction status", "Not a degradation prediction"],
-      ["Testing responsibility", "Cell testing company to define test programme"],
-      ["Data source", "Calculated from pack, cell and use-case inputs"]
-    ]
   );
 
   addFooter();
