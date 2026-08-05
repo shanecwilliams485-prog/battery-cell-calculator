@@ -47,19 +47,12 @@ const DEFAULT_INPUTS = {
   weatherCondition: "dryWarm",
   driverAggression: "normal",
   payloadKg: 0,
-  degradationEnabled: false,
-  degradationServiceLifeYears: 10,
-  degradationTargetMileageMiles: 100000,
-  degradationAnnualMileageMiles: 10000,
-  degradationBolUsableEnergyKWh: 0,
-  degradationEolCapacityPercent: 70,
-  degradationSocWindowMinPercent: 10,
-  degradationSocWindowMaxPercent: 90,
-  degradationEnergyConsumptionKWhPerMile: 0.30,
-  degradationEolCellPulseCurrentA: 20,
-  degradationEolCellContinuousCurrentA: 9,
-  degradationEolCellChargeCurrentA: 5.5,
-  degradationChargingMethod: "acDcRapid",
+ degradationEnabled: false,
+ degradationServiceLifeYears: 10,
+ degradationTargetMileageMiles: 100000,
+ degradationEolCapacityPercent: 70,
+ degradationEnergyConsumptionKWhPerMile: 0.30,
+ degradationChargingMethod: "acDcRapid",
 };
 
 const STORAGE_KEY = 'batteryCellCalculator.inputs.v1';
@@ -136,15 +129,8 @@ const fields = [
   ['degradationEnabled', 'checkbox'],
   ['degradationServiceLifeYears', 'number'],
   ['degradationTargetMileageMiles', 'number'],
-  ['degradationAnnualMileageMiles', 'number'],
-  ['degradationBolUsableEnergyKWh', 'number'],
   ['degradationEolCapacityPercent', 'number'],
-  ['degradationSocWindowMinPercent', 'number'],
-  ['degradationSocWindowMaxPercent', 'number'],
   ['degradationEnergyConsumptionKWhPerMile', 'number'],
-  ['degradationEolCellPulseCurrentA', 'number'],
-  ['degradationEolCellContinuousCurrentA', 'number'],
-  ['degradationEolCellChargeCurrentA', 'number'],
   ['degradationChargingMethod', 'text'],
   ];
 
@@ -689,85 +675,72 @@ const simulationInput = {
     percentage,
     usableEnergyKWh: usableEnergyKWh * percentage / 100.0
   }));
-  const degradationEnabled = !!input.degradationEnabled;
+const degradationEnabled = !!input.degradationEnabled;
 
-  const degradationBolUsableEnergyKWh = input.degradationBolUsableEnergyKWh > 0
-    ? input.degradationBolUsableEnergyKWh
-    : usableEnergyKWh;
+const degradationServiceLifeYears =
+  Math.max(0, clampNumber(input.degradationServiceLifeYears, 0));
 
-  const degradationEolCapacityPercent = clamp(
-    clampNumber(input.degradationEolCapacityPercent, 70),
-    0,
-    100
-  );
+const degradationTargetMileageMiles =
+  Math.max(0, clampNumber(input.degradationTargetMileageMiles, 0));
 
-  const degradationEolUsableEnergyKWh =
-    degradationBolUsableEnergyKWh * degradationEolCapacityPercent / 100;
+const degradationAnnualMileageMiles =
+  degradationServiceLifeYears > 0
+    ? degradationTargetMileageMiles / degradationServiceLifeYears
+    : 0;
 
-  const degradationEnergyLostKWh =
-    degradationBolUsableEnergyKWh - degradationEolUsableEnergyKWh;
+const degradationEnergyConsumptionKWhPerMile =
+  Math.max(0, clampNumber(input.degradationEnergyConsumptionKWhPerMile, 0));
 
-  const degradationServiceLifeYears =
-    Math.max(0, clampNumber(input.degradationServiceLifeYears, 0));
+const degradationBolUsableEnergyKWh = usableEnergyKWh;
 
-  const degradationTargetMileageMiles =
-    Math.max(0, clampNumber(input.degradationTargetMileageMiles, 0));
+const degradationEolCapacityPercent = clamp(
+  clampNumber(input.degradationEolCapacityPercent, 70),
+  0,
+  100
+);
 
-  const degradationAnnualMileageMiles =
-    Math.max(0, clampNumber(input.degradationAnnualMileageMiles, 0));
+const degradationEolUsableEnergyKWh =
+  degradationBolUsableEnergyKWh * degradationEolCapacityPercent / 100;
 
-  const degradationMileageFromAnnual =
-    degradationServiceLifeYears * degradationAnnualMileageMiles;
+const degradationEnergyLostKWh =
+  degradationBolUsableEnergyKWh - degradationEolUsableEnergyKWh;
 
-  const degradationEnergyLossPerYearKWh =
-    degradationServiceLifeYears > 0
-      ? degradationEnergyLostKWh / degradationServiceLifeYears
-      : null;
+const degradationLifetimeEnergyThroughputKWh =
+  degradationTargetMileageMiles * degradationEnergyConsumptionKWhPerMile;
 
-  const degradationEnergyLossPer10000MilesKWh =
-    degradationTargetMileageMiles > 0
-      ? degradationEnergyLostKWh / degradationTargetMileageMiles * 10000
-      : null;
+const degradationEnergyThroughputPerYearKWh =
+  degradationServiceLifeYears > 0
+    ? degradationLifetimeEnergyThroughputKWh / degradationServiceLifeYears
+    : null;
 
-  const degradationEnergyConsumptionKWhPerMile =
-    Math.max(0, clampNumber(input.degradationEnergyConsumptionKWhPerMile, 0));
+const degradationAverageDailyEnergyUseKWh =
+  degradationEnergyThroughputPerYearKWh !== null
+    ? degradationEnergyThroughputPerYearKWh / 365
+    : null;
 
-  const degradationBolRangeMiles =
-    degradationEnergyConsumptionKWhPerMile > 0
-      ? degradationBolUsableEnergyKWh / degradationEnergyConsumptionKWhPerMile
-      : null;
+const degradationEquivalentFullCycles =
+  degradationBolUsableEnergyKWh > 0
+    ? degradationLifetimeEnergyThroughputKWh / degradationBolUsableEnergyKWh
+    : null;
 
-  const degradationEolRangeMiles =
-    degradationEnergyConsumptionKWhPerMile > 0
-      ? degradationEolUsableEnergyKWh / degradationEnergyConsumptionKWhPerMile
-      : null;
+const degradationBolRangeMiles =
+  degradationEnergyConsumptionKWhPerMile > 0
+    ? degradationBolUsableEnergyKWh / degradationEnergyConsumptionKWhPerMile
+    : null;
 
-  const degradationSocWindowMinPercent =
-    clamp(clampNumber(input.degradationSocWindowMinPercent, 10), 0, 100);
+const degradationEolRangeMiles =
+  degradationEnergyConsumptionKWhPerMile > 0
+    ? degradationEolUsableEnergyKWh / degradationEnergyConsumptionKWhPerMile
+    : null;
 
-  const degradationSocWindowMaxPercent =
-    clamp(clampNumber(input.degradationSocWindowMaxPercent, 90), 0, 100);
+const degradationSocWindowPercent =
+  clamp(input.usableEnergyFactor * 100, 0, 100);
 
-  const degradationSocWindowPercent =
-    Math.max(0, degradationSocWindowMaxPercent - degradationSocWindowMinPercent);
+const degradationSocWindowMinPercent =
+  (100 - degradationSocWindowPercent) / 2;
 
-  const degradationEolPackPulseCurrentA =
-    Math.max(0, clampNumber(input.degradationEolCellPulseCurrentA, 0)) * parallel;
-
-  const degradationEolPackContinuousCurrentA =
-    Math.max(0, clampNumber(input.degradationEolCellContinuousCurrentA, 0)) * parallel;
-
-  const degradationEolPackChargeCurrentA =
-    Math.max(0, clampNumber(input.degradationEolCellChargeCurrentA, 0)) * parallel;
-
-  const degradationEolPulsePowerKW =
-    nominalVoltageV * degradationEolPackPulseCurrentA / 1000;
-
-  const degradationEolContinuousPowerKW =
-    nominalVoltageV * degradationEolPackContinuousCurrentA / 1000;
-
-  const degradationEolChargePowerKW =
-    nominalVoltageV * degradationEolPackChargeCurrentA / 1000;
+const degradationSocWindowMaxPercent =
+  100 - degradationSocWindowMinPercent;
   return {
     cellNominalVoltage: input.nominalVoltage,
 cellMaxVoltage: input.maxVoltage,
@@ -899,25 +872,20 @@ degradationEnabled,
 degradationServiceLifeYears,
 degradationTargetMileageMiles,
 degradationAnnualMileageMiles,
-degradationMileageFromAnnual,
 degradationBolUsableEnergyKWh,
 degradationEolCapacityPercent,
 degradationEolUsableEnergyKWh,
 degradationEnergyLostKWh,
-degradationEnergyLossPerYearKWh,
-degradationEnergyLossPer10000MilesKWh,
 degradationEnergyConsumptionKWhPerMile,
 degradationBolRangeMiles,
 degradationEolRangeMiles,
 degradationSocWindowMinPercent,
 degradationSocWindowMaxPercent,
 degradationSocWindowPercent,
-degradationEolPackPulseCurrentA,
-degradationEolPackContinuousCurrentA,
-degradationEolPackChargeCurrentA,
-degradationEolPulsePowerKW,
-degradationEolContinuousPowerKW,
-degradationEolChargePowerKW,
+degradationLifetimeEnergyThroughputKWh,
+degradationEnergyThroughputPerYearKWh,
+degradationAverageDailyEnergyUseKWh,
+degradationEquivalentFullCycles,
 degradationChargingMethod: input.degradationChargingMethod
   };
 }
@@ -1822,39 +1790,38 @@ if (degradationResultsSection && degradationRows) {
 degradationRows.innerHTML = `
   <div class="degradation-result-groups">
     <div class="degradation-result-group">
-      <h4>Energy / range</h4>
-      ${[
-        valueRow('BOL usable energy', `${fmt(results.degradationBolUsableEnergyKWh, 2)} kWh`),
-        valueRow('EOL usable energy', `${fmt(results.degradationEolUsableEnergyKWh, 2)} kWh`),
-        valueRow('EOL capacity target', `${fmt(results.degradationEolCapacityPercent, 0)} %`),
-        valueRow('Energy lost over life', `${fmt(results.degradationEnergyLostKWh, 2)} kWh`),
-        valueRow('Estimated BOL range', results.degradationBolRangeMiles !== null ? `${fmt(results.degradationBolRangeMiles, 1)} miles` : '—'),
-        valueRow('Estimated EOL range', results.degradationEolRangeMiles !== null ? `${fmt(results.degradationEolRangeMiles, 1)} miles` : '—')
-      ].join('')}
-    </div>
-
-    <div class="degradation-result-group">
-      <h4>Mileage / ageing</h4>
+      <h4>Application profile</h4>
       ${[
         valueRow('Service life target', `${fmt(results.degradationServiceLifeYears, 0)} years`),
         valueRow('Target mileage', `${fmt(results.degradationTargetMileageMiles, 0)} miles`),
-        valueRow('Annual mileage', `${fmt(results.degradationAnnualMileageMiles, 0)} miles/year`),
-        valueRow('Mileage from years × annual mileage', `${fmt(results.degradationMileageFromAnnual, 0)} miles`),
-        valueRow('Energy loss per year', results.degradationEnergyLossPerYearKWh !== null ? `${fmt(results.degradationEnergyLossPerYearKWh, 2)} kWh/year` : '—'),
-        valueRow('Energy loss per 10,000 miles', results.degradationEnergyLossPer10000MilesKWh !== null ? `${fmt(results.degradationEnergyLossPer10000MilesKWh, 2)} kWh` : '—')
+        valueRow('Calculated annual mileage', `${fmt(results.degradationAnnualMileageMiles, 0)} miles/year`),
+        valueRow('Energy consumption', `${fmt(results.degradationEnergyConsumptionKWhPerMile, 2)} kWh/mile`),
+        valueRow('Charging method', degradationChargingMethodLabel(results.degradationChargingMethod)),
+        valueRow('EOL capacity target', `${fmt(results.degradationEolCapacityPercent, 0)} %`)
       ].join('')}
     </div>
 
     <div class="degradation-result-group">
-      <h4>SOC / EOL power</h4>
+      <h4>Pack / SOC basis</h4>
       ${[
-        valueRow('SOC window', `${fmt(results.degradationSocWindowMinPercent, 0)}–${fmt(results.degradationSocWindowMaxPercent, 0)} %`),
-        valueRow('SOC window size', `${fmt(results.degradationSocWindowPercent, 0)} %`),
-        valueRow('Energy consumption assumption', `${fmt(results.degradationEnergyConsumptionKWhPerMile, 2)} kWh/mile`),
-        valueRow('EOL pulse discharge', `${fmt(results.degradationEolPackPulseCurrentA, 0)} A / ${fmt(results.degradationEolPulsePowerKW, 1)} kW`),
-        valueRow('EOL continuous discharge', `${fmt(results.degradationEolPackContinuousCurrentA, 0)} A / ${fmt(results.degradationEolContinuousPowerKW, 1)} kW`),
-        valueRow('EOL maximum charge', `${fmt(results.degradationEolPackChargeCurrentA, 0)} A / ${fmt(results.degradationEolChargePowerKW, 1)} kW`),
-        valueRow('Charging method', degradationChargingMethodLabel(results.degradationChargingMethod))
+        valueRow('BOL usable energy', `${fmt(results.degradationBolUsableEnergyKWh, 2)} kWh`),
+        valueRow('EOL usable energy target', `${fmt(results.degradationEolUsableEnergyKWh, 2)} kWh`),
+        valueRow('Energy reduction allowance', `${fmt(results.degradationEnergyLostKWh, 2)} kWh`),
+        valueRow('Usable factor', `${fmt(results.usableEnergyFactor * 100, 0)} %`),
+        valueRow('Calculated SOC window', `${fmt(results.degradationSocWindowMinPercent, 0)}–${fmt(results.degradationSocWindowMaxPercent, 0)} %`),
+        valueRow('SOC window size', `${fmt(results.degradationSocWindowPercent, 0)} %`)
+      ].join('')}
+    </div>
+
+    <div class="degradation-result-group">
+      <h4>Lifetime duty</h4>
+      ${[
+        valueRow('Lifetime energy throughput', `${fmt(results.degradationLifetimeEnergyThroughputKWh, 0)} kWh`),
+        valueRow('Energy throughput per year', results.degradationEnergyThroughputPerYearKWh !== null ? `${fmt(results.degradationEnergyThroughputPerYearKWh, 0)} kWh/year` : '—'),
+        valueRow('Average daily energy use', results.degradationAverageDailyEnergyUseKWh !== null ? `${fmt(results.degradationAverageDailyEnergyUseKWh, 2)} kWh/day` : '—'),
+        valueRow('Equivalent full cycles', results.degradationEquivalentFullCycles !== null ? `${fmt(results.degradationEquivalentFullCycles, 0)} cycles` : '—'),
+        valueRow('Estimated BOL range', results.degradationBolRangeMiles !== null ? `${fmt(results.degradationBolRangeMiles, 1)} miles` : '—'),
+        valueRow('Estimated EOL range target', results.degradationEolRangeMiles !== null ? `${fmt(results.degradationEolRangeMiles, 1)} miles` : '—')
       ].join('')}
     </div>
   </div>
