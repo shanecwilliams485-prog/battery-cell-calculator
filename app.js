@@ -2860,7 +2860,7 @@ const designRequirementRows = [
   ["Required pulse discharge", `${fmtSafe(lastResults.requiredPulseCurrentA, " A", 0)} / ${fmtSafe(lastResults.requiredPeakPowerKW, " kW", 1)}`],
   ["Required pulse duration", fmtSafe(lastResults.requiredPulseDurationSeconds, " s", 0)],
   ["Required continuous discharge", `${fmtSafe(lastResults.requiredContinuousCurrentA, " A", 0)} / ${fmtSafe(lastResults.requiredContinuousPowerKW, " kW", 1)}`],
-  ["Required max charge current", fmtSafe(lastResults.requiredMaxChargeCurrentA, " A", 0)],
+ ["Required max charge", `${fmtSafe(lastResults.requiredMaxChargeCurrentA, " A", 0)} / ${fmtSafe(lastResults.requiredMaxChargePowerKW, " kW", 1)}`],
   ["Required regen current", fmtSafe(lastResults.requiredRegenCurrentA, " A", 0)],
   ["Required usable energy", fmtSafe(lastResults.requiredUsableEnergyKWh, " kWh", 1)]
 ];
@@ -3264,7 +3264,7 @@ const vehicleRequirementRows = lastResults.designRequirementsEnabled
       ["Required pulse power", requirementPulsePowerKW !== null ? fmtSafe(requirementPulsePowerKW, " kW", 1) : "N/A"],
       ["Required continuous current", fmtSafe(lastResults.requiredContinuousCurrentA, " A", 0)],
       ["Required continuous power", requirementContinuousPowerKW !== null ? fmtSafe(requirementContinuousPowerKW, " kW", 1) : "N/A"],
-      ["Required max charge current", fmtSafe(lastResults.requiredMaxChargeCurrentA, " A", 0)],
+     ["Required max charge", `${fmtSafe(lastResults.requiredMaxChargeCurrentA, " A", 0)} / ${fmtSafe(lastResults.requiredMaxChargePowerKW, " kW", 1)}`],
       ["Required usable energy", fmtSafe(lastResults.requiredUsableEnergyKWh, " kWh", 1)],
       ["Required regen current", fmtSafe(lastResults.requiredRegenCurrentA, " A", 0)],
       ["Cell-level pulse current", cellRequiredPulseCurrentA !== null ? fmtSafe(cellRequiredPulseCurrentA, " A", 2) : "N/A"],
