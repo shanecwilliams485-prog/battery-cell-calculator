@@ -2286,9 +2286,7 @@ body.mobile-input-section-open .mobile-input-section:not([hidden]) {
   }
 }
 .design-requirements-grid {
-  display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 16px;
 }
 
 .requirement-input-combo {
