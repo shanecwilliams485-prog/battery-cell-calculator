@@ -3876,8 +3876,11 @@ function initMobileResultSections() {
       if (menu) menu.hidden = true;
       if (toolbar) toolbar.hidden = true;
 
+           updateResultMenuButtons();
+
       allResultSections().forEach(section => {
-        section.hidden = section.id === 'secondModuleResults' && !(lastResults?.hasSecondModule);
+        const sectionId = section.dataset.resultSection;
+        section.hidden = !isResultSectionVisible(sectionId);
       });
 
       return;
@@ -3885,6 +3888,8 @@ function initMobileResultSections() {
 
     document.body.classList.add('mobile-results-menu-open');
     document.body.classList.remove('mobile-results-section-open');
+
+    updateResultMenuButtons();
 
     if (menu) menu.hidden = false;
     if (toolbar) toolbar.hidden = true;
