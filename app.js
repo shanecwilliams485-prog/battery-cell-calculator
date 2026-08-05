@@ -3136,14 +3136,61 @@ async function downloadCellTestProfilePdf() {
   ["Max charge C-rate", fmtSafe(lastResults.cellMaxChargeCRating, " C", 1)]
 ];
 
-  const packCurrentRows = [
-    ["Maximum discharge current", fmtSafe(lastResults.maxDischargeCurrentA, " A", 0)],
-    ["Continuous discharge current", fmtSafe(lastResults.continuousDischargeCurrentA, " A", 0)],
-    ["Maximum charge current", fmtSafe(lastResults.maxChargeCurrentA, " A", 0)],
-    ["Maximum discharge power", fmtSafe(lastResults.maxDischargePowerKW, " kW", 1)],
-    ["Continuous discharge power", fmtSafe(lastResults.continuousDischargePowerKW, " kW", 1)],
-    ["Maximum charge power", fmtSafe(lastResults.maxChargePowerKW, " kW", 1)]
-  ];
+const cellRequiredPulseCurrentA =
+  lastResults.designRequirementsEnabled &&
+  lastResults.requiredPulseCurrentA > 0 &&
+  lastResults.parallelCount > 0
+    ? lastResults.requiredPulseCurrentA / lastResults.parallelCount
+    : null;
+
+const cellRequiredContinuousCurrentA =
+  lastResults.designRequirementsEnabled &&
+  lastResults.requiredContinuousCurrentA > 0 &&
+  lastResults.parallelCount > 0
+    ? lastResults.requiredContinuousCurrentA / lastResults.parallelCount
+    : null;
+
+const cellRequiredChargeCurrentA =
+  lastResults.designRequirementsEnabled &&
+  lastResults.requiredMaxChargeCurrentA > 0 &&
+  lastResults.parallelCount > 0
+    ? lastResults.requiredMaxChargeCurrentA / lastResults.parallelCount
+    : null;
+
+const requirementPulsePowerKW =
+  lastResults.designRequirementsEnabled &&
+  lastResults.requiredPulseCurrentA > 0
+    ? lastResults.nominalVoltageV * lastResults.requiredPulseCurrentA / 1000
+    : null;
+
+const requirementContinuousPowerKW =
+  lastResults.designRequirementsEnabled &&
+  lastResults.requiredContinuousCurrentA > 0
+    ? lastResults.nominalVoltageV * lastResults.requiredContinuousCurrentA / 1000
+    : null;
+
+const vehicleRequirementRows = lastResults.designRequirementsEnabled
+  ? [
+      ["Required pulse current", fmtSafe(lastResults.requiredPulseCurrentA, " A", 0)],
+      ["Required pulse duration", fmtSafe(lastResults.requiredPulseDurationSeconds, " s", 0)],
+      ["Required pulse power", requirementPulsePowerKW !== null ? fmtSafe(requirementPulsePowerKW, " kW", 1) : "N/A"],
+      ["Required continuous current", fmtSafe(lastResults.requiredContinuousCurrentA, " A", 0)],
+      ["Required continuous power", requirementContinuousPowerKW !== null ? fmtSafe(requirementContinuousPowerKW, " kW", 1) : "N/A"],
+      ["Required max charge current", fmtSafe(lastResults.requiredMaxChargeCurrentA, " A", 0)],
+      ["Required usable energy", fmtSafe(lastResults.requiredUsableEnergyKWh, " kWh", 1)],
+      ["Required regen current", fmtSafe(lastResults.requiredRegenCurrentA, " A", 0)],
+      ["Cell-level pulse current", cellRequiredPulseCurrentA !== null ? fmtSafe(cellRequiredPulseCurrentA, " A", 2) : "N/A"],
+      ["Cell-level continuous current", cellRequiredContinuousCurrentA !== null ? fmtSafe(cellRequiredContinuousCurrentA, " A", 2) : "N/A"],
+      ["Cell-level charge current", cellRequiredChargeCurrentA !== null ? fmtSafe(cellRequiredChargeCurrentA, " A", 2) : "N/A"]
+    ]
+  : [
+      ["Design requirements", "Not enabled"],
+      ["Required pulse current", "N/A"],
+      ["Required pulse duration", "N/A"],
+      ["Required continuous current", "N/A"],
+      ["Required max charge current", "N/A"],
+      ["Cell-level requirement", "N/A"]
+    ];
 
   addTwoColumnRow(
     "Application Profile",
@@ -3159,12 +3206,12 @@ async function downloadCellTestProfilePdf() {
     socChargingRows
   );
 
-  addTwoColumnRow(
-    "Cell-Level Data",
-    cellLevelRows,
-    "Pack Current / Power Basis",
-    packCurrentRows
-  );
+addTwoColumnRow(
+  "Cell-Level Data",
+  cellLevelRows,
+  "Vehicle / Pack Requirement",
+  vehicleRequirementRows
+);
 
   addFooter();
 
