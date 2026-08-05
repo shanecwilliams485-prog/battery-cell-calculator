@@ -3836,17 +3836,30 @@ function initMobileResultSections() {
   const backBtn = document.getElementById('mobileResultsBack');
   const title = document.getElementById('mobileResultsTitle');
 
-  const sections = [
-    { id: 'overviewResults', title: 'Overview' },
-    { id: 'cellSpec', title: 'Cell Specification' },
-    { id: 'modules', title: 'Modules' },
-    { id: 'packResults', title: 'Pack Results' },
-    { id: 'sohResults', title: 'Usable Energy vs SOH' },
-    { id: 'vehicleResults', title: 'Vehicle Results' },
-    { id: 'simulationGraph', title: 'Simulation Graph' },
-    { id: 'simulationSettings', title: 'Simulation Settings' }
+   const sections = [
+    { id: 'overviewResults', title: 'Overview', visible: () => true },
+    { id: 'cellSpec', title: 'Cell Specification', visible: () => true },
+    { id: 'modules', title: 'Modules', visible: () => true },
+    { id: 'packResults', title: 'Pack Results', visible: () => true },
+    { id: 'requirementCheck', title: 'Requirement Check', visible: () => !!lastResults?.designRequirementsEnabled },
+    { id: 'sohResults', title: 'Usable Energy vs SOH', visible: () => true },
+    { id: 'degradationResults', title: 'Cell Test Profile Data', visible: () => !!lastResults?.degradationEnabled },
+    { id: 'vehicleResults', title: 'Vehicle Results', visible: () => !!lastResults?.variableSimulationEnabled },
+    { id: 'simulationGraph', title: 'Simulation Graph', visible: () => !!lastResults?.variableSimulationEnabled },
+    { id: 'simulationSettings', title: 'Simulation Settings', visible: () => !!lastResults?.variableSimulationEnabled }
   ];
 
+  function isResultSectionVisible(sectionId) {
+    const config = sections.find(section => section.id === sectionId);
+    return config ? config.visible() : true;
+  }
+
+  function updateResultMenuButtons() {
+    document.querySelectorAll('[data-open-result]').forEach(button => {
+      const sectionId = button.dataset.openResult;
+      button.hidden = !isResultSectionVisible(sectionId);
+    });
+  }
   const mobileQuery = window.matchMedia('(max-width: 950px), (pointer: coarse)')
 
   function allResultSections() {
