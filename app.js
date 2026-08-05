@@ -3104,15 +3104,34 @@ async function downloadCellTestProfilePdf() {
     ["EOL capacity target", fmtSafe(lastResults.degradationEolCapacityPercent, "%", 0)]
   ];
 
-  const packBasisRows = [
-    ["Pack configuration", `${lastResults.seriesCount}S${lastResults.parallelCount}P`],
-    ["Total cell count", fmtSafe(lastResults.numberOfCells, "", 0)],
-    ["Nominal voltage", fmtSafe(lastResults.nominalVoltageV, " V", 1)],
-    ["Voltage range", `${fmtSafe(lastResults.minVoltageV, " V", 1)} to ${fmtSafe(lastResults.maxVoltageV, " V", 1)}`],
-    ["Pack capacity", fmtSafe(lastResults.packCapacityAh, " Ah", 1)],
-    ["Nominal energy", fmtSafe(lastResults.packEnergyKWh, " kWh", 2)],
-    ["BOL usable energy", fmtSafe(lastResults.degradationBolUsableEnergyKWh, " kWh", 2)]
-  ];
+const moduleConfigurationRows = lastResults.hasSecondModule
+  ? [
+      [
+        "Module configuration 1",
+        `${lastResults.moduleConfig} - ${fmt(lastResults.moduleCount1, 0)} module${lastResults.moduleCount1 === 1 ? "" : "s"}`
+      ],
+      [
+        "Module configuration 2",
+        `${lastResults.module2Config} - ${fmt(lastResults.moduleCount2, 0)} module${lastResults.moduleCount2 === 1 ? "" : "s"}`
+      ]
+    ]
+  : [
+      [
+        "Module configuration",
+        `${lastResults.moduleConfig} - ${fmt(lastResults.moduleCount1, 0)} module${lastResults.moduleCount1 === 1 ? "" : "s"}`
+      ]
+    ];
+
+const packBasisRows = [
+  ["Pack configuration", `${lastResults.seriesCount}S${lastResults.parallelCount}P`],
+  ...moduleConfigurationRows,
+  ["Total cell count", fmtSafe(lastResults.numberOfCells, "", 0)],
+  ["Nominal voltage", fmtSafe(lastResults.nominalVoltageV, " V", 1)],
+  ["Voltage range", `${fmtSafe(lastResults.minVoltageV, " V", 1)} to ${fmtSafe(lastResults.maxVoltageV, " V", 1)}`],
+  ["Pack capacity", fmtSafe(lastResults.packCapacityAh, " Ah", 1)],
+  ["Nominal energy", fmtSafe(lastResults.packEnergyKWh, " kWh", 2)],
+  ["BOL usable energy", fmtSafe(lastResults.degradationBolUsableEnergyKWh, " kWh", 2)]
+];
 
   const socChargingRows = [
     ["Usable factor", fmtSafe(lastResults.usableEnergyFactor * 100, "%", 0)],
