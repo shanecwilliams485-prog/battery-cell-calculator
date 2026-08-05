@@ -151,47 +151,49 @@
   </label>
 
   <div id="designRequirementInputs" class="form-grid" hidden>
-    <label>
-      Required pulse discharge <span>value / unit</span>
-      <div class="requirement-input-combo">
-        <input id="requiredPulseDischargeValue" type="number" step="1" min="0" inputmode="decimal">
-        <select id="requiredPulseDischargeUnit">
-          <option value="A">A</option>
-          <option value="kW">kW</option>
-        </select>
-      </div>
-    </label>
+   <div id="designRequirementInputs" class="design-requirements-grid" hidden>
+  <label class="design-requirement-combo">
+    Required pulse discharge <span>value / unit</span>
+    <div class="requirement-input-combo">
+      <input id="requiredPulseDischargeValue" type="number" step="1" min="0" inputmode="decimal">
+      <select id="requiredPulseDischargeUnit">
+        <option value="A">A</option>
+        <option value="kW">kW</option>
+      </select>
+    </div>
+  </label>
 
-    <label>
-      Required pulse duration <span>seconds</span>
-      <input id="requiredPulseDurationSeconds" type="number" step="1" min="0" inputmode="decimal">
-    </label>
+  <label>
+    Required pulse duration <span>seconds</span>
+    <input id="requiredPulseDurationSeconds" type="number" step="1" min="0" inputmode="decimal">
+  </label>
 
-    <label>
-      Required continuous discharge <span>value / unit</span>
-      <div class="requirement-input-combo">
-        <input id="requiredContinuousDischargeValue" type="number" step="1" min="0" inputmode="decimal">
-        <select id="requiredContinuousDischargeUnit">
-          <option value="A">A</option>
-          <option value="kW">kW</option>
-        </select>
-      </div>
-    </label>
+  <label class="design-requirement-combo">
+    Required continuous discharge <span>value / unit</span>
+    <div class="requirement-input-combo">
+      <input id="requiredContinuousDischargeValue" type="number" step="1" min="0" inputmode="decimal">
+      <select id="requiredContinuousDischargeUnit">
+        <option value="A">A</option>
+        <option value="kW">kW</option>
+      </select>
+    </div>
+  </label>
 
-    <label>
-      Required max charge current <span>A</span>
-      <input id="requiredMaxChargeCurrentA" type="number" step="1" min="0" inputmode="decimal">
-    </label>
+  <label>
+    Required max charge current <span>A</span>
+    <input id="requiredMaxChargeCurrentA" type="number" step="1" min="0" inputmode="decimal">
+  </label>
 
-    <label>
-      Required regen current <span>A</span>
-      <input id="requiredRegenCurrentA" type="number" step="1" min="0" inputmode="decimal">
-    </label>
+  <label>
+    Required regen current <span>A</span>
+    <input id="requiredRegenCurrentA" type="number" step="1" min="0" inputmode="decimal">
+  </label>
 
-    <label>
-      Required usable energy <span>kWh</span>
-      <input id="requiredUsableEnergyKWh" type="number" step="0.1" min="0" inputmode="decimal">
-    </label>
+  <label>
+    Required usable energy <span>kWh</span>
+    <input id="requiredUsableEnergyKWh" type="number" step="0.1" min="0" inputmode="decimal">
+  </label>
+</div>
 
   </div>
 </section>
