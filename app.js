@@ -3516,6 +3516,10 @@ function initMobileInputSections() {
 
   function showSection(sectionId) {
     const selected = sections.find(section => section.id === sectionId);
+        if (!isResultSectionVisible(sectionId)) {
+      showMenu();
+      return;
+    }
 
     document.body.classList.remove('mobile-input-menu-open');
     document.body.classList.add('mobile-input-section-open');
