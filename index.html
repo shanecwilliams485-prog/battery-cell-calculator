@@ -151,36 +151,32 @@
   </label>
 
   <div id="designRequirementInputs" class="form-grid" hidden>
-   <label>
-  Required pulse discharge <span>A / kW</span>
-  <input id="requiredPulseDischargeValue" type="number" step="1" min="0" inputmode="decimal">
-</label>
+    <label>
+      Required pulse discharge <span>value / unit</span>
+      <div class="requirement-input-combo">
+        <input id="requiredPulseDischargeValue" type="number" step="1" min="0" inputmode="decimal">
+        <select id="requiredPulseDischargeUnit">
+          <option value="A">A</option>
+          <option value="kW">kW</option>
+        </select>
+      </div>
+    </label>
 
-<label>
-  Pulse discharge unit <span>unit</span>
-  <select id="requiredPulseDischargeUnit">
-    <option value="A">A</option>
-    <option value="kW">kW</option>
-  </select>
-</label>
+    <label>
+      Required pulse duration <span>seconds</span>
+      <input id="requiredPulseDurationSeconds" type="number" step="1" min="0" inputmode="decimal">
+    </label>
 
-<label>
-  Required pulse duration <span>seconds</span>
-  <input id="requiredPulseDurationSeconds" type="number" step="1" min="0" inputmode="decimal">
-</label>
-
-<label>
-  Required continuous discharge <span>A / kW</span>
-  <input id="requiredContinuousDischargeValue" type="number" step="1" min="0" inputmode="decimal">
-</label>
-
-<label>
-  Continuous discharge unit <span>unit</span>
-  <select id="requiredContinuousDischargeUnit">
-    <option value="A">A</option>
-    <option value="kW">kW</option>
-  </select>
-</label>
+    <label>
+      Required continuous discharge <span>value / unit</span>
+      <div class="requirement-input-combo">
+        <input id="requiredContinuousDischargeValue" type="number" step="1" min="0" inputmode="decimal">
+        <select id="requiredContinuousDischargeUnit">
+          <option value="A">A</option>
+          <option value="kW">kW</option>
+        </select>
+      </div>
+    </label>
 
     <label>
       Required max charge current <span>A</span>
