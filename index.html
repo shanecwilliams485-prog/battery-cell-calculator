@@ -416,13 +416,22 @@
 
   <div class="advanced-subsection-content">
       <div class="form-grid">
-       <label>
+      <label>
   <span>Heating</span>
   <span class="toggle-row">
     Enabled
     <input id="heatingEnabled" type="checkbox">
   </span>
   <small>Adds extra load for cabin heating or demisting.</small>
+</label>
+
+<label>
+  <span>Heater type</span>
+  <select id="heaterType">
+    <option value="resistive">Resistive heater</option>
+    <option value="heatPump">Heat pump</option>
+  </select>
+  <small>Used when Heating is enabled.</small>
 </label>
 
 <label>
@@ -433,16 +442,6 @@
   </span>
   <small>Adds extra load for cabin cooling.</small>
 </label>
-
-        <label>
-          <span>Heater type</span>
-          <select id="heaterType">
-            <option value="resistive">Resistive heater</option>
-            <option value="heatPump">Heat pump</option>
-          </select>
-          <small>Used when Heating is enabled.</small>
-        </label>
-
         <label>
           <span>Head lights / wipers / radio</span>
           <span class="toggle-row">
