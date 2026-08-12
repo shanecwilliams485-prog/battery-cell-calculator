@@ -1913,23 +1913,18 @@ degradationRows.innerHTML = `
     <div class="degradation-result-group">
       <h4>Application profile</h4>
       ${[
-        valueRow('Service life target', `${fmt(results.degradationServiceLifeYears, 0)} years`),
+                valueRow('Service life target', `${fmt(results.degradationServiceLifeYears, 0)} years`),
         valueRow('Target mileage', `${fmt(results.degradationTargetMileageMiles, 0)} miles`),
         valueRow('Calculated annual mileage', `${fmt(results.degradationAnnualMileageMiles, 0)} miles/year`),
-       const degradationEnergySourceInput = document.getElementById('degradationEnergyConsumptionSource');
-const degradationEnergyInput = document.getElementById('degradationEnergyConsumptionKWhPerMile');
-
-if (degradationEnergySourceInput && degradationEnergyInput) {
-  const usingAutoEnergy =
-    results.degradationEnergyConsumptionSource === "auto" &&
-    results.autoDegradationEnergyConsumptionKWhPerMile !== null;
-
-  degradationEnergyInput.readOnly = usingAutoEnergy;
-
-  if (usingAutoEnergy) {
-    degradationEnergyInput.value = fmt(results.autoDegradationEnergyConsumptionKWhPerMile, 3);
-  }
-}
+        valueRow(
+          'Energy consumption',
+          `${fmt(results.degradationEnergyConsumptionKWhPerMile, 3)} kWh/mile ${
+            results.degradationEnergyConsumptionSource === "auto" &&
+            results.autoDegradationEnergyConsumptionKWhPerMile !== null
+              ? "(auto)"
+              : "(manual)"
+          }`
+        ),
         valueRow('Charging method', degradationChargingMethodLabel(results.degradationChargingMethod)),
         valueRow('EOL capacity target', `${fmt(results.degradationEolCapacityPercent, 0)} %`)
       ].join('')}
