@@ -1744,6 +1744,21 @@ function requirementCheckRow(label, required, available, unit, decimals = 0) {
 }
 function renderResults(results) {
   document.getElementById('results').hidden = false;
+
+const degradationEnergySourceInput = document.getElementById('degradationEnergyConsumptionSource');
+const degradationEnergyInput = document.getElementById('degradationEnergyConsumptionKWhPerMile');
+
+if (degradationEnergySourceInput && degradationEnergyInput) {
+  const usingAutoEnergy =
+    results.degradationEnergyConsumptionSource === "auto" &&
+    results.autoDegradationEnergyConsumptionKWhPerMile !== null;
+
+  degradationEnergyInput.readOnly = usingAutoEnergy;
+
+  if (usingAutoEnergy) {
+    degradationEnergyInput.value = fmt(results.autoDegradationEnergyConsumptionKWhPerMile, 3);
+  }
+}
   
   const maxRegenInput = document.getElementById('maxRegenCurrentA');
 if (maxRegenInput) maxRegenInput.value = fmt(results.maxRegenCurrentA, 0);
@@ -1901,7 +1916,20 @@ degradationRows.innerHTML = `
         valueRow('Service life target', `${fmt(results.degradationServiceLifeYears, 0)} years`),
         valueRow('Target mileage', `${fmt(results.degradationTargetMileageMiles, 0)} miles`),
         valueRow('Calculated annual mileage', `${fmt(results.degradationAnnualMileageMiles, 0)} miles/year`),
-        valueRow('Energy consumption', `${fmt(results.degradationEnergyConsumptionKWhPerMile, 2)} kWh/mile`),
+       const degradationEnergySourceInput = document.getElementById('degradationEnergyConsumptionSource');
+const degradationEnergyInput = document.getElementById('degradationEnergyConsumptionKWhPerMile');
+
+if (degradationEnergySourceInput && degradationEnergyInput) {
+  const usingAutoEnergy =
+    results.degradationEnergyConsumptionSource === "auto" &&
+    results.autoDegradationEnergyConsumptionKWhPerMile !== null;
+
+  degradationEnergyInput.readOnly = usingAutoEnergy;
+
+  if (usingAutoEnergy) {
+    degradationEnergyInput.value = fmt(results.autoDegradationEnergyConsumptionKWhPerMile, 3);
+  }
+}
         valueRow('Charging method', degradationChargingMethodLabel(results.degradationChargingMethod)),
         valueRow('EOL capacity target', `${fmt(results.degradationEolCapacityPercent, 0)} %`)
       ].join('')}
