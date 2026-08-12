@@ -227,20 +227,21 @@
     <input id="degradationEolCapacityPercent" type="number" step="1" min="0" max="100" inputmode="decimal">
   </label>
 
- <label>
-  Energy consumption source <span>auto / manual</span>
-  <select id="degradationEnergyConsumptionSource">
-    <option value="auto">Auto from vehicle simulation</option>
-    <option value="manual">Manual input</option>
-  </select>
-</label>
+<div class="energy-consumption-group">
+  <label>
+    Energy consumption <span>source</span>
+    <select id="degradationEnergyConsumptionSource">
+      <option value="auto">Auto from vehicle simulation</option>
+      <option value="manual">Manual input</option>
+    </select>
+  </label>
 
-<label>
-  Energy consumption <span>kWh/mile</span>
-  <input id="degradationEnergyConsumptionKWhPerMile" type="number" step="0.01" min="0" inputmode="decimal">
-  <small>Auto uses the vehicle simulation. Manual can be used for real-world or target consumption data.</small>
-</label>
-
+  <label>
+    Calculated / manual value <span>kWh/mile</span>
+    <input id="degradationEnergyConsumptionKWhPerMile" type="number" step="0.001" min="0" inputmode="decimal">
+    <small>Auto fills this from the vehicle simulation. Manual lets you enter real-world or target consumption data.</small>
+  </label>
+</div>
   <label>
     Charging method <span>type</span>
     <select id="degradationChargingMethod">
