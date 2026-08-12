@@ -1860,7 +1860,7 @@ if (requirementCheckCard && requirementCheckRows) {
       )
     ].filter(Boolean);
 
-    requirementCheckCard.hidden = rows.length === 0;
+   requirementCheckCard.hidden = !results.designRequirementsEnabled || rows.length === 0;
 
     requirementCheckRows.innerHTML = rows.length
       ? rows.join("")
