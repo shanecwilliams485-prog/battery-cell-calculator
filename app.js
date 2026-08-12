@@ -1775,20 +1775,7 @@ function requirementCheckRow(label, required, available, unit, decimals = 0) {
 function renderResults(results) {
   document.getElementById('results').hidden = false;
 
-const degradationEnergySourceInput = document.getElementById('degradationEnergyConsumptionSource');
-const degradationEnergyInput = document.getElementById('degradationEnergyConsumptionKWhPerMile');
-
-if (degradationEnergySourceInput && degradationEnergyInput) {
-  const usingAutoEnergy =
-    results.degradationEnergyConsumptionSource === "auto" &&
-    results.autoDegradationEnergyConsumptionKWhPerMile !== null;
-
-  degradationEnergyInput.readOnly = usingAutoEnergy;
-
-  if (usingAutoEnergy) {
-    degradationEnergyInput.value = fmt(results.autoDegradationEnergyConsumptionKWhPerMile, 3);
-  }
-}
+updateDegradationEnergyConsumptionInput();
   
   const maxRegenInput = document.getElementById('maxRegenCurrentA');
 if (maxRegenInput) maxRegenInput.value = fmt(results.maxRegenCurrentA, 0);
