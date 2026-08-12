@@ -756,12 +756,23 @@ const degradationAnnualMileageMiles =
 
 const degradationBolUsableEnergyKWh = usableEnergyKWh;
 
+const degradationEnergyConsumptionSource =
+  input.degradationEnergyConsumptionSource || "auto";
+
 const manualDegradationEnergyConsumptionKWhPerMile =
   Math.max(0, clampNumber(input.degradationEnergyConsumptionKWhPerMile, 0));
 
+const autoDegradationEnergyConsumptionKWhPerMile =
+  variableSimulation &&
+  variableSimulation.simulatedEnergyUsedKWh > 0 &&
+  variableSimulation.simulatedDistanceMiles > 0
+    ? variableSimulation.simulatedEnergyUsedKWh / variableSimulation.simulatedDistanceMiles
+    : null;
+
 const degradationEnergyConsumptionKWhPerMile =
-  calculatedVehicleRangeMiles !== null && calculatedVehicleRangeMiles > 0
-    ? degradationBolUsableEnergyKWh / calculatedVehicleRangeMiles
+  degradationEnergyConsumptionSource === "auto" &&
+  autoDegradationEnergyConsumptionKWhPerMile !== null
+    ? autoDegradationEnergyConsumptionKWhPerMile
     : manualDegradationEnergyConsumptionKWhPerMile;
 
 const degradationEolCapacityPercent = clamp(
@@ -955,6 +966,9 @@ degradationBolUsableEnergyKWh,
 degradationEolCapacityPercent,
 degradationEolUsableEnergyKWh,
 degradationEnergyLostKWh,
+degradationEnergyConsumptionSource,
+manualDegradationEnergyConsumptionKWhPerMile,
+autoDegradationEnergyConsumptionKWhPerMile,
 degradationEnergyConsumptionKWhPerMile,
 degradationBolRangeMiles,
 degradationEolRangeMiles,
