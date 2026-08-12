@@ -3865,7 +3865,23 @@ function initMobileResultSections() {
   function allResultSections() {
     return [...document.querySelectorAll('.mobile-result-section')];
   }
+allResultSections().forEach(section => {
+  const sectionId = section.dataset.resultSection;
 
+  if (sectionId === 'requirementCheck') {
+    section.hidden = !lastResults?.designRequirementsEnabled;
+  } else if (sectionId === 'degradationResults') {
+    section.hidden = !lastResults?.degradationEnabled;
+  } else if (
+    sectionId === 'vehicleResults' ||
+    sectionId === 'simulationGraph' ||
+    sectionId === 'simulationSettings'
+  ) {
+    section.hidden = !lastResults?.variableSimulationEnabled;
+  } else {
+    section.hidden = false;
+  }
+});
   function showMenu() {
     if (mobileGraphExperienceActive) {
   closeMobileGraphExperience(false);
