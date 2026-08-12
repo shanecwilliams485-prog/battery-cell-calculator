@@ -3427,7 +3427,46 @@ function refreshResultsIfVisible() {
 function init() {
   setInputs(loadInputs());
   updateModuleConfigurationOptions();
+  
+const degradationLiveUpdateFields = [
+  'degradationEnergyConsumptionSource',
+  'variableCurrentSimulationEnabled',
+  'driveCycle',
+  'vehicleMassKg',
+  'dragCoefficient',
+  'frontalAreaM2',
+  'rollingResistanceCoefficient',
+  'drivetrainEfficiencyPercent',
+  'assumedLoadKW',
+  'simulationTimeStepSeconds',
+  'advancedVehicleRealismEnabled',
+  'regenEnabled',
+  'maxRegenCurrentA',
+  'regenEfficiencyPercent',
+  'regenDisableAboveSocPercent',
+  'batteryTemperatureC',
+  'roadGradientProfile',
+  'airConditioningEnabled',
+  'heatingEnabled',
+  'heaterType',
+  'electricalAccessoriesEnabled',
+  'weatherCondition',
+  'driverAggression',
+  'payloadKg',
+  'nominalVoltage',
+  'capacityAh',
+  'seriesCount',
+  'parallelCount',
+  'usableEnergyFactor'
+];
 
+degradationLiveUpdateFields.forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.addEventListener('input', updateDegradationEnergyConsumptionInput);
+  el.addEventListener('change', updateDegradationEnergyConsumptionInput);
+});
   document.getElementById('calculatorForm')?.addEventListener('submit', handleCalculate);
   document.getElementById('resetBtn')?.addEventListener('click', resetAll);
   document.getElementById('backBtn')?.addEventListener('click', showCalculatorPage);
