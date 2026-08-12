@@ -185,9 +185,10 @@ function setInputs(inputs) {
     else if (type === 'text') el.value = inputs[name] || "";
     else el.value = inputs[name];
   }
-  toggleDesignRequirementsOptions();
+   toggleDesignRequirementsOptions();
   toggleDegradationOptions();
   toggleSimulationOptions();
+  updateDegradationEnergyConsumptionInput();
   
 }
 function toggleAdvancedVehicleRealismOptions() {
@@ -534,6 +535,35 @@ function updateCalculatedRegenEfficiencyInput() {
   const calculatedRegenEfficiencyPercent = getCalculatedRegenEfficiencyPercent(input);
 
   regenEfficiencyInput.value = fmt(calculatedRegenEfficiencyPercent, 0);
+}
+function updateDegradationEnergyConsumptionInput() {
+  const sourceInput = document.getElementById('degradationEnergyConsumptionSource');
+  const energyInput = document.getElementById('degradationEnergyConsumptionKWhPerMile');
+
+  if (!sourceInput || !energyInput) return;
+
+  const input = getInputs();
+  const usingAuto = sourceInput.value === "auto";
+
+  energyInput.readOnly = usingAuto;
+
+  if (!usingAuto) return;
+
+  if (!input.variableCurrentSimulationEnabled) {
+    energyInput.value = "";
+    energyInput.placeholder = "Enable vehicle simulation";
+    return;
+  }
+
+  const previewResults = calculate(input);
+
+  if (previewResults.autoDegradationEnergyConsumptionKWhPerMile !== null) {
+    energyInput.value = fmt(previewResults.autoDegradationEnergyConsumptionKWhPerMile, 3);
+    energyInput.placeholder = "";
+  } else {
+    energyInput.value = "";
+    energyInput.placeholder = "Calculate unavailable";
+  }
 }
 function updateAppliedAccessoryLoadInput() {
   const accessoryLoadInput = document.getElementById('assumedLoadKW');
