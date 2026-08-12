@@ -54,8 +54,9 @@ requiredMaxChargeUnit: "A",
  degradationServiceLifeYears: 10,
  degradationTargetMileageMiles: 100000,
  degradationEolCapacityPercent: 70,
- degradationEnergyConsumptionKWhPerMile: 0.30,
- degradationChargingMethod: "acDcRapid",
+degradationEnergyConsumptionSource: "auto",
+degradationEnergyConsumptionKWhPerMile: 0.30,
+degradationChargingMethod: "acDcRapid",
 };
 
 const STORAGE_KEY = 'batteryCellCalculator.inputs.v1';
@@ -135,9 +136,10 @@ const fields = [
   ['degradationEnabled', 'checkbox'],
   ['degradationServiceLifeYears', 'number'],
   ['degradationTargetMileageMiles', 'number'],
-  ['degradationEolCapacityPercent', 'number'],
-  ['degradationEnergyConsumptionKWhPerMile', 'number'],
-  ['degradationChargingMethod', 'text'],
+ ['degradationEolCapacityPercent', 'number'],
+['degradationEnergyConsumptionSource', 'text'],
+['degradationEnergyConsumptionKWhPerMile', 'number'],
+['degradationChargingMethod', 'text'],
   ];
 
 function fmt(value, decimals = 1) {
