@@ -753,10 +753,25 @@ const simulationInput = {
   const maxDischargeCRating = input.capacityAh === 0 ? 0 : input.maxDischargeCurrentA / input.capacityAh;
   const maxChargeCRating = input.capacityAh === 0 ? 0 : input.maxChargeCurrentA / input.capacityAh;
 
-  const usableEnergyKWh = packEnergyKWh * input.usableEnergyFactor;
-  const usableBatteryWhSpreadsheet = input.nominalVoltage * series * input.capacityAh * parallel * input.usableEnergyFactor;
-  const runtimeAtContinuousDischargeMinutes = maxVoltageV <= 0 ? 0 : usableBatteryWhSpreadsheet / maxVoltageV;
-  const runtimeAtAssumedLoadMinutes = input.assumedLoadKW > 0 ? usableEnergyKWh / input.assumedLoadKW * 60.0 : null;
+ const usableEnergyKWh = packEnergyKWh * input.usableEnergyFactor;
+const usableBatteryWhSpreadsheet = input.nominalVoltage * series * input.capacityAh * parallel * input.usableEnergyFactor;
+
+const linearDischargeCurrentA =
+  designRequirementsActive && requiredContinuousCurrentA > 0
+    ? requiredContinuousCurrentA
+    : continuousDischargeCurrentA;
+
+const linearDischargePowerKW =
+  nominalVoltageV > 0
+    ? (nominalVoltageV * linearDischargeCurrentA) / 1000
+    : 0;
+
+const runtimeAtContinuousDischargeMinutes =
+  linearDischargePowerKW > 0
+    ? (usableEnergyKWh / linearDischargePowerKW) * 60
+    : null;
+
+const runtimeAtAssumedLoadMinutes = input.assumedLoadKW > 0 ? usableEnergyKWh / input.assumedLoadKW * 60.0 : null;
 
   const variableSimulation = input.variableCurrentSimulationEnabled
  ? simulateVariableCurrentRuntime(usableEnergyKWh, nominalVoltageV, simulationInput, simulationDischargeCurrentLimitA)
@@ -909,6 +924,8 @@ requiredContinuousPowerKW,
 requiredContinuousPowerCurrentA,
 
 runtimeAtContinuousDischargeMinutes,
+linearDischargeCurrentA,
+linearDischargePowerKW,
 runtimeAtAssumedLoadMinutes,
    moduleConfig: module1Config,
 moduleCount1,
