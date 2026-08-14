@@ -2068,7 +2068,12 @@ if (runtimeRows && vehicleResultsSection) {
   if (results.variableSimulationEnabled && results.variableAveragePowerKW !== null) {
     vehicleResultsSection.hidden = false;
 
-    runtime = valueRow('Pack linear discharge runtime', `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`)
+    runtime = valueRow(
+  `Pack linear discharge runtime (@ ${fmt(results.linearDischargeCurrentA, 1)} A / ${fmt(results.linearDischargePowerKW, 1)} kW)`,
+  results.runtimeAtContinuousDischargeMinutes !== null
+    ? `${fmt(results.runtimeAtContinuousDischargeMinutes, 1)} min`
+    : '—'
+)
       + '<hr>'
       + valueRow('Vehicle average power', `${fmt(results.variableAveragePowerKW, 2)} kW`)
       + valueRow('Vehicle average current', `${fmt(results.variableAverageCurrentA, 1)} A`)
