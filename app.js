@@ -2827,7 +2827,7 @@ function addFooter() {
   function addNewPdfPage() {
     addFooter();
     doc.addPage();
-    addHeader();
+    addHeader(false);
   }
 
   function addFullWidthSection(title, rows) {
