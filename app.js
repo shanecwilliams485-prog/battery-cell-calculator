@@ -2733,8 +2733,9 @@ const cellModel = pdfOptions.cellSpecification
     }
   }
 
-  function addHeader(showTitle = true) {
+ function addHeader(showTitle = true) {
   const today = new Date().toLocaleDateString("en-GB");
+  const dividerY = showTitle ? 54 : 22;
 
   doc.setTextColor(...black);
   doc.setFont("helvetica", "normal");
@@ -2749,7 +2750,7 @@ const cellModel = pdfOptions.cellSpecification
 
   doc.setDrawColor(...black);
   doc.setLineWidth(0.3);
-  doc.line(margin, 54, pageWidth - margin, 54);
+  doc.line(margin, dividerY, pageWidth - margin, dividerY);
 }
   
 function addFooter() {
@@ -2824,11 +2825,12 @@ function addFooter() {
     return headerHeight + rows.length * rowHeight + 4;
   }
 
-  function addNewPdfPage() {
-    addFooter();
-    doc.addPage();
-    addHeader(false);
-  }
+function addNewPdfPage() {
+  addFooter();
+  doc.addPage();
+  addHeader(false);
+  flowY = 30;
+}
 
   function addFullWidthSection(title, rows) {
     if (!rows || !rows.length) return;
