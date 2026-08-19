@@ -1818,7 +1818,8 @@ updateDegradationEnergyConsumptionInput();
   
   const maxRegenInput = document.getElementById('maxRegenCurrentA');
 if (maxRegenInput) maxRegenInput.value = fmt(results.maxRegenCurrentA, 0);
-  updateCalculatedMaxRegenCurrentInput();  function setOptionalResultVisible(sectionId, visible) {
+  updateCalculatedMaxRegenCurrentInput();  
+  function setOptionalResultVisible(sectionId, visible) {
     const section = document.querySelector(`[data-result-section="${sectionId}"]`);
     const menuButton = document.querySelector(`[data-open-result="${sectionId}"]`);
 
