@@ -1789,6 +1789,23 @@ function requirementCheckRow(label, required, available, unit, decimals = 0) {
     </div>
   `;
 }
+function pdfRequirementCheckRow(label, required, available, unit, decimals = 0) {
+  const status = getRequirementStatus(required, available);
+
+  if (!status) return null;
+
+  const requiredText = fmtSafe(required, ` ${unit}`, decimals);
+  const availableText = fmtSafe(available, ` ${unit}`, decimals);
+
+  const marginText = status.marginPercent < 0
+    ? `${fmt(Math.abs(status.marginPercent), 1)}% shortfall`
+    : `${fmt(status.marginPercent, 1)}% margin`;
+
+  return [
+    label,
+    `Required: ${requiredText} | Pack available: ${availableText} | ${marginText} | ${status.label}`
+  ];
+}
 function renderResults(results) {
   document.getElementById('results').hidden = false;
 
@@ -2957,15 +2974,72 @@ const packResultRows = [
 ];
 
 const designRequirementRows = [
-  ["Simulation discharge limit", fmtSafe(lastResults.simulationDischargeCurrentLimitA, " A", 0)],
-  ["Simulation regen limit", fmtSafe(lastResults.simulationMaxRegenCurrentA, " A", 0)],
-  ["Required pulse discharge", `${fmtSafe(lastResults.requiredPulseCurrentA, " A", 0)} / ${fmtSafe(lastResults.requiredPeakPowerKW, " kW", 1)}`],
-  ["Required pulse duration", fmtSafe(lastResults.requiredPulseDurationSeconds, " s", 0)],
-  ["Required continuous discharge", `${fmtSafe(lastResults.requiredContinuousCurrentA, " A", 0)} / ${fmtSafe(lastResults.requiredContinuousPowerKW, " kW", 1)}`],
- ["Required max charge", `${fmtSafe(lastResults.requiredMaxChargeCurrentA, " A", 0)} / ${fmtSafe(lastResults.requiredMaxChargePowerKW, " kW", 1)}`],
-  ["Required regen current", fmtSafe(lastResults.requiredRegenCurrentA, " A", 0)],
-  ["Required usable energy", fmtSafe(lastResults.requiredUsableEnergyKWh, " kWh", 1)]
-];
+  ["Simulation discharge limit", `${fmtSafe(lastResults.simulationDischargeCurrentLimitA, " A", 0)} — ${getSimulationLimitReason(lastResults)}`],
+  ["Simulation regen limit", `${fmtSafe(lastResults.simulationMaxRegenCurrentA, " A", 0)} — Design regen current requirement`],
+
+  pdfRequirementCheckRow(
+    "Pulse discharge current",
+    lastResults.requiredPulseCurrentA,
+    lastResults.maxDischargeCurrentA,
+    "A",
+    0
+  ),
+
+  lastResults.requiredPulseDurationSeconds > 0
+    ? [
+        "Pulse duration requirement",
+        `${fmtSafe(lastResults.requiredPulseDurationSeconds, " s", 0)} requested — thermal validation required`
+      ]
+    : null,
+
+  pdfRequirementCheckRow(
+    "Continuous discharge current",
+    lastResults.requiredContinuousCurrentA,
+    lastResults.continuousDischargeCurrentA,
+    "A",
+    0
+  ),
+
+  pdfRequirementCheckRow(
+    "Max charge current",
+    lastResults.requiredMaxChargeCurrentA,
+    lastResults.maxChargeCurrentA,
+    "A",
+    0
+  ),
+
+  pdfRequirementCheckRow(
+    "Regen current",
+    lastResults.requiredRegenCurrentA,
+    lastResults.maxRegenCurrentA,
+    "A",
+    0
+  ),
+
+  pdfRequirementCheckRow(
+    "Usable energy",
+    lastResults.requiredUsableEnergyKWh,
+    lastResults.usableEnergyKWh,
+    "kWh",
+    1
+  ),
+
+  pdfRequirementCheckRow(
+    "Peak discharge power",
+    lastResults.requiredPeakPowerKW,
+    lastResults.maxDischargePowerKW,
+    "kW",
+    0
+  ),
+
+  pdfRequirementCheckRow(
+    "Continuous discharge power",
+    lastResults.requiredContinuousPowerKW,
+    lastResults.continuousDischargePowerKW,
+    "kW",
+    0
+  )
+].filter(Boolean);
 const pdfSohRows = (lastResults.sohRows || []).map(row => [
   `${fmtSafe(row.percentage, "%", 0)} SOH`,
   fmtSafe(row.usableEnergyKWh, " kWh", 2)
