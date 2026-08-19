@@ -3123,15 +3123,19 @@ addTwoColumnRow(
 );
 
 /* Row 5 */
-addTwoColumnRow(
-  "Design Requirements Check",
-  designRequirementRows,
-  pdfOptions.designRequirements && lastResults.designRequirementsEnabled,
-  "Vehicle Simulation Results",
-  vehicleResultRows,
-  pdfOptions.vehicleResults && lastResults.variableSimulationEnabled
-);
+if (pdfOptions.designRequirements && lastResults.designRequirementsEnabled) {
+  addFullWidthSection(
+    "Design Requirements Check",
+    designRequirementRows
+  );
+}
 
+if (pdfOptions.vehicleResults && lastResults.variableSimulationEnabled) {
+  addFullWidthSection(
+    "Vehicle Simulation Results",
+    vehicleResultRows
+  );
+}
 /* Notes full width at the end */
 if (pdfOptions.notesEnabled && pdfOptions.notesText) {
   addNotesSection(pdfOptions.notesText);
