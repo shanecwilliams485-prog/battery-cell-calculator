@@ -2733,23 +2733,25 @@ const cellModel = pdfOptions.cellSpecification
     }
   }
 
-  function addHeader() {
-    const today = new Date().toLocaleDateString("en-GB");
+  function addHeader(showTitle = true) {
+  const today = new Date().toLocaleDateString("en-GB");
 
-    doc.setTextColor(...black);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text(today, pageWidth - margin, 12, { align: "right" });
+  doc.setTextColor(...black);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.text(today, pageWidth - margin, 12, { align: "right" });
 
+  if (showTitle) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
     doc.text("Calculated Battery Specification", pageWidth / 2, 40, { align: "center" });
-
-    doc.setDrawColor(...black);
-    doc.setLineWidth(0.3);
-    doc.line(margin, 54, pageWidth - margin, 54);
   }
 
+  doc.setDrawColor(...black);
+  doc.setLineWidth(0.3);
+  doc.line(margin, 54, pageWidth - margin, 54);
+}
+  
 function addFooter() {
   const pageNumber = doc.internal.getNumberOfPages();
 
