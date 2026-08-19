@@ -1794,8 +1794,13 @@ function pdfRequirementCheckRow(label, required, available, unit, decimals = 0) 
 
   if (!status) return null;
 
-  const requiredText = fmtSafe(required, ` ${unit}`, decimals);
-  const availableText = fmtSafe(available, ` ${unit}`, decimals);
+  const requiredText = Number.isFinite(Number(required))
+    ? `${fmt(Number(required), decimals)} ${unit}`
+    : "N/A";
+
+  const availableText = Number.isFinite(Number(available))
+    ? `${fmt(Number(available), decimals)} ${unit}`
+    : "N/A";
 
   const marginText = status.marginPercent < 0
     ? `${fmt(Math.abs(status.marginPercent), 1)}% shortfall`
