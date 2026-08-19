@@ -3158,6 +3158,13 @@ if (pdfOptions.vehicleResults && lastResults.variableSimulationEnabled) {
     vehicleResultRows
   );
 }
+  
+if (pdfOptions.cellTestProfile && lastResults.degradationEnabled) {
+  addFullWidthSection(
+    "Cell Test Profile Data",
+    cellTestProfileRows
+  );
+}
 /* Notes full width at the end */
 if (pdfOptions.notesEnabled && pdfOptions.notesText) {
   addNotesSection(pdfOptions.notesText);
