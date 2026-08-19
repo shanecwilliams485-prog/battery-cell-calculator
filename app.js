@@ -2571,6 +2571,7 @@ function openPdfOptionsModal() {
   const hasModule2 = !!lastResults.hasSecondModule;
   const hasDesignRequirements = !!lastResults.designRequirementsEnabled;
   const hasVehicleSimulation = !!lastResults.variableSimulationEnabled;
+  const hasCellTestProfile = !!lastResults.degradationEnabled;
 
   setPdfOptionVisible("pdfModule2Option", hasModule2);
   setPdfOptionVisible("pdfDesignRequirementsOption", hasDesignRequirements);
