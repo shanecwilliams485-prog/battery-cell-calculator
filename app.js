@@ -2577,6 +2577,7 @@ function openPdfOptionsModal() {
   setPdfOptionVisible("pdfDesignRequirementsOption", hasDesignRequirements);
   setPdfOptionVisible("pdfVehicleResultsOption", hasVehicleSimulation);
   setPdfOptionVisible("pdfSimulationSettingsOption", hasVehicleSimulation);
+  setPdfOptionVisible("pdfCellTestProfileOption", hasCellTestProfile);
 
   setPdfCheckboxValue("pdfPackOverview", true);
   setPdfCheckboxValue("pdfCellSpecification", true);
@@ -2594,6 +2595,7 @@ if (cellModelInput) cellModelInput.value = "";
   setPdfCheckboxValue("pdfSoh", true);
   setPdfCheckboxValue("pdfVehicleResults", hasVehicleSimulation);
   setPdfCheckboxValue("pdfSimulationSettings", hasVehicleSimulation);
+  setPdfCheckboxValue("pdfCellTestProfile", hasCellTestProfile)
   setPdfCheckboxValue("pdfNotesEnabled", false);
 
   const notesWrap = document.getElementById("pdfNotesWrap");
@@ -2633,6 +2635,7 @@ function getPdfExportOptions() {
     soh: getPdfCheckboxValue("pdfSoh"),
     vehicleResults: getPdfCheckboxValue("pdfVehicleResults") && !!lastResults?.variableSimulationEnabled,
     simulationSettings: getPdfCheckboxValue("pdfSimulationSettings") && !!lastResults?.variableSimulationEnabled,
+    cellTestProfile: getPdfCheckboxValue("pdfCellTestProfile") && !!lastResults?.degradationEnabled,
     notesEnabled: getPdfCheckboxValue("pdfNotesEnabled"),
     notesText: document.getElementById("pdfNotesText")?.value?.trim() || ""
   };
@@ -3076,6 +3079,24 @@ const simulationSettingRows = [
   ["Weather", weatherConditionLabel(lastResults.weatherCondition)],
   ["Road gradient", roadGradientLabel(lastResults.roadGradientProfile)],
   ["Driver mode", driverAggressionLabel(lastResults.driverAggression)]
+];
+
+  const cellTestProfileRows = [
+  ["Service life target", fmtSafe(lastResults.degradationServiceLifeYears, " years", 0)],
+  ["Target mileage", fmtSafe(lastResults.degradationTargetMileageMiles, " miles", 0)],
+  ["Calculated annual mileage", fmtSafe(lastResults.degradationAnnualMileageMiles, " miles/year", 0)],
+  ["Energy consumption", `${fmtSafe(lastResults.degradationEnergyConsumptionKWhPerMile, " kWh/mile", 3)} ${lastResults.degradationEnergyConsumptionSource === "auto" ? "(auto)" : "(manual)"}`],
+  ["Charging method", degradationChargingMethodLabel(lastResults.degradationChargingMethod)],
+  ["BOL usable energy", fmtSafe(lastResults.degradationBolUsableEnergyKWh, " kWh", 2)],
+  ["EOL usable energy target", fmtSafe(lastResults.degradationEolUsableEnergyKWh, " kWh", 2)],
+  ["EOL capacity target", fmtSafe(lastResults.degradationEolCapacityPercent, "%", 0)],
+  ["Calculated SOC window", `${fmtSafe(lastResults.degradationSocWindowMinPercent, "%", 0)}–${fmtSafe(lastResults.degradationSocWindowMaxPercent, "%", 0)}`],
+  ["Lifetime energy throughput", fmtSafe(lastResults.degradationLifetimeEnergyThroughputKWh, " kWh", 0)],
+  ["Energy throughput per year", fmtSafe(lastResults.degradationEnergyThroughputPerYearKWh, " kWh/year", 0)],
+  ["Average daily energy use", fmtSafe(lastResults.degradationAverageDailyEnergyUseKWh, " kWh/day", 2)],
+  ["Equivalent full cycles", fmtSafe(lastResults.degradationEquivalentFullCycles, " cycles", 0)],
+  ["Estimated BOL range", fmtSafe(lastResults.degradationBolRangeMiles, " miles", 1)],
+  ["Estimated EOL range target", fmtSafe(lastResults.degradationEolRangeMiles, " miles", 1)]
 ];
 
 const leftX = margin;
