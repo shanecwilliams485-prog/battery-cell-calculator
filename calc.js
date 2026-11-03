@@ -1,0 +1,484 @@
+// Cell → module → pack calculations (static, no time simulation).
+//
+// Pure functions only, so they can be unit tested with Node:
+//   node tests/calc.test.js
+//
+// Hierarchy
+//   Cell    : datasheet values.
+//   Module  : either built from cells (series × parallel) or entered from a
+//             module datasheet.
+//   Pack    : modules in series (optionally two module types) × parallel strings.
+//
+// The vehicle simulation (simulation.js) works on a repeating "series element":
+// a cell when the build starts from cells, a module when it starts from a
+// module datasheet. toEngineInput() produces that mapping.
+
+(function (root) {
+  const num = (value, fallback = 0) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  };
+  const pos = (value) => Math.max(0, num(value));
+  const has = (value) => num(value) > 0;
+
+  // Standard cylindrical formats: the name gives diameter and length in mm.
+  const CELL_FORMATS = {
+    cyl18650: { label: "Cylindrical 18650", shape: "cylindrical", diameterMm: 18, lengthMm: 65 },
+    cyl21700: { label: "Cylindrical 21700", shape: "cylindrical", diameterMm: 21, lengthMm: 70 },
+    cyl4680: { label: "Cylindrical 4680", shape: "cylindrical", diameterMm: 46, lengthMm: 80 },
+    cylCustom: { label: "Cylindrical (other size)", shape: "cylindrical" },
+    prismatic: { label: "Prismatic", shape: "box" },
+    pouch: { label: "Pouch", shape: "box" }
+  };
+
+  const BUILD_STEPS = ["cell", "module", "pack", "vehicle"];
+
+  function buildRange(input) {
+    const start = input.buildStart === "module" ? "module" : "cell";
+    let end = BUILD_STEPS.includes(input.buildEnd) ? input.buildEnd : "vehicle";
+    if (BUILD_STEPS.indexOf(end) < BUILD_STEPS.indexOf("module")) end = "module";
+    return {
+      start,
+      end,
+      includes: (step) => BUILD_STEPS.indexOf(step) >= BUILD_STEPS.indexOf(start) && BUILD_STEPS.indexOf(step) <= BUILD_STEPS.indexOf(end)
+    };
+  }
+
+  // Volume of a box from three mm dimensions, in litres (null if incomplete).
+  function boxLitres(l, w, h) {
+    return has(l) && has(w) && has(h) ? (num(l) * num(w) * num(h)) / 1e6 : null;
+  }
+
+  function overheadMass(baseKg, mode, pct, items) {
+    if (mode === "itemised") {
+      const extra = items.reduce((sum, value) => sum + pos(value), 0);
+      return { totalKg: baseKg + extra, overheadKg: extra };
+    }
+    const extra = baseKg * pos(pct) / 100;
+    return { totalKg: baseKg + extra, overheadKg: extra };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Cell
+  // ---------------------------------------------------------------------------
+  function computeCell(input) {
+    const fmt = CELL_FORMATS[input.cellFormat] || null;
+    const shape = fmt ? fmt.shape : null;
+    const diameterMm = fmt && fmt.diameterMm ? fmt.diameterMm : pos(input.cellDiameterMm);
+    const lengthMm = fmt && fmt.lengthMm ? fmt.lengthMm : pos(input.cellLengthMm);
+
+    let volumeL = null;
+    if (shape === "cylindrical" && diameterMm > 0 && lengthMm > 0) {
+      volumeL = Math.PI * (diameterMm / 2) ** 2 * lengthMm / 1e6;
+    } else if (shape === "box") {
+      volumeL = boxLitres(input.cellLengthMm, input.cellWidthMm, input.cellThicknessMm);
+    }
+
+    const nominalV = num(input.cellNominalV);
+    const capacityAh = pos(input.cellCapacityAh);
+    const energyWh = nominalV * capacityAh;
+    const massKg = pos(input.cellMassG) / 1000;
+
+    return {
+      formatLabel: fmt ? fmt.label : null,
+      shape,
+      diameterMm: shape === "cylindrical" ? diameterMm : null,
+      lengthMm: shape === "cylindrical" ? lengthMm : (shape === "box" ? pos(input.cellLengthMm) : null),
+      widthMm: shape === "box" ? pos(input.cellWidthMm) : null,
+      thicknessMm: shape === "box" ? pos(input.cellThicknessMm) : null,
+      nominalV,
+      maxV: num(input.cellMaxV),
+      minV: num(input.cellMinV),
+      capacityAh,
+      energyWh,
+      maxDischargeA: pos(input.cellMaxDischargeA),
+      contDischargeA: pos(input.cellContDischargeA),
+      maxChargeA: pos(input.cellMaxChargeA),
+      maxDischargeC: capacityAh > 0 ? pos(input.cellMaxDischargeA) / capacityAh : 0,
+      contDischargeC: capacityAh > 0 ? pos(input.cellContDischargeA) / capacityAh : 0,
+      maxChargeC: capacityAh > 0 ? pos(input.cellMaxChargeA) / capacityAh : 0,
+      massKg,
+      volumeL,
+      whPerKg: massKg > 0 ? energyWh / massKg : null,
+      whPerL: volumeL ? energyWh / volumeL : null,
+      dcirMOhm: pos(input.cellDcirMOhm),
+      pulseDurationS: pos(input.cellPulseDurationS)
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Module built from cells
+  // ---------------------------------------------------------------------------
+  function moduleFromCells(cell, series, parallel, input, prefix) {
+    const s = Math.max(0, Math.round(num(series)));
+    const p = Math.max(0, Math.round(num(parallel)));
+    const cells = s * p;
+    const cellMassKg = cell.massKg * cells;
+    const mass = overheadMass(cellMassKg, input.modOverheadMode, input.modMassOverheadPct, [
+      input.modItemHousingKg, input.modItemInterconnectKg, input.modItemElectronicsKg, input.modItemOtherKg
+    ]);
+    // Itemised overhead is entered per module type 1; module type 2 scales it by cell count.
+    let totalKg = mass.totalKg;
+    if (prefix === "mod2" && input.modOverheadMode === "itemised") {
+      const mod1Cells = Math.round(num(input.modSeries)) * p;
+      const perCell = mod1Cells > 0 ? mass.overheadKg / mod1Cells : 0;
+      totalKg = cellMassKg + perCell * cells;
+    }
+    const nominalV = cell.nominalV * s;
+    const capacityAh = cell.capacityAh * p;
+    const energyKWh = nominalV * capacityAh / 1000;
+    const volumeL = prefix === "mod1" ? boxLitres(input.modLengthMm, input.modWidthMm, input.modHeightMm) : null;
+    const cellVolumeL = cell.volumeL !== null ? cell.volumeL * cells : null;
+
+    return {
+      source: "cells",
+      config: `${s}S${p}P`,
+      series: s,
+      parallel: p,
+      cells,
+      nominalV,
+      maxV: cell.maxV * s,
+      minV: cell.minV * s,
+      capacityAh,
+      energyKWh,
+      maxDischargeA: cell.maxDischargeA * p,
+      contDischargeA: cell.contDischargeA * p,
+      maxChargeA: cell.maxChargeA * p,
+      maxDischargeKW: nominalV * cell.maxDischargeA * p / 1000,
+      contDischargeKW: nominalV * cell.contDischargeA * p / 1000,
+      maxChargeKW: nominalV * cell.maxChargeA * p / 1000,
+      cellMassKg,
+      massKg: totalKg,
+      overheadKg: totalKg - cellMassKg,
+      volumeL,
+      cellVolumeL,
+      whPerKg: totalKg > 0 ? energyKWh * 1000 / totalKg : null,
+      whPerL: volumeL ? energyKWh * 1000 / volumeL : null,
+      dcirMOhm: cell.dcirMOhm > 0 && p > 0 ? cell.dcirMOhm * s / p : 0,
+      pulseDurationS: cell.pulseDurationS
+    };
+  }
+
+  // Module entered from a module datasheet
+  function moduleFromDatasheet(input) {
+    const nominalV = num(input.mdNominalV);
+    const capacityAh = pos(input.mdCapacityAh);
+    const energyKWh = nominalV * capacityAh / 1000;
+    const massKg = pos(input.mdMassKg);
+    const volumeL = boxLitres(input.mdLengthMm, input.mdWidthMm, input.mdHeightMm);
+    return {
+      source: "datasheet",
+      config: String(input.mdConfig || "").trim() || null,
+      cellType: String(input.mdCellType || "").trim() || null,
+      series: null,
+      parallel: null,
+      cells: null,
+      nominalV,
+      maxV: num(input.mdMaxV),
+      minV: num(input.mdMinV),
+      capacityAh,
+      energyKWh,
+      maxDischargeA: pos(input.mdMaxDischargeA),
+      contDischargeA: pos(input.mdContDischargeA),
+      maxChargeA: pos(input.mdMaxChargeA),
+      maxDischargeKW: nominalV * pos(input.mdMaxDischargeA) / 1000,
+      contDischargeKW: nominalV * pos(input.mdContDischargeA) / 1000,
+      maxChargeKW: nominalV * pos(input.mdMaxChargeA) / 1000,
+      cellMassKg: null,
+      massKg,
+      overheadKg: null,
+      volumeL,
+      cellVolumeL: null,
+      whPerKg: massKg > 0 ? energyKWh * 1000 / massKg : null,
+      whPerL: volumeL ? energyKWh * 1000 / volumeL : null,
+      dcirMOhm: pos(input.mdDcirMOhm),
+      pulseDurationS: pos(input.mdPulseDurationS)
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pack
+  // ---------------------------------------------------------------------------
+  function computePack(input, range, cell, mod1, mod2) {
+    const n1 = Math.max(0, Math.round(num(input.packModules)));
+    const n2 = mod2 ? Math.max(0, Math.round(num(input.packModules2))) : 0;
+    const strings = Math.max(1, Math.round(num(input.packStrings, 1)));
+    const fromCells = range.start === "cell";
+
+    // Series element = cell (cell build) or module (module build).
+    const elementsInSeries = fromCells ? n1 * mod1.series + n2 * (mod2 ? mod2.series : 0) : n1;
+    const elementParallel = fromCells ? mod1.parallel * strings : strings;
+    const element = fromCells ? cell : mod1;
+
+    const nominalV = element.nominalV * elementsInSeries;
+    const maxV = element.maxV * elementsInSeries;
+    const minV = element.minV * elementsInSeries;
+    const capacityAh = element.capacityAh * elementParallel;
+    const energyKWh = nominalV * capacityAh / 1000;
+    const usableFactor = Math.min(1, Math.max(0, num(input.usableFactor, 1)));
+
+    const cellMaxA = element.maxDischargeA * elementParallel;
+    const cellContA = element.contDischargeA * elementParallel;
+    const cellChargeA = element.maxChargeA * elementParallel;
+
+    const bmsOn = !!input.bmsEnabled;
+    const bmsVal = (value) => (bmsOn && has(value) ? num(value) : Infinity);
+    const bmsPeakA = bmsVal(input.bmsPeakA);
+    const bmsContA = bmsVal(input.bmsContA);
+    const bmsChargeA = bmsVal(input.bmsChargeA);
+
+    const peakA = Math.min(cellMaxA, bmsPeakA);
+    const contA = Math.min(cellContA, bmsContA);
+    const chargeA = Math.min(cellChargeA, bmsChargeA);
+    const regenA = Math.min(cellChargeA * 0.8, bmsChargeA);
+
+    const durations = [
+      element.pulseDurationS > 0 ? element.pulseDurationS : null,
+      bmsOn && Number.isFinite(bmsPeakA) && Number.isFinite(bmsContA) && has(input.bmsPeakS) ? num(input.bmsPeakS) : null
+    ].filter((d) => d !== null);
+
+    const modulesMassKg = n1 * mod1.massKg * strings + n2 * (mod2 ? mod2.massKg : 0) * strings;
+    const moduleCount = (n1 + n2) * strings;
+    const mass = overheadMass(modulesMassKg, input.packOverheadMode, input.packMassOverheadPct, [
+      input.packItemEnclosureKg, input.packItemBusbarsKg, input.packItemBmsKg, input.packItemCoolingKg, input.packItemOtherKg
+    ]);
+    const enclosureL = boxLitres(input.packLengthMm, input.packWidthMm, input.packHeightMm);
+    const moduleVolumes = [mod1.volumeL, mod2 ? mod2.volumeL : 0];
+    const modulesVolumeL = mod1.volumeL !== null && (!mod2 || n2 === 0 || mod2.volumeL !== null)
+      ? (n1 * moduleVolumes[0] + n2 * (moduleVolumes[1] || 0)) * strings
+      : null;
+
+    const dcirMOhm = element.dcirMOhm > 0 && elementParallel > 0 ? element.dcirMOhm * elementsInSeries / elementParallel : 0;
+    const cells = fromCells ? elementsInSeries * elementParallel : null;
+
+    return {
+      moduleCount,
+      modules1: n1 * strings,
+      modules2: n2 * strings,
+      modulesInSeries: n1 + n2,
+      strings,
+      seriesCells: fromCells ? elementsInSeries : null,
+      parallelCells: fromCells ? elementParallel : null,
+      config: fromCells ? `${elementsInSeries}S${elementParallel}P` : `${n1}S${strings}P modules`,
+      cells,
+      nominalV,
+      maxV,
+      minV,
+      capacityAh,
+      energyKWh,
+      usableFactor,
+      usableKWh: energyKWh * usableFactor,
+      cellPeakA: cellMaxA,
+      cellContA,
+      cellChargeA,
+      peakA,
+      contA,
+      chargeA,
+      regenA,
+      peakSource: bmsPeakA < cellMaxA ? "BMS" : (fromCells ? "cells" : "modules"),
+      contSource: bmsContA < cellContA ? "BMS" : (fromCells ? "cells" : "modules"),
+      chargeSource: bmsChargeA < cellChargeA ? "BMS" : (fromCells ? "cells" : "modules"),
+      regenSource: bmsChargeA < cellChargeA * 0.8 ? "BMS" : "derated",
+      peakDurationS: durations.length ? Math.min(...durations) : null,
+      peakKW: nominalV * peakA / 1000,
+      contKW: nominalV * contA / 1000,
+      chargeKW: nominalV * chargeA / 1000,
+      bmsEnabled: bmsOn,
+      bmsNote: bmsOn ? String(input.bmsNote || "").trim() : "",
+      dcirMOhm,
+      modulesMassKg,
+      cellMassKg: fromCells ? cell.massKg * cells : null,
+      massKg: mass.totalKg,
+      overheadKg: mass.overheadKg,
+      enclosureL,
+      modulesVolumeL,
+      whPerKg: mass.totalKg > 0 ? energyKWh * 1000 / mass.totalKg : null,
+      whPerL: enclosureL ? energyKWh * 1000 / enclosureL : null,
+      element,
+      elementsInSeries,
+      elementParallel
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Charging (simple constant-power estimate)
+  // ---------------------------------------------------------------------------
+  function computeCharging(input, pack) {
+    if (!pack) return null;
+    const packLimitKW = pack.chargeKW;
+    const ac = has(input.acChargerKW) ? Math.min(num(input.acChargerKW), packLimitKW) : null;
+    const dc = has(input.dcChargerKW) ? Math.min(num(input.dcChargerKW), packLimitKW) : null;
+    return {
+      packLimitKW,
+      acKW: ac,
+      dcKW: dc,
+      acLimitedBy: has(input.acChargerKW) ? (num(input.acChargerKW) > packLimitKW ? "pack" : "charger") : null,
+      dcLimitedBy: has(input.dcChargerKW) ? (num(input.dcChargerKW) > packLimitKW ? "pack" : "charger") : null,
+      // Usable window 0-100 % on AC; 10-80 % on DC.
+      acHours: ac ? pack.usableKWh / ac : null,
+      dcMinutes: dc ? pack.usableKWh * 0.7 / dc * 60 : null
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Validation and sanity warnings
+  // ---------------------------------------------------------------------------
+  function validate(input, range) {
+    const errors = [];
+    if (range.start === "cell") {
+      if (!(num(input.cellNominalV) > 0)) errors.push({ step: "cell", text: "Cell nominal voltage must be above zero." });
+      if (!(num(input.cellMaxV) > num(input.cellMinV))) errors.push({ step: "cell", text: "Cell max voltage must be higher than min voltage." });
+      if (num(input.cellNominalV) > num(input.cellMaxV) || num(input.cellNominalV) < num(input.cellMinV)) errors.push({ step: "cell", text: "Cell nominal voltage should sit between min and max voltage." });
+      if (!(num(input.cellCapacityAh) > 0)) errors.push({ step: "cell", text: "Cell capacity must be above zero." });
+      if (num(input.cellContDischargeA) > num(input.cellMaxDischargeA)) errors.push({ step: "cell", text: "Cell continuous discharge cannot exceed max discharge." });
+      if (!(num(input.modSeries) >= 1) || !(num(input.modParallel) >= 1)) errors.push({ step: "module", text: "Module series and parallel counts must be at least 1." });
+      if (input.useSecondModule && !(num(input.mod2Series) >= 1)) errors.push({ step: "module", text: "Second module type needs a series count of at least 1." });
+    } else {
+      if (!(num(input.mdNominalV) > 0)) errors.push({ step: "module", text: "Module nominal voltage must be above zero." });
+      if (!(num(input.mdMaxV) > num(input.mdMinV))) errors.push({ step: "module", text: "Module max voltage must be higher than min voltage." });
+      if (!(num(input.mdCapacityAh) > 0)) errors.push({ step: "module", text: "Module capacity must be above zero." });
+      if (num(input.mdContDischargeA) > num(input.mdMaxDischargeA)) errors.push({ step: "module", text: "Module continuous discharge cannot exceed max discharge." });
+    }
+    if (range.includes("pack")) {
+      if (!(num(input.packModules) >= 1)) errors.push({ step: "pack", text: "Pack needs at least one module in series." });
+      if (!(num(input.usableFactor) > 0 && num(input.usableFactor) <= 1)) errors.push({ step: "pack", text: "Usable factor must be between 0 and 1 (e.g. 0.88)." });
+      if (input.bmsEnabled && has(input.bmsPeakS) && !has(input.bmsContA)) errors.push({ step: "pack", text: "BMS peak duration needs a BMS continuous limit to drop to." });
+      if (input.bmsEnabled && has(input.bmsContA) && has(input.bmsPeakA) && num(input.bmsContA) > num(input.bmsPeakA)) errors.push({ step: "pack", text: "BMS continuous limit should not exceed the BMS peak limit." });
+    }
+    if (range.includes("vehicle")) {
+      if (!(num(input.vehMassKg) > 0)) errors.push({ step: "vehicle", text: "Vehicle mass must be above zero." });
+      if (!(num(input.drivetrainEffPct) > 30 && num(input.drivetrainEffPct) <= 100)) errors.push({ step: "vehicle", text: "Drivetrain efficiency should be between 30 and 100 %." });
+      if (input.motorEnabled) {
+        if (has(input.motorPeakS) && !has(input.motorContKW)) errors.push({ step: "vehicle", text: "Motor peak duration needs a continuous power to drop to." });
+        if (has(input.motorMaxRpm) && !(has(input.gearRatio) && has(input.tyreRadiusMm))) errors.push({ step: "vehicle", text: "Motor max rpm needs the gear ratio and tyre radius." });
+      }
+    }
+    return errors;
+  }
+
+  // Gentle range checks on values that are allowed but unusual.
+  const SANITY = [
+    { id: "cellNominalV", lo: 1.2, hi: 4.4, text: "Cell nominal voltage is outside the usual 1.2–4.4 V range." },
+    { id: "cellCapacityAh", lo: 0.5, hi: 400, text: "Cell capacity looks unusual (0.5–400 Ah is typical)." },
+    { id: "cellMassG", lo: 10, hi: 6000, text: "Cell mass looks unusual (10 g – 6 kg is typical)." },
+    { id: "usableFactor", lo: 0.6, hi: 1, text: "Usable factor below 0.6 is unusual." },
+    { id: "cd", lo: 0.2, hi: 0.7, text: "Drag coefficient outside 0.20–0.70 is unusual for a road vehicle." },
+    { id: "frontalAreaM2", lo: 1.2, hi: 6, text: "Frontal area outside 1.2–6 m² is unusual." },
+    { id: "crr", lo: 0.005, hi: 0.02, text: "Rolling resistance outside 0.005–0.020 is unusual for road tyres." },
+    { id: "drivetrainEffPct", lo: 70, hi: 97, text: "Battery-to-wheel efficiency outside 70–97 % is unusual." },
+    { id: "vehMassKg", lo: 300, hi: 4000, text: "Vehicle mass outside 300–4000 kg is unusual for a car." }
+  ];
+
+  function sanityWarnings(input, range) {
+    const warnings = [];
+    const active = (id) => {
+      if (id.startsWith("cell")) return range.start === "cell";
+      if (id === "usableFactor") return range.includes("pack");
+      return range.includes("vehicle");
+    };
+    for (const rule of SANITY) {
+      if (!active(rule.id)) continue;
+      const value = num(input[rule.id], NaN);
+      if (Number.isFinite(value) && value !== 0 && (value < rule.lo || value > rule.hi)) warnings.push({ id: rule.id, text: rule.text });
+    }
+    if (range.start === "cell" && has(input.cellMaxDischargeA) && has(input.cellCapacityAh) && num(input.cellMaxDischargeA) / num(input.cellCapacityAh) > 30) {
+      warnings.push({ id: "cellMaxDischargeA", text: "Max discharge above 30C is unusual: check it is amps, not C-rate." });
+    }
+    return warnings;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Mapping to the simulation engine's input names
+  // ---------------------------------------------------------------------------
+  function toEngineInput(input, range, pack, cell) {
+    const el = pack.element;
+    const fromCells = range.start === "cell";
+    const hasDcir = el.dcirMOhm > 0;
+    const hasOcv = fromCells && String(input.cellOcvTable || "").trim().length > 0;
+    const vehicleMass = pos(input.vehMassKg) + (input.vehMassIncludesPack ? 0 : pack.massKg);
+    return {
+      nominalVoltage: el.nominalV,
+      maxVoltage: el.maxV,
+      minVoltage: el.minV,
+      capacityAh: el.capacityAh,
+      maxDischargeCurrentA: el.maxDischargeA,
+      continuousDischargeCurrentA: el.contDischargeA,
+      maxChargeCurrentA: el.maxChargeA,
+      cellPulseDurationSeconds: el.pulseDurationS,
+      advancedCellEnabled: hasDcir || hasOcv,
+      cellDcirMilliOhm: el.dcirMOhm,
+      cellOcvTable: hasOcv ? input.cellOcvTable : "",
+      seriesCount: pack.elementsInSeries,
+      parallelCount: pack.elementParallel,
+      usableEnergyFactor: pack.usableFactor,
+      bmsLimitsEnabled: !!input.bmsEnabled,
+      bmsPeakDischargeCurrentA: input.bmsPeakA,
+      bmsPeakDurationSeconds: input.bmsPeakS,
+      bmsContinuousDischargeCurrentA: input.bmsContA,
+      bmsMaxChargeCurrentA: input.bmsChargeA,
+      vehicleMassKg: vehicleMass,
+      payloadKg: input.payloadKg,
+      dragCoefficient: input.cd,
+      frontalAreaM2: input.frontalAreaM2,
+      rollingResistanceCoefficient: input.crr,
+      drivetrainEfficiencyPercent: input.drivetrainEffPct,
+      assumedLoadKW: input.auxBaseKW,
+      airConditioningEnabled: !!input.acEnabled,
+      heatingEnabled: !!input.heatingEnabled,
+      heaterType: input.heaterType,
+      electricalAccessoriesEnabled: !!input.accessoriesEnabled,
+      regenEnabled: !!input.regenEnabled,
+      regenEfficiencyPercent: input.regenEffPct,
+      regenDisableAboveSocPercent: input.regenDisableAboveSoc,
+      motorLimitsEnabled: !!input.motorEnabled,
+      motorPeakPowerKW: input.motorPeakKW,
+      motorPeakDurationSeconds: input.motorPeakS,
+      motorContinuousPowerKW: input.motorContKW,
+      controllerMaxCurrentA: input.controllerMaxA,
+      motorMaxRegenPowerKW: input.motorRegenKW,
+      motorPeakTorqueNm: input.motorTorqueNm,
+      motorMaxRpm: input.motorMaxRpm,
+      gearRatio: input.gearRatio,
+      tyreRadiusMm: input.tyreRadiusMm,
+      vehicleTopSpeedMph: input.topSpeedMph,
+      driveCycle: input.driveCycle,
+      constantSpeedMph: input.constantSpeedMph,
+      customProfileText: input.customProfileText,
+      customProfileUnit: input.customProfileUnit,
+      simulationTimeStepSeconds: input.graphResolutionS
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Whole build
+  // ---------------------------------------------------------------------------
+  function computeBuild(input) {
+    const range = buildRange(input);
+    const errors = validate(input, range);
+    const warnings = sanityWarnings(input, range);
+    const out = { range, errors, warnings, cell: null, module1: null, module2: null, pack: null, charging: null, engineInput: null, vehicleMassKg: null };
+    if (errors.length) return out;
+
+    if (range.start === "cell") {
+      out.cell = computeCell(input);
+      out.module1 = moduleFromCells(out.cell, input.modSeries, input.modParallel, input, "mod1");
+      if (input.useSecondModule) out.module2 = moduleFromCells(out.cell, input.mod2Series, input.modParallel, input, "mod2");
+    } else {
+      out.module1 = moduleFromDatasheet(input);
+    }
+
+    if (range.includes("pack")) {
+      out.pack = computePack(input, range, out.cell, out.module1, out.module2);
+      out.charging = range.includes("vehicle") ? computeCharging(input, out.pack) : null;
+      if (range.includes("vehicle")) {
+        out.engineInput = toEngineInput(input, range, out.pack, out.cell);
+        out.vehicleMassKg = out.engineInput.vehicleMassKg;
+      }
+    }
+    return out;
+  }
+
+  const api = { CELL_FORMATS, BUILD_STEPS, buildRange, computeCell, moduleFromCells, moduleFromDatasheet, computePack, computeCharging, validate, sanityWarnings, toEngineInput, computeBuild };
+  root.VoltCalc = api;
+  if (typeof module !== "undefined") module.exports = api;
+})(typeof window !== "undefined" ? window : globalThis);
