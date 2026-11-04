@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReadMe | Battery Cell Calculator | Volt Energy Systems</title>
+  <meta name="description" content="How the Volt Energy Systems battery cell calculator works: method, equations, assumptions and sources.">
+  <link rel="icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.4">
+</head>
+<body class="readme-page">
+  <header class="readme-top">
+    <a href="index.html" class="readme-logo"><img src="assets/logo-white.png" alt="Volt Energy Systems"></a>
+    <a href="index.html" class="button">Back to calculator</a>
+  </header>
+  <div class="readme-layout">
+    <nav class="readme-toc" id="toc" aria-label="Contents"></nav>
+    <main class="readme-main">
+      <div class="step-head">
+        <p class="eyebrow">Battery cell calculator</p>
+        <h1>ReadMe: how it works</h1>
+        <p>The method, equations, assumptions and sources behind every result. Figures are engineering estimates from the inputs given, not specifications.</p>
+      </div>
+      <div id="readmeBody"></div>
+    </main>
+  </div>
+  <script src="readme-content.js?v=2.4"></script>
+  <script>
+    (function () {
+      var R = window.VoltReadme;
+      if (!R) { document.getElementById("readmeBody").textContent = "readme-content.js did not load. Upload all files together."; return; }
+      var groups = [];
+      R.topics.forEach(function (t) { var g = groups.find(function (x) { return x.name === t.group; }); if (!g) { g = { name: t.group, items: [] }; groups.push(g); } g.items.push(t); });
+      var toc = document.getElementById("toc");
+      toc.innerHTML = '<button type="button" class="readme-toc-toggle" aria-expanded="false">Contents <span aria-hidden="true">▾</span></button>' + groups.map(function (g) {
+        return '<p class="group-label">' + g.name + '</p>' + g.items.map(function (t) { return '<a href="#' + t.id + '">' + t.title + '</a>'; }).join("");
+      }).join("");
+      var toggle = toc.querySelector(".readme-toc-toggle");
+      toggle.addEventListener("click", function () { var open = toc.classList.toggle("open"); toggle.setAttribute("aria-expanded", String(open)); });
+      toc.addEventListener("click", function (e) { if (e.target.closest("a")) { toc.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); } });
+      document.getElementById("readmeBody").innerHTML = groups.map(function (g) {
+        return '<section class="readme-group"><h2 class="readme-group-title">' + g.name + '</h2>' + g.items.map(function (t) {
+          return '<article class="readme-topic" id="' + t.id + '"><h3>' + t.title + '</h3>' + t.html + '</article>';
+        }).join("") + '</section>';
+      }).join("");
+      if (location.hash) { var el = document.getElementById(location.hash.slice(1)); if (el) setTimeout(function () { el.scrollIntoView(); el.classList.add("flash"); }, 50); }
+    })();
+  </script>
+</body>
+</html>
