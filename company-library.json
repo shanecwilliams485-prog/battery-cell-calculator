@@ -1,7 +1,0 @@
-{
-  "type": "volt-battery-calculator-library",
-  "version": 1,
-  "company": true,
-  "updatedAt": null,
-  "library": { "cells": [], "modules": [], "vehicles": [] }
-}
