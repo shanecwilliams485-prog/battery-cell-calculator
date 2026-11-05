@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Battery Cell Calculator | Volt Energy Systems</title>
+  <meta name="description" content="Cell to vehicle battery calculator: cell, module, pack and vehicle performance.">
+  <link rel="icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.11">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <button type="button" class="icon-button" id="menuButton" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <img src="assets/logo-white.png" alt="Volt Energy Systems" class="topbar-logo">
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img src="assets/logo-white.png" alt="Volt Energy Systems" class="sidebar-logo">
+        <p class="eyebrow">Battery cell calculator</p>
+      </div>
+
+      <div class="build-picker">
+        <label for="buildStart">Start from</label>
+        <select id="buildStart">
+          <option value="cell">Cell</option>
+          <option value="module">Module</option>
+        </select>
+        <label for="buildEnd">Build up to</label>
+        <select id="buildEnd">
+          <option value="module">Module</option>
+          <option value="pack">Pack</option>
+          <option value="vehicle">Vehicle</option>
+        </select>
+      </div>
+
+      <nav aria-label="Calculator steps" id="stepNav" class="step-nav"></nav>
+
+      <div class="sidebar-tools">
+        <div class="units-toggle" role="group" aria-label="Units">
+          <button type="button" data-units="uk" aria-pressed="true">Miles</button>
+          <button type="button" data-units="metric" aria-pressed="false">Km</button>
+        </div>
+        <div class="tool-buttons">
+          <button type="button" class="text-button" id="saveProject">Save project</button>
+          <label class="text-button" for="openProject">Open project</label>
+          <input type="file" id="openProject" accept=".json,application/json" hidden>
+          <button type="button" class="text-button" id="loadExample">Load example</button>
+          <button type="button" class="text-button" id="newProject">New project</button>
+          <button type="button" class="text-button" id="exportLibrary">Export library</button>
+          <label class="text-button" for="importLibrary">Import library</label>
+          <input type="file" id="importLibrary" accept=".json,application/json" hidden>
+          <button type="button" class="text-button wide" id="exportCompanyLibrary">Make company library file</button>
+        </div>
+      </div>
+
+      <a class="readme-link" href="readme.html" target="_blank" rel="noopener"><span class="info-dot" aria-hidden="true">i</span>ReadMe: how it works</a>
+      <p class="sidebar-note">Calculated estimate for engineering discussion. Not a specification commitment.</p>
+    </aside>
+    <div class="scrim" id="scrim" hidden></div>
+
+    <main class="main" id="main">
+      <div id="startupError" class="startup-error" role="alert" hidden></div>
+      <div id="steps"></div>
+    </main>
+  </div>
+
+  <dialog id="wltpDialog" class="info-dialog" aria-labelledby="wltpDialogTitle">
+    <div class="dialog-head">
+      <h2 id="wltpDialogTitle">Which WLTP class?</h2>
+      <button type="button" class="icon-button close" data-close-dialog aria-label="Close">×</button>
+    </div>
+    <p>The WLTP test (UN GTR 15) uses a different drive cycle depending on the vehicle's <strong>power-to-mass ratio</strong> (PMR = rated power ÷ kerb mass, in W/kg) and its <strong>maximum speed</strong>. Each cycle lasts 1,800 s (30 minutes) and has Low, Medium, High and Extra High phases.</p>
+    <div class="table-wrap"><table class="data">
+      <thead><tr><th>Class</th><th>Applies to</th><th>Distance</th><th>Top speed in cycle</th></tr></thead>
+      <tbody>
+        <tr><td>Class 3b</td><td>PMR &gt; 34 W/kg, max speed ≥ 120 km/h (most modern cars)</td><td>23.27 km</td><td>131.3 km/h</td></tr>
+        <tr><td>Class 3a</td><td>PMR &gt; 34 W/kg, max speed &lt; 120 km/h</td><td>23.19 km</td><td>131.3 km/h</td></tr>
+        <tr><td>Class 2</td><td>22 &lt; PMR ≤ 34 W/kg (lower-powered vehicles)</td><td>22.65 km</td><td>123.1 km/h</td></tr>
+        <tr><td>Class 1</td><td>PMR ≤ 22 W/kg (very low power; not included)</td><td>11.43 km</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <ul>
+      <li><strong>3a vs 3b:</strong> the same Low and Extra High phases; the Medium and High phases differ slightly.</li>
+      <li><strong>Class 2</strong> has lower maximum speeds in every phase (51.4, 74.7, 85.2 and 123.1 km/h, against 56.5, 76.6, 97.4 and 131.3 km/h for Class 3).</li>
+      <li><strong>Mass:</strong> GTR 15 uses kerb mass; EU rules use mass in running order (kerb mass + 75 kg), which gives a slightly lower PMR.</li>
+      <li><strong>Downscaling:</strong> the official test can slow the cycle down for vehicles near a class boundary or with very low power. This calculator always runs the full cycle and reports any time the vehicle cannot keep up.</li>
+    </ul>
+    <p class="help">Sources: UN GTR No. 15 (WLTP); DieselNet, “Worldwide Harmonized Light Vehicles Test Cycle (WLTC)”. Cycle data from the European Commission JRC <code>wltp</code> reference implementation.</p>
+  </dialog>
+
+  <dialog id="infoDialog" class="info-dialog" aria-labelledby="infoDialogTitle">
+    <div class="dialog-head">
+      <h2 id="infoDialogTitle"></h2>
+      <button type="button" class="icon-button close" data-close-dialog aria-label="Close">×</button>
+    </div>
+    <div class="info-body" id="infoDialogBody"></div>
+    <div class="info-foot"><a id="infoDialogLink" class="text-button" href="readme.html" target="_blank" rel="noopener">Open in the full ReadMe</a></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="readme-content.js?v=2.11"></script>
+  <script src="simulation.js?v=2.11"></script>
+  <script src="calc.js?v=2.11"></script>
+  <script src="app.js?v=2.11"></script>
+  <script src="report.js?v=2.11"></script>
+  <script src="tools.js?v=2.11"></script>
+</body>
+</html>
