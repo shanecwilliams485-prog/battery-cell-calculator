@@ -2,7 +2,7 @@
   "type": "volt-battery-calculator-library",
   "version": 1,
   "company": true,
-  "updatedAt": "2026-11-06T09:23:48.128Z",
+  "updatedAt": "2026-11-06T11:49:24.884Z",
   "library": {
     "cells": [
       {
@@ -29,6 +29,37 @@
           "cellPulseDurationS": 20,
           "cellDcirMOhm": 17,
           "cellOcvTable": "7,2.956\n8,2.975\n9,3\n10,3.022\n12,3.059\n14,3.091\n16,3.119\n18,3.149\n20,3.184\n25,3.265\n30,3.319\n35,3.376\n40,3.452\n45,3.537\n50,3.615\n55,3.705\n60,3.792\n65,3.851\n70,3.894\n75,3.975\n80,4.025\n85,4.05\n90,4.06\n95,4.07\n96,4.079\n97,4.086\n98,4.102\n99,4.131\n100,4.166\n"
+        }
+      },
+      {
+        "name": "Reliance INR-21700-RS60",
+        "savedAt": "2026-11-06T11:48:05.686Z",
+        "values": {
+          "cellManufacturer": "Reliance",
+          "cellModel": "INR-21700-RS60",
+          "cellNominalV": 3.6,
+          "cellMaxV": 4.2,
+          "cellMinV": 2.5,
+          "cellCapacityAh": 6,
+          "cellMaxDischargeA": 75,
+          "cellContDischargeA": 50,
+          "cellMaxChargeA": 12,
+          "cellPeakChargeA": 18,
+          "cellPeakChargeS": 10,
+          "cellMassG": 73,
+          "cellFormat": "cyl21700",
+          "cellDiameterMm": "",
+          "cellLengthMm": "",
+          "cellWidthMm": "",
+          "cellThicknessMm": "",
+          "cellPulseDurationS": 10,
+          "cellDcirMOhm": 10,
+          "cellOcvTable": "5,2.87\n8,2.98\n11,3.06\n21,3.23\n30,3.40\n36,3.48\n43,3.58\n46,3.62\n52,3.70\n60,3.82\n65,3.87\n68,3.88\n71,3.90\n74,3.95\n77,4.01\n79,4.04\n81,4.05\n95,4.08\n98,4.11\n100,4.17\n",
+          "cellTaperEnabled": false,
+          "cellTaperStartPct": 80,
+          "cellTaperEndPct": 10,
+          "cellResIncreasePct": "",
+          "cellResIncreaseSource": "supplier"
         }
       }
     ],
