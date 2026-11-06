@@ -2,6 +2,37 @@
   "type": "volt-battery-calculator-library",
   "version": 1,
   "company": true,
-  "updatedAt": null,
-  "library": { "cells": [], "modules": [], "vehicles": [] }
+  "updatedAt": "2026-11-06T09:23:48.128Z",
+  "library": {
+    "cells": [
+      {
+        "name": "Molicel INR-21700-M65A",
+        "savedAt": "2026-11-05T14:28:21.673Z",
+        "values": {
+          "cellManufacturer": "Molicel",
+          "cellModel": "INR-21700-M65A",
+          "cellNominalV": 3.6,
+          "cellMaxV": 4.2,
+          "cellMinV": 2.5,
+          "cellCapacityAh": 6.5,
+          "cellMaxDischargeA": 39,
+          "cellContDischargeA": 26,
+          "cellMaxChargeA": 6.5,
+          "cellPeakChargeA": 9.75,
+          "cellPeakChargeS": 10,
+          "cellMassG": 74.5,
+          "cellFormat": "cyl21700",
+          "cellDiameterMm": "",
+          "cellLengthMm": "",
+          "cellWidthMm": "",
+          "cellThicknessMm": "",
+          "cellPulseDurationS": 20,
+          "cellDcirMOhm": 17,
+          "cellOcvTable": "7,2.956\n8,2.975\n9,3\n10,3.022\n12,3.059\n14,3.091\n16,3.119\n18,3.149\n20,3.184\n25,3.265\n30,3.319\n35,3.376\n40,3.452\n45,3.537\n50,3.615\n55,3.705\n60,3.792\n65,3.851\n70,3.894\n75,3.975\n80,4.025\n85,4.05\n90,4.06\n95,4.07\n96,4.079\n97,4.086\n98,4.102\n99,4.131\n100,4.166\n"
+        }
+      }
+    ],
+    "modules": [],
+    "vehicles": []
+  }
 }
