@@ -83,7 +83,11 @@ function libraryBarHtml(type) {
   const t = LIBRARY_TYPES[type];
   return `<div class="lib-bar" data-lib="${type}">
     <span class="lib-label">Library</span>
-    <select data-lib-select aria-label="Saved ${t.label}s"></select>
+    <select data-lib-select class="lib-native" aria-hidden="true" tabindex="-1"></select>
+    <div class="lib-pick">
+      <button type="button" class="lib-pick-btn" data-lib-open aria-haspopup="listbox" aria-expanded="false" aria-label="Saved ${t.label}s"><span></span></button>
+      <div class="lib-pick-list" role="listbox" aria-label="Saved ${t.label}s" hidden></div>
+    </div>
     <button type="button" class="text-button" data-lib-load>Load</button>
     <button type="button" class="text-button" data-lib-save>Save this ${t.label}</button>
     <button type="button" class="text-button" data-lib-delete>Delete</button>
@@ -110,8 +114,39 @@ function refreshLibraryBars() {
     if (all.some((i) => i.id === current)) select.value = current;
     select.disabled = !all.length;
     bar.querySelector("[data-lib-load]").disabled = !all.length;
+    renderLibraryPicker(bar);
     updateDeleteButton(bar);
   }
+}
+
+// The list of saved items is drawn by the page itself (v2.12.2): a native <select> list is
+// drawn by the operating system and can come out unreadable on a dark page in Windows.
+// The hidden <select> keeps the chosen value, so the rest of the code is unchanged.
+function renderLibraryPicker(bar) {
+  const select = bar.querySelector("[data-lib-select]");
+  const btn = bar.querySelector("[data-lib-open]");
+  const list = bar.querySelector(".lib-pick-list");
+  const chosen = select.selectedOptions[0];
+  btn.querySelector("span").textContent = chosen ? chosen.textContent : "";
+  btn.disabled = select.disabled;
+  let html = "";
+  for (const node of select.children) {
+    if (node.tagName === "OPTGROUP") {
+      html += `<div class="lib-pick-group">${esc(node.label)}</div>`;
+      for (const o of node.children) html += pickOption(o, select.value);
+    } else if (node.value) html += pickOption(node, select.value);
+  }
+  list.innerHTML = html;
+}
+function pickOption(o, current) {
+  return `<button type="button" role="option" class="lib-pick-opt" data-value="${esc(o.value)}" aria-selected="${o.value === current}">${esc(o.textContent)}</button>`;
+}
+function closeLibraryPickers(except) {
+  $$(".lib-pick-list").forEach((list) => {
+    if (list === except) return;
+    list.hidden = true;
+    list.closest(".lib-pick").querySelector("[data-lib-open]").setAttribute("aria-expanded", "false");
+  });
 }
 
 function updateDeleteButton(bar) {
@@ -453,12 +488,43 @@ function initTools() {
   });
   document.addEventListener("click", (e) => {
     const bar = e.target.closest(".lib-bar");
+    const open = e.target.closest("[data-lib-open]");
+    const opt = e.target.closest(".lib-pick-opt");
+    if (open) {
+      const list = open.closest(".lib-pick").querySelector(".lib-pick-list");
+      const show = list.hidden;
+      closeLibraryPickers();
+      list.hidden = !show;
+      open.setAttribute("aria-expanded", String(show));
+      if (show) (list.querySelector('[aria-selected="true"]') || list.querySelector(".lib-pick-opt"))?.focus();
+      return;
+    }
+    if (opt) {
+      const select = bar.querySelector("[data-lib-select]");
+      select.value = opt.dataset.value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      renderLibraryPicker(bar);
+      closeLibraryPickers();
+      bar.querySelector("[data-lib-open]").focus();
+      return;
+    }
+    if (!e.target.closest(".lib-pick")) closeLibraryPickers();
     if (!bar) return;
     const type = bar.dataset.lib;
     const id = bar.querySelector("[data-lib-select]").value;
     if (e.target.closest("[data-lib-save]")) saveToLibrary(type);
     else if (e.target.closest("[data-lib-load]") && id) loadFromLibrary(type, id);
     else if (e.target.closest("[data-lib-delete]") && id) deleteFromLibrary(type, id);
+  });
+  document.addEventListener("keydown", (e) => {
+    const list = e.target.closest && e.target.closest(".lib-pick-list");
+    if (e.key === "Escape" && (list || e.target.closest?.(".lib-pick"))) { closeLibraryPickers(); e.target.closest(".lib-pick")?.querySelector("[data-lib-open]").focus(); return; }
+    if (!list || !["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+    e.preventDefault();
+    const opts = $$(".lib-pick-opt", list);
+    const i = opts.indexOf(document.activeElement);
+    const next = e.key === "Home" ? 0 : e.key === "End" ? opts.length - 1 : Math.min(opts.length - 1, Math.max(0, i + (e.key === "ArrowDown" ? 1 : -1)));
+    opts[next]?.focus();
   });
   $("#exportLibrary")?.addEventListener("click", exportLibrary);
   $("#exportCompanyLibrary")?.addEventListener("click", exportCompanyFile);
