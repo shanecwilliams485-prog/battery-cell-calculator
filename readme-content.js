@@ -144,7 +144,7 @@ ${eq("Wh/kg = energy ÷ mass &nbsp;&nbsp; Wh/L = energy ÷ volume")}
   <li><strong>Volume from CAD</strong>: the enclosure volume in litres from the CAD model. The most accurate for any shape.</li>
   <li><strong>Made of several boxes</strong>: for early concepts without CAD. Split the shape into simple boxes that do not overlap; V = Σ (length × width × height).</li>
 </ul>
-<p>The <strong>overall size</strong> (overall length, width and height) is the outside box the pack fits in, for checking it fits the vehicle. It is shown in the results but not used for Wh/L, because for a stepped or shaped pack it counts empty space as pack and makes Wh/L too low. A project saved before this choice existed opens as “made of several boxes” with its one box, so its results do not change.</p>`
+<p>A single overall box is not used, because for a stepped or shaped pack it counts empty space as pack and makes Wh/L too low. A project saved before this choice existed opens as “made of several boxes” with its one box, so its results do not change.</p>`
     },
     {
       id: "pack-electrical", group: "Pack & BMS", title: "Pack electrical model",

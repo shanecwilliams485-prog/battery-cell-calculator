@@ -53,7 +53,7 @@ To remove a company item, delete it from the file's JSON (or rebuild the file fr
 Inputs, libraries and snapshots are kept in the browser's local storage on each computer. They are not shared between computers or users; use project files and library export/import to move them.
 
 ## Version
-v2.12.3 — enclosure volume from CAD or made of several boxes, with a separate overall size; library list drawn by the page (readable on Windows).
+v2.12.4 — enclosure volume from CAD or made of several boxes (overall size removed); library list drawn by the page (readable on Windows).
 
 v2.12 — charging taper and on-board charger efficiency, end-of-life check, heat from the cells and cooling check. Engine version 17.
 

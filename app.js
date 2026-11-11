@@ -287,14 +287,11 @@ const STEPS = [
       {
         more: true,
         title: "Enclosure size",
-        tag: "volume for Wh/L, overall size",
+        tag: "volume for Wh/L",
         fields: [
           f("packVolumeMethod", "How to enter the volume", { type: "segment", full: true, options: [["cad", "Volume from CAD"], ["boxes", "Made of several boxes"]] }),
           f("packVolumeL", "Enclosure volume", { unit: "L", step: 0.1, optional: true, showIf: (s) => s.packVolumeMethod === "cad", help: "From the CAD model of the enclosure. Used for pack Wh/L." }),
-          f("packBoxes", "Sections", { type: "boxes", full: true, showIf: (s) => s.packVolumeMethod === "boxes", help: "For early concepts without CAD. Split the shape into simple boxes that do not overlap; their volumes are added for pack Wh/L." }),
-          f("packLengthMm", "Overall length", { unit: "mm", step: 1, optional: true, help: "Overall size: the outside box the pack fits in, for checking it fits the vehicle. Not used for Wh/L." }),
-          f("packWidthMm", "Overall width", { unit: "mm", step: 1, optional: true }),
-          f("packHeightMm", "Overall height", { unit: "mm", step: 1, optional: true })
+          f("packBoxes", "Sections", { type: "boxes", full: true, showIf: (s) => s.packVolumeMethod === "boxes", help: "For early concepts without CAD. Split the shape into simple boxes that do not overlap; their volumes are added for pack Wh/L." })
         ]
       },
       {
@@ -545,7 +542,7 @@ function cleanInputs(source) {
   out.reqPulseSocPct = Math.min(100, Math.max(0, Number(out.reqPulseSocPct)));
   if (!["both", "bol", "eol"].includes(out.reqAgeMode)) out.reqAgeMode = "both";
   // Enclosure (v2.12.3): a project saved before the volume choice used one length × width × height box.
-  // It opens as "made of several boxes" with that box, which is also kept as the overall size.
+  // It opens as "made of several boxes" with that box, so its Wh/L is unchanged.
   if (source && !Object.prototype.hasOwnProperty.call(source, "packVolumeMethod")) {
     const dims = [out.packLengthMm, out.packWidthMm, out.packHeightMm];
     if (dims.every((d) => d !== "" && Number(d) > 0)) { out.packVolumeMethod = "boxes"; out.packBoxes = `Enclosure, ${dims.map(Number).join(", ")}`; }
@@ -1526,7 +1523,7 @@ function densityTable(all) {
   if (pack) rows.push(["Pack", `${fmt(pack.energyKWh, 2)} kWh`, `${fmt(pack.massKg, 1)} kg`, pack.whPerKg, pack.whPerL]);
   const body = rows.map(([level, energy, mass, wkg, wl]) => `<tr><td>${level}</td><td>${energy}</td><td>${mass}</td><td>${wkg ? fmt(wkg, 0) : "—"}</td><td>${wl ? fmt(wl, 0) : "—"}</td></tr>`).join("");
   return `<div class="table-wrap"><table class="data"><thead><tr><th>Level</th><th>Energy</th><th>Mass</th><th>Wh/kg</th><th>Wh/L</th></tr></thead><tbody>${body}</tbody></table></div>
-    <p class="help" style="margin:10px 0 0">Wh/L needs a size: cell format, module size, or the pack enclosure volume (from CAD or made of boxes; the overall size is not used). Module and pack mass include the overheads entered.</p>`;
+    <p class="help" style="margin:10px 0 0">Wh/L needs a size: cell format, module size, or the pack enclosure volume (from CAD or made of boxes). Module and pack mass include the overheads entered.</p>`;
 }
 
 // Cell → module → pack → vehicle: the limit each level passes on and what set it.
@@ -1837,7 +1834,7 @@ function resultSections(all) {
       p.dcirMOhm > 0 ? ["Internal resistance", `${fmt(p.dcirMOhm, 1)} mΩ`] : null,
       p.enclosureL ? ["Enclosure volume", `${fmt(p.enclosureL, 1)} L${sub(p.enclosureMethod === "cad" ? "From CAD" : p.enclosureMethod === "boxes" ? `Made of ${p.enclosureBoxes.length} box${p.enclosureBoxes.length === 1 ? "" : "es"}` : "Length × width × height")}`] : null,
       p.whPerL ? ["Pack energy density (volume)", `${fmt(p.whPerL, 0)} Wh/L${sub(`${fmt(p.energyKWh, 1)} kWh ÷ ${fmt(p.enclosureL, 1)} L`)}`] : null,
-      p.overallMm ? ["Overall size", `${p.overallMm.map((x) => fmt(x, 0)).join(" × ")} mm${sub("For fit checks; not used for Wh/L")}`] : null
+      null
     ]));
 
     const lim = all.atLimits;
