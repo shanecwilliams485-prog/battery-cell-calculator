@@ -64,7 +64,11 @@ function inputValueText(field) {
     return `${parsed.points.length} points, ${fmt(a.v, 2)} V at ${fmt(a.soc, 0)} % to ${fmt(z.v, 2)} V at ${fmt(z.soc, 0)} %`;
   }
   if (value === "" || value === null || value === undefined) return null;
-  if (field.type === "select") {
+  if (field.type === "boxes") {
+    const boxes = Calc.parseBoxes(value);
+    return boxes.length ? boxes.map((b) => `${b.name ? `${esc(b.name)}: ` : ""}${fmt(b.l, 0)} × ${fmt(b.w, 0)} × ${fmt(b.h, 0)} mm (${fmt(b.litres, 1)} L)`).join("; ") : null;
+  }
+  if (field.type === "select" || field.type === "segment") {
     const opt = field.options.find(([v]) => v === value);
     return opt && opt[0] !== "" ? esc(opt[1]) : null;
   }

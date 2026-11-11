@@ -287,11 +287,14 @@ const STEPS = [
       {
         more: true,
         title: "Enclosure size",
-        tag: "for Wh/L",
+        tag: "volume for Wh/L, overall size",
         fields: [
-          f("packLengthMm", "Length", { unit: "mm", step: 1 }),
-          f("packWidthMm", "Width", { unit: "mm", step: 1 }),
-          f("packHeightMm", "Height", { unit: "mm", step: 1 })
+          f("packVolumeMethod", "How to enter the volume", { type: "segment", full: true, options: [["cad", "Volume from CAD"], ["boxes", "Made of several boxes"]] }),
+          f("packVolumeL", "Enclosure volume", { unit: "L", step: 0.1, optional: true, showIf: (s) => s.packVolumeMethod === "cad", help: "From the CAD model of the enclosure. Used for pack Wh/L." }),
+          f("packBoxes", "Sections", { type: "boxes", full: true, showIf: (s) => s.packVolumeMethod === "boxes", help: "For early concepts without CAD. Split the shape into simple boxes that do not overlap; their volumes are added for pack Wh/L." }),
+          f("packLengthMm", "Overall length", { unit: "mm", step: 1, optional: true, help: "Overall size: the outside box the pack fits in, for checking it fits the vehicle. Not used for Wh/L." }),
+          f("packWidthMm", "Overall width", { unit: "mm", step: 1, optional: true }),
+          f("packHeightMm", "Overall height", { unit: "mm", step: 1, optional: true })
         ]
       },
       {
@@ -483,7 +486,7 @@ const BLANK = {
   packModules: "", packStrings: 1, usableFactor: 0.9,
   bmsEnabled: false, bmsMode: "limit", bmsPeakA: 0, bmsPeakS: 0, bmsContA: 0, bmsChargeA: 0, bmsNote: "",
   packOverheadMode: "percent", packMassOverheadPct: 0, packItemEnclosureKg: 0, packItemBusbarsKg: 0, packItemBmsKg: 0, packItemCoolingKg: 0, packItemOtherKg: 0,
-  packLengthMm: "", packWidthMm: "", packHeightMm: "",
+  packLengthMm: "", packWidthMm: "", packHeightMm: "", packVolumeMethod: "cad", packVolumeL: "", packBoxes: "",
   vehPreset: "", vehName: "", vehMassKg: "", vehMassIncludesPack: false, payloadKg: 75, cd: "", frontalAreaM2: "", crr: "", drivetrainEffPct: 90, auxBaseKW: 0.5,
   motorEnabled: false, motorPeakKW: 0, motorPeakS: 0, motorContKW: 0, motorEffPct: 0, controllerMaxA: 0, motorRegenKW: 0, motorTorqueNm: 0, motorMaxRpm: 0, gearRatio: 0, tyreSize: "", tyreRadiusMm: 0, topSpeedMph: 0,
   acChargerKW: 0, dcChargerKW: 0, acChargerEffPct: "",
@@ -541,6 +544,14 @@ function cleanInputs(source) {
   if (!["limit", "replace"].includes(out.bmsMode)) out.bmsMode = "limit";
   out.reqPulseSocPct = Math.min(100, Math.max(0, Number(out.reqPulseSocPct)));
   if (!["both", "bol", "eol"].includes(out.reqAgeMode)) out.reqAgeMode = "both";
+  // Enclosure (v2.12.3): a project saved before the volume choice used one length × width × height box.
+  // It opens as "made of several boxes" with that box, which is also kept as the overall size.
+  if (source && !Object.prototype.hasOwnProperty.call(source, "packVolumeMethod")) {
+    const dims = [out.packLengthMm, out.packWidthMm, out.packHeightMm];
+    if (dims.every((d) => d !== "" && Number(d) > 0)) { out.packVolumeMethod = "boxes"; out.packBoxes = `Enclosure, ${dims.map(Number).join(", ")}`; }
+    else out.packVolumeMethod = "cad";
+  }
+  if (!["cad", "boxes"].includes(out.packVolumeMethod)) out.packVolumeMethod = "cad";
   if (!["bol", "eol"].includes(out.resultsAge)) out.resultsAge = "bol";
   if (!RES_SOURCES.some(([v]) => v === out.cellResIncreaseSource)) out.cellResIncreaseSource = "supplier";
   out.cellTaperStartPct = Math.min(99, Math.max(0, Number(out.cellTaperStartPct)));
@@ -608,6 +619,13 @@ function fieldHtml(field) {
   const cls = `field${field.full || field.type === "textarea" || field.type === "ocv" ? " full" : ""}`;
   const messages = `<span class="warning" data-warning-for="${field.id}" hidden></span>`;
 
+  if (field.type === "segment") {
+    return `<div class="${cls}" data-field="${field.id}"><span class="seg-label">${esc(field.label)}</span>
+      <div class="seg-toggle" role="group" aria-label="${esc(field.label)}" id="${field.id}">${field.options.map(([v, l]) => `<button type="button" data-seg-value="${esc(v)}" aria-pressed="false">${esc(l)}</button>`).join("")}</div>${help}</div>`;
+  }
+  if (field.type === "boxes") {
+    return `<div class="${cls}" data-field="${field.id}"><span class="seg-label">${esc(field.label)}</span><div class="box-editor" id="${field.id}"></div>${help}</div>`;
+  }
   if (field.type === "switch") {
     return `<div class="${cls}" data-field="${field.id}">
       <label class="switch"><input type="checkbox" id="${field.id}"><span class="track" aria-hidden="true"></span><span>${esc(field.label)}</span></label>
@@ -711,6 +729,8 @@ function setControlValues() {
     const el = document.getElementById(field.id);
     if (!el || field.type === "profile" || field.type === "wltpinfo" || field.type === "ratings") continue;
     const value = state[field.id];
+    if (field.type === "segment") { $$("[data-seg-value]", el).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.segValue === value))); continue; }
+    if (field.type === "boxes") { renderBoxEditor(el); continue; }
     if (field.type === "switch") el.checked = !!value;
     else if (field.type === "speedlist") el.value = speedListToDisplay(value);
     else if (field.kind && value !== "" && Number.isFinite(Number(value))) el.value = String(Number(toDisplay(field.kind, Number(value)).toFixed(4)) * 1);
@@ -725,6 +745,38 @@ function setControlValues() {
   updateWltpGuide();
   updatePresetNote();
   updateRatingsPreviews();
+}
+
+// Enclosure sections editor: rows of name, length, width, height (mm), kept in state as text lines.
+function boxRowsFromState() {
+  const rows = String(state.packBoxes || "").split(/\r?\n/).filter((l) => l.trim()).map((line) => {
+    const parts = line.split(/[,;\t]/).map((x) => x.trim());
+    const dims = parts.length >= 3 ? parts.slice(-3) : ["", "", ""];
+    return { name: parts.length > 3 ? parts.slice(0, -3).join(", ") : "", l: dims[0], w: dims[1], h: dims[2] };
+  });
+  return rows.length ? rows : [{ name: "", l: "", w: "", h: "" }];
+}
+function renderBoxEditor(el, rows = boxRowsFromState()) {
+  const litres = (r) => (Number(r.l) > 0 && Number(r.w) > 0 && Number(r.h) > 0 ? Number(r.l) * Number(r.w) * Number(r.h) / 1e6 : null);
+  const total = rows.reduce((sum, r) => sum + (litres(r) || 0), 0);
+  el.innerHTML = `<div class="box-head"><span>Section</span><span>Length mm</span><span>Width mm</span><span>Height mm</span><span>Volume</span><span></span></div>`
+    + rows.map((r, i) => `<div class="box-row" data-box-row="${i}">
+      <input type="text" data-box-col="name" value="${esc(r.name)}" placeholder="e.g. Main tray" aria-label="Section ${i + 1} name" autocomplete="off">
+      <input type="number" min="0" step="1" inputmode="decimal" data-box-col="l" value="${esc(r.l)}" aria-label="Section ${i + 1} length, mm">
+      <input type="number" min="0" step="1" inputmode="decimal" data-box-col="w" value="${esc(r.w)}" aria-label="Section ${i + 1} width, mm">
+      <input type="number" min="0" step="1" inputmode="decimal" data-box-col="h" value="${esc(r.h)}" aria-label="Section ${i + 1} height, mm">
+      <strong data-box-litres>${litres(r) !== null ? `${fmt(litres(r), 1)} L` : "—"}</strong>
+      <button type="button" class="box-remove" data-box-remove="${i}" aria-label="Remove section ${i + 1}"${rows.length === 1 ? " disabled" : ""}>×</button></div>`).join("")
+    + `<div class="box-foot"><button type="button" class="text-button" data-box-add>+ Add a section</button><span>Total <strong data-box-total>${total > 0 ? `${fmt(total, 1)} L` : "—"}</strong></span></div>`;
+}
+function readBoxEditor(el) {
+  return $$("[data-box-row]", el).map((row) => {
+    const v = (c) => row.querySelector(`[data-box-col="${c}"]`).value.trim();
+    return { name: v("name").replace(/[,;\t\r\n]/g, " "), l: v("l"), w: v("w"), h: v("h") };
+  });
+}
+function boxRowsToText(rows) {
+  return rows.filter((r) => r.name || r.l || r.w || r.h).map((r) => `${r.name ? `${r.name}, ` : ""}${r.l}, ${r.w}, ${r.h}`).join("\n");
 }
 
 function readControl(field) {
@@ -1474,7 +1526,7 @@ function densityTable(all) {
   if (pack) rows.push(["Pack", `${fmt(pack.energyKWh, 2)} kWh`, `${fmt(pack.massKg, 1)} kg`, pack.whPerKg, pack.whPerL]);
   const body = rows.map(([level, energy, mass, wkg, wl]) => `<tr><td>${level}</td><td>${energy}</td><td>${mass}</td><td>${wkg ? fmt(wkg, 0) : "—"}</td><td>${wl ? fmt(wl, 0) : "—"}</td></tr>`).join("");
   return `<div class="table-wrap"><table class="data"><thead><tr><th>Level</th><th>Energy</th><th>Mass</th><th>Wh/kg</th><th>Wh/L</th></tr></thead><tbody>${body}</tbody></table></div>
-    <p class="help" style="margin:10px 0 0">Wh/L needs dimensions: cell format, module size or enclosure size. Module and pack mass include the overheads entered.</p>`;
+    <p class="help" style="margin:10px 0 0">Wh/L needs a size: cell format, module size, or the pack enclosure volume (from CAD or made of boxes; the overall size is not used). Module and pack mass include the overheads entered.</p>`;
 }
 
 // Cell → module → pack → vehicle: the limit each level passes on and what set it.
@@ -1783,7 +1835,9 @@ function resultSections(all) {
       ["Energy / usable", `${fmt(p.energyKWh, 2)} / ${fmt(p.usableKWh, 2)} kWh`],
       ["Mass", `${fmt(p.massKg, 1)} kg${p.overheadKg > 0 ? ` (modules ${fmt(p.modulesMassKg, 1)} kg)` : ""}`],
       p.dcirMOhm > 0 ? ["Internal resistance", `${fmt(p.dcirMOhm, 1)} mΩ`] : null,
-      p.enclosureL ? ["Enclosure volume", `${fmt(p.enclosureL, 1)} L`] : null
+      p.enclosureL ? ["Enclosure volume", `${fmt(p.enclosureL, 1)} L${sub(p.enclosureMethod === "cad" ? "From CAD" : p.enclosureMethod === "boxes" ? `Made of ${p.enclosureBoxes.length} box${p.enclosureBoxes.length === 1 ? "" : "es"}` : "Length × width × height")}`] : null,
+      p.whPerL ? ["Pack energy density (volume)", `${fmt(p.whPerL, 0)} Wh/L${sub(`${fmt(p.energyKWh, 1)} kWh ÷ ${fmt(p.enclosureL, 1)} L`)}`] : null,
+      p.overallMm ? ["Overall size", `${p.overallMm.map((x) => fmt(x, 0)).join(" × ")} mm${sub("For fit checks; not used for Wh/L")}`] : null
     ]));
 
     const lim = all.atLimits;
@@ -1990,6 +2044,9 @@ function applyInputs(inputs, step) {
 // ---------------------------------------------------------------------------
 function onFieldChange(field) {
   state[field.id] = readControl(field);
+  afterInputChange(field);
+}
+function afterInputChange(field) {
   if (field.id === "cellOcvTable") updateOcvStatus();
   if (field.id === "tyreSize") updateTyreStatus(true);
   if (field.id === "vehPreset") applyPreset();
@@ -2014,6 +2071,36 @@ function bindEvents() {
   for (const field of ALL_FIELDS) {
     const el = document.getElementById(field.id);
     if (!el) continue;
+    if (field.type === "segment") {
+      el.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-seg-value]");
+        if (!b) return;
+        state[field.id] = b.dataset.segValue;
+        $$("[data-seg-value]", el).forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        afterInputChange(field);
+      });
+      continue;
+    }
+    if (field.type === "boxes") {
+      const commit = () => { state[field.id] = boxRowsToText(readBoxEditor(el)); afterInputChange(field); };
+      el.addEventListener("input", () => {
+        // update the row and total figures in place so typing is not interrupted
+        const rows = readBoxEditor(el);
+        const lit = (r) => (Number(r.l) > 0 && Number(r.w) > 0 && Number(r.h) > 0 ? Number(r.l) * Number(r.w) * Number(r.h) / 1e6 : null);
+        $$("[data-box-row]", el).forEach((row, i) => { const x = lit(rows[i]); row.querySelector("[data-box-litres]").textContent = x !== null ? `${fmt(x, 1)} L` : "—"; });
+        const total = rows.reduce((sum, r) => sum + (lit(r) || 0), 0);
+        el.querySelector("[data-box-total]").textContent = total > 0 ? `${fmt(total, 1)} L` : "—";
+        commit();
+      });
+      el.addEventListener("click", (e) => {
+        const rows = readBoxEditor(el);
+        if (e.target.closest("[data-box-add]")) { rows.push({ name: "", l: "", w: "", h: "" }); renderBoxEditor(el, rows); el.querySelector(`[data-box-row="${rows.length - 1}"] input`)?.focus(); }
+        else if (e.target.closest("[data-box-remove]")) { rows.splice(Number(e.target.closest("[data-box-remove]").dataset.boxRemove), 1); renderBoxEditor(el, rows.length ? rows : undefined); }
+        else return;
+        commit();
+      });
+      continue;
+    }
     const eventName = field.type === "switch" || field.type === "select" || field.type === "date" ? "change" : "input";
     el.addEventListener(eventName, () => onFieldChange(field));
   }

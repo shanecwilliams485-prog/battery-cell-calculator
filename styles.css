@@ -819,3 +819,26 @@ details.more summary .info-dot { margin-left: 10px; }
 .lib-pick-opt { display: block; width: 100%; text-align: left; padding: 9px 12px; border: 0; border-radius: 8px; background: none; color: var(--text); font: 400 14px var(--font-body); cursor: pointer; }
 .lib-pick-opt:hover, .lib-pick-opt:focus-visible { background: var(--line-soft); outline: none; }
 .lib-pick-opt[aria-selected="true"] { color: var(--bronze-light); font-weight: 600; }
+
+/* v2.12.3: enclosure volume method and sections */
+.seg-label { display: block; font-size: 14px; font-weight: 500; color: var(--text-2); margin-bottom: 8px; }
+.seg-toggle { display: inline-flex; width: fit-content; max-width: 100%; align-self: flex-start; flex-wrap: wrap; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+.seg-toggle button { font: 500 14px var(--font-body); color: var(--muted); background: none; border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+.seg-toggle button[aria-pressed="true"] { background: var(--bronze-light); color: var(--black); font-weight: 600; }
+.seg-toggle button:focus-visible { outline: 2px solid var(--bronze-light); outline-offset: 2px; }
+.box-editor { display: grid; gap: 8px; }
+.box-head, .box-row { display: grid; grid-template-columns: minmax(120px, 1.6fr) repeat(3, minmax(70px, 1fr)) 80px 36px; gap: 10px; align-items: center; }
+.box-head span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.box-head span:nth-child(5), .box-row [data-box-litres] { text-align: right; }
+.box-row input { min-height: 42px; padding: 8px 12px; }
+.box-row [data-box-litres] { font-family: var(--font-head); font-weight: 500; }
+.box-remove { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 10px; background: none; color: var(--muted); font-size: 18px; cursor: pointer; }
+.box-remove:disabled { opacity: .3; cursor: default; }
+.box-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.box-foot strong { font-family: var(--font-head); color: var(--bronze-light); font-weight: 600; }
+@media (max-width: 720px) {
+  .box-head { display: none; }
+  .box-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .box-row [data-box-col="name"] { grid-column: 1 / -1; }
+  .box-row [data-box-litres] { text-align: left; grid-column: 1 / 3; }
+}

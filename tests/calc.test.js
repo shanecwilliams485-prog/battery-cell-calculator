@@ -46,6 +46,11 @@ const pouch = C.computeCell({ ...base, cellFormat: "pouch", cellLengthMm: 200, c
 check("Pouch volume = 0.2 L", near(pouch.volumeL, 0.2, 1e-12));
 const enclosure = C.computeBuild({ ...base, packLengthMm: 1500, packWidthMm: 1000, packHeightMm: 150 });
 check("Pack Wh/L from enclosure", near(enclosure.pack.whPerL, 41472 / 225, 1e-9));
+const cad = C.computeBuild({ ...base, packVolumeMethod: "cad", packVolumeL: 190, packLengthMm: 1500, packWidthMm: 1000, packHeightMm: 150 });
+check("Enclosure from CAD: Wh/L uses the CAD volume, not the overall size", near(cad.pack.whPerL, 41472 / 190, 1e-9) && cad.pack.overallMm.join() === "1500,1000,150");
+const bx = C.computeBuild({ ...base, packVolumeMethod: "boxes", packBoxes: "Main tray, 1400, 900, 120\nRaised section, 500, 600, 150\nbad line", packLengthMm: 1400, packWidthMm: 900, packHeightMm: 270 });
+check("Enclosure made of boxes: volumes added, bad lines ignored", near(bx.pack.enclosureL, 196.2, 1e-9) && bx.pack.enclosureBoxes.length === 2 && bx.pack.enclosureBoxes[0].name === "Main tray");
+check("No CAD volume entered: no pack Wh/L", C.computeBuild({ ...base, packVolumeMethod: "cad", packLengthMm: 1500, packWidthMm: 1000, packHeightMm: 150 }).pack.whPerL === null);
 
 // 4. BMS limits
 const bms = C.computeBuild({ ...base, bmsEnabled: true, bmsPeakA: 350, bmsPeakS: 10, bmsContA: 150, bmsChargeA: 60, bmsNote: "HV connector" });

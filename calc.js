@@ -54,6 +54,32 @@
     return has(l) && has(w) && has(h) ? (num(l) * num(w) * num(h)) / 1e6 : null;
   }
 
+  // Enclosure made of several boxes (v2.12.3): one per line, "name, length, width, height" in mm.
+  // The name is optional; the last three numbers on a line are the dimensions.
+  function parseBoxes(text) {
+    return String(text || "").split(/\r?\n/).map((line) => {
+      const parts = line.split(/[,;\t]/).map((x) => x.trim());
+      if (parts.length < 3) return null;
+      const dims = parts.slice(-3).map(Number);
+      if (!dims.every((d) => Number.isFinite(d) && d > 0)) return null;
+      const name = parts.slice(0, -3).join(", ").trim();
+      return { name, l: dims[0], w: dims[1], h: dims[2], litres: dims[0] * dims[1] * dims[2] / 1e6 };
+    }).filter(Boolean);
+  }
+
+  // Pack enclosure volume for Wh/L: from CAD, or the sum of several boxes.
+  // Inputs without a method (older callers) use the length × width × height box, as before.
+  function enclosureVolume(input) {
+    const overall = boxLitres(input.packLengthMm, input.packWidthMm, input.packHeightMm);
+    const method = input.packVolumeMethod;
+    if (method === "cad") return { litres: has(input.packVolumeL) ? num(input.packVolumeL) : null, method, boxes: [], overall };
+    if (method === "boxes") {
+      const boxes = parseBoxes(input.packBoxes);
+      return { litres: boxes.length ? boxes.reduce((sum, b) => sum + b.litres, 0) : null, method, boxes, overall };
+    }
+    return { litres: overall, method: "overall", boxes: [], overall };
+  }
+
   function overheadMass(baseKg, mode, pct, items) {
     if (mode === "itemised") {
       const extra = items.reduce((sum, value) => sum + pos(value), 0);
@@ -329,7 +355,8 @@
     const mass = overheadMass(modulesMassKg, input.packOverheadMode, input.packMassOverheadPct, [
       input.packItemEnclosureKg, input.packItemBusbarsKg, input.packItemBmsKg, input.packItemCoolingKg, input.packItemOtherKg
     ]);
-    const enclosureL = boxLitres(input.packLengthMm, input.packWidthMm, input.packHeightMm);
+    const encl = enclosureVolume(input);
+    const enclosureL = encl.litres;
     const modulesVolumeL = mod1.volumeL !== null ? n1 * mod1.volumeL * strings : null;
 
     const dcirMOhm = element.dcirMOhm > 0 && elementParallel > 0 ? element.dcirMOhm * elementsInSeries / elementParallel : 0;
@@ -383,6 +410,9 @@
       massKg: mass.totalKg,
       overheadKg: mass.overheadKg,
       enclosureL,
+      enclosureMethod: encl.method,
+      enclosureBoxes: encl.boxes,
+      overallMm: encl.overall ? [num(input.packLengthMm), num(input.packWidthMm), num(input.packHeightMm)] : null,
       modulesVolumeL,
       whPerKg: mass.totalKg > 0 ? energyKWh * 1000 / mass.totalKg : null,
       whPerL: enclosureL ? energyKWh * 1000 / enclosureL : null,
@@ -581,7 +611,7 @@
     return out;
   }
 
-  const api = { CELL_FORMATS, BUILD_STEPS, RATING_KEYS, applyRatings, buildRange, computeCell, moduleFromCells, moduleFromDatasheet, computePack, computeCharging, validate, sanityWarnings, toEngineInput, computeBuild };
+  const api = { CELL_FORMATS, BUILD_STEPS, RATING_KEYS, applyRatings, parseBoxes, enclosureVolume, buildRange, computeCell, moduleFromCells, moduleFromDatasheet, computePack, computeCharging, validate, sanityWarnings, toEngineInput, computeBuild };
   root.VoltCalc = api;
   if (typeof module !== "undefined") module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -345,6 +345,7 @@ function compareMetrics() {
       ["Usable energy", (a) => num(pk(a)?.usableKWh, 2, "kWh")],
       ["Pack mass", (a) => num(pk(a)?.massKg, 1, "kg")],
       ["Pack Wh/kg", (a) => num(pk(a)?.whPerKg, 0)],
+      ["Enclosure volume", (a) => num(pk(a)?.enclosureL, 1, "L")],
       ["Pack Wh/L", (a) => num(pk(a)?.whPerL, 0)],
       ["Peak discharge power", (a) => num(pk(a) ? (a.atLimits.hasSag ? a.atLimits.full.powerW / 1000 : pk(a).peakKW) : null, 1, "kW")],
       [`Peak power at low charge (${LOW_CHARGE} %)`, (a) => num(pk(a) && a.atLimits.hasSag ? a.atLimits.low.powerW / 1000 : null, 1, "kW")],
