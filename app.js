@@ -185,11 +185,11 @@ const STEPS = [
       },
       {
         more: true,
-        title: "Module ratings",
+        title: "Module limits",
         tag: "once the module is designed",
         showIf: isCellStart,
         fields: [
-          f("modRatingsEnabled", "The module has its own current ratings", { type: "switch", full: true, help: "Off: the module is rated from the cells (cell rating × cells in parallel). Turn on once the module design sets its own ratings, e.g. busbars, joints and terminals, or a validated module design." }),
+          f("modRatingsEnabled", "The module has its own current limits", { type: "switch", full: true, help: "Off: the module is rated from the cells (cell rating × cells in parallel). Turn on once the module design sets its own ratings, e.g. busbars, joints and terminals, or a validated module design." }),
           f("modRatingsMode", "How should these be used?", { type: "select", full: true, options: RATING_MODES.mod, showIf: (s) => !!s.modRatingsEnabled }),
           f("modPeakA", "Peak discharge", { unit: "A", step: 1, showIf: (s) => !!s.modRatingsEnabled, help: "Leave 0 to keep the cell-based figure." }),
           f("modPeakS", "Peak duration", { unit: "s", step: 1, showIf: (s) => !!s.modRatingsEnabled }),
@@ -245,7 +245,7 @@ const STEPS = [
     id: "pack",
     title: "Pack & BMS",
     when: (r) => r.includes("pack"),
-    intro: "Arrange modules into the pack. Pack ratings, mass overhead and enclosure size are optional.",
+    intro: "Arrange modules into the pack. Pack limits, mass overhead and enclosure size are optional.",
     blocks: [
       {
         title: "Pack arrangement",
@@ -257,10 +257,10 @@ const STEPS = [
       },
       {
         more: true,
-        title: "Pack ratings",
+        title: "Pack limits",
         tag: "BMS, fuse, contactors",
         fields: [
-          f("bmsEnabled", "The pack has its own current ratings", { type: "switch", full: true, help: "Off: the pack is rated from the module (module rating × parallel strings). Turn on for the BMS settings, the weakest part in the current path (fuse, contactors, busbars, HV connector) or a validated pack design." }),
+          f("bmsEnabled", "The pack has its own current limits", { type: "switch", full: true, help: "Off: the pack is rated from the module (module rating × parallel strings). Turn on for the BMS settings, the weakest part in the current path (fuse, contactors, busbars, HV connector) or a validated pack design." }),
           f("bmsMode", "How should these be used?", { type: "select", full: true, options: RATING_MODES.pack, showIf: (s) => !!s.bmsEnabled }),
           f("bmsPeakA", "Peak discharge", { unit: "A", step: 1, showIf: (s) => !!s.bmsEnabled, help: "Leave 0 to keep the module-based figure." }),
           f("bmsPeakS", "Peak duration", { unit: "s", step: 1, showIf: (s) => !!s.bmsEnabled }),
@@ -315,8 +315,8 @@ const STEPS = [
         fields: [
           f("vehPreset", "Vehicle type preset", { type: "select", options: PRESET_OPTIONS, full: true, help: "Fills drag, frontal area and rolling resistance with typical values. Replace them with real data when you have it." }),
           f("vehName", "Vehicle", { type: "text", optional: true }),
-          f("vehMassKg", "Vehicle mass", { unit: "kg", step: 1, help: "Kerb mass. The calculated pack mass is added unless the switch below is on." }),
-          f("vehMassIncludesPack", "This mass already includes the battery pack", { type: "switch", full: true }),
+          f("vehMassKg", "Vehicle mass without battery pack", { unit: "kg", step: 1, help: "The calculated pack mass and the payload are added to give the test mass in the results." }),
+          f("vehMassIncludesPack", "This figure already includes a battery pack", { type: "switch", beside: true, help: "Leave off to add the calculated pack mass. Only changes the mass: payload, drag and the rest are always used." }),
           f("payloadKg", "Payload", { unit: "kg", step: 1, help: "Driver, passengers and luggage." }),
           f("cd", "Drag coefficient (Cd)", { step: 0.01 }),
           f("frontalAreaM2", "Frontal area", { unit: "m²", step: 0.01 }),
@@ -624,7 +624,7 @@ function fieldHtml(field) {
     return `<div class="${cls}" data-field="${field.id}"><span class="seg-label">${esc(field.label)}</span><div class="box-editor" id="${field.id}"></div>${help}</div>`;
   }
   if (field.type === "switch") {
-    return `<div class="${cls}" data-field="${field.id}">
+    return `<div class="${cls}${field.beside ? " beside" : ""}" data-field="${field.id}">
       <label class="switch"><input type="checkbox" id="${field.id}"><span class="track" aria-hidden="true"></span><span>${esc(field.label)}</span></label>
       ${help}</div>`;
   }
@@ -1505,7 +1505,7 @@ function moduleRows(m) {
     ["Voltage range", `${fmt(m.minV, 1)}–${fmt(m.maxV, 1)} V`],
     ["Capacity", `${fmt(m.capacityAh, 1)} Ah`],
     ["Energy", `${fmt(m.energyKWh, 3)} kWh`],
-    m.ratingsNote ? ["Module ratings set by", esc(m.ratingsNote), "highlight"] : null,
+    m.ratingsNote ? ["Module limits set by", esc(m.ratingsNote), "highlight"] : null,
     ["Max discharge", `${fmt(m.maxDischargeA, 0)} A · ${fmt(m.maxDischargeKW, 1)} kW${Number.isFinite(m.ratings.peakS) ? ` for ${fmt(m.ratings.peakS, 0)} s` : ""} (${sourceText(m.ratings.src.peakA)})`],
     ["Continuous discharge", `${fmt(m.contDischargeA, 0)} A · ${fmt(m.contDischargeKW, 1)} kW (${sourceText(m.ratings.src.contA)})`],
     ["Continuous charge", `${fmt(m.maxChargeA, 0)} A · ${fmt(m.maxChargeKW, 1)} kW (${sourceText(m.ratings.src.chargeA)})`],
@@ -1571,14 +1571,14 @@ function chainHtml(all) {
   }
   const mr = m.ratings;
   parts.push(card(`${b.cell ? "2" : "1"} · Module`, m.config || state.mdName || "Module",
-    m.source === "cells" ? `Cell × ${fmt(m.parallel, 0)} in parallel${m.ratingsOn ? ", then module ratings" : ""}` : "From the module datasheet", [
+    m.source === "cells" ? `Cell × ${fmt(m.parallel, 0)} in parallel${m.ratingsOn ? ", then module limits" : ""}` : "From the module datasheet", [
       ["Peak", `${fmt(mr.peakA, 0)} A${Number.isFinite(mr.peakS) ? ` · ${fmt(mr.peakS, 0)} s` : ""}`, via(rowFor(m, "peakA"), "peakA", "module"), mr.src.peakA === "module"],
       ["Continuous", `${fmt(mr.contA, 0)} A`, via(rowFor(m, "contA"), "contA", "module"), mr.src.contA === "module"],
       ["Charge", `${fmt(mr.chargeA, 0)} A`, via(rowFor(m, "chargeA"), "chargeA", "module"), mr.src.chargeA === "module"]
     ]));
   if (p) {
     parts.push(card(`${b.cell ? "3" : "2"} · Pack`, `${fmt(p.modulesInSeries, 0)} modules · ${fmt(p.strings, 0)} string${p.strings === 1 ? "" : "s"}`,
-      `Module × ${fmt(p.strings, 0)}${p.ratingsOn ? ", then pack ratings" : ""}`, [
+      `Module × ${fmt(p.strings, 0)}${p.ratingsOn ? ", then pack limits" : ""}`, [
         ["Peak", `${fmt(p.peakA, 0)} A · ${fmt(p.peakKW, 1)} kW`, via(rowFor(p, "peakA"), "peakA", "pack"), p.peakSource === "pack"],
         ["Continuous", `${fmt(p.contA, 0)} A · ${fmt(p.contKW, 1)} kW`, via(rowFor(p, "contA"), "contA", "pack"), p.contSource === "pack"],
         ["Charge", `${fmt(p.chargeA, 0)} A · ${fmt(p.chargeKW, 1)} kW`, via(rowFor(p, "chargeA"), "chargeA", "pack"), p.chargeSource === "pack"]
@@ -1629,7 +1629,7 @@ function assumptionsList(all) {
   ];
   if (b.pack) {
     items.push(`Usable energy = nominal energy × usable factor (${fmt(b.pack.usableFactor, 2)}), as a symmetric window (${fmt(all.packModel.socBottom, 0)}–${fmt(all.packModel.socTop, 0)} % cell SOC). Charge levels are shown as the driver sees them: 100 % full, 0 % empty.`);
-    items.push("Current ratings follow the chain cell → module → pack: each level starts from the one below (× cells in parallel, × parallel strings) and optional module or pack ratings either limit it (the lower figure is used) or replace it (a validated design rating).");
+    items.push("Current ratings follow the chain cell → module → pack: each level starts from the one below (× cells in parallel, × parallel strings) and optional module or pack limits either cap it (the lower figure is used) or replace it (a validated design rating).");
     items.push("Regen current is 80 % of the cell (or module datasheet) charge rating, unless a module or pack charge rating sets it.");
     items.push(all.atLimits.hasSag
       ? "Voltage sag uses a constant internal resistance (and the OCV table if entered); resistance changes with temperature are not modelled, and age only through the end-of-life check."
@@ -1644,7 +1644,7 @@ function assumptionsList(all) {
         : `Range: official ${Sim.DRIVE_CYCLES[dc].shortLabel} speed trace (UN GTR 15), repeated until the usable energy is used. Flat road, still air; WLTP downscaling not applied.`);
     if (state.vehPreset && VEHICLE_PRESETS[state.vehPreset]) items.push(`Vehicle preset “${VEHICLE_PRESETS[state.vehPreset].label}”: typical Cd, frontal area and Crr from published examples, not measured for this vehicle.`);
     items.push("Road load F = m·a + m·g·Crr + ½·ρ·Cd·A·v² (ρ = 1.225 kg/m³, g = 9.81 m/s²). Constant battery-to-wheel efficiency; rotating inertia, wind and gradient not modelled.");
-    items.push(state.vehMassIncludesPack ? "Vehicle mass as entered (includes the pack) plus payload." : "Vehicle mass = entered mass + calculated pack mass + payload.");
+    items.push(state.vehMassIncludesPack ? "Test mass = vehicle mass as entered (it already includes a battery pack) + payload." : "Test mass = vehicle mass without battery pack + calculated pack mass + payload.");
     items.push(`Low-charge figures are at ${LOW_CHARGE} % displayed charge. Top speed: 3 minutes of full throttle from rest.`);
     if (all.charging && (all.charging.ac || all.charging.dc)) items.push(`Charging is worked out step by step: power into the pack = lower of the charger${all.charging.effPct ? " (AC × on-board charger efficiency)" : ""} and the pack charge current × pack voltage${all.charging.taper ? ", with the current reduced in a straight line above the taper start" : ""}. Pack resistance losses are included; cable losses and temperature are not.`);
   }
@@ -1839,7 +1839,7 @@ function resultSections(all) {
 
     const lim = all.atLimits;
     add("limits", "Pack limits", rowsHtml([
-      p.bmsNote ? ["Pack ratings set by", esc(p.bmsNote), "highlight"] : null,
+      p.bmsNote ? ["Pack limits set by", esc(p.bmsNote), "highlight"] : null,
       ["Peak discharge", `${fmt(p.peakA, 0)} A · ${fmt(p.peakKW, 1)} kW${p.peakDurationS ? ` for ${fmt(p.peakDurationS, 0)} s` : ""} (${sourceText(p.peakSource)})`],
       ["Continuous discharge", `${fmt(p.contA, 0)} A · ${fmt(p.contKW, 1)} kW (${sourceText(p.contSource)})`],
       ["Continuous charge", `${fmt(p.chargeA, 0)} A · ${fmt(p.chargeKW, 1)} kW (${sourceText(p.chargeSource)})`],
@@ -1863,7 +1863,7 @@ function resultSections(all) {
     add("vehicle", "Vehicle", rowsHtml([
       state.vehName ? ["Vehicle", esc(state.vehName)] : null,
       preset ? ["Body-style preset", esc(preset.label)] : null,
-      ["Test mass", `${fmt(v.massKg, 0)} kg (${state.vehMassIncludesPack ? "includes pack" : `vehicle ${fmt(state.vehMassKg, 0)} + pack ${fmt(p.massKg, 0)}`} + payload ${fmt(state.payloadKg, 0)} kg)`],
+      ["Test mass", `${fmt(v.massKg, 0)} kg${sub(state.vehMassIncludesPack ? `${fmt(state.vehMassKg, 0)} kg vehicle (includes a battery pack) + ${fmt(state.payloadKg, 0)} kg payload` : `${fmt(state.vehMassKg, 0)} kg vehicle + ${fmt(p.massKg, 0)} kg pack + ${fmt(state.payloadKg, 0)} kg payload`)}`],
       ["Drag", `Cd ${fmt(state.cd, 2)} × ${fmt(state.frontalAreaM2, 2)} m² = CdA ${fmt(cdA, 2)} m²`],
       ["Rolling resistance (Crr)", fmt(state.crr, 4)],
       ["Drivetrain efficiency", `${fmt(state.drivetrainEffPct, 0)} %`],

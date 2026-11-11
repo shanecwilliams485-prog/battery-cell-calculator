@@ -84,7 +84,7 @@ ${eq("V<sub>module</sub> = V<sub>cell</sub> × S &nbsp;&nbsp; (nominal, max and 
 ${eq("C<sub>module</sub> = C<sub>cell</sub> × P &nbsp;&nbsp; I<sub>module</sub> = I<sub>cell</sub> × P")}
 ${eq("E<sub>module</sub> = V<sub>module</sub> × C<sub>module</sub>")}
 ${eq("m<sub>module</sub> = m<sub>cell</sub> × S × P + overhead")}
-<p>The module's current ratings start from the cells (cell rating × P). Once the module is designed they can be refined with optional <em>Module ratings</em> (see <em>Module and pack ratings</em>).</p>`
+<p>The module's current ratings start from the cells (cell rating × P). Once the module is designed they can be refined with optional <em>Module limits</em> (see <em>Module and pack limits</em>).</p>`
     },
     {
       id: "module-datasheet", group: "Module", title: "Starting from a module datasheet",
@@ -120,7 +120,7 @@ ${eq("Charge shown = (SOC − SOC<sub>bottom</sub>) ÷ (SOC<sub>top</sub> − SO
 <p>“Low charge” figures are taken at 15 % displayed charge.</p>`
     },
     {
-      id: "module-pack-ratings", group: "Pack & BMS", title: "Module and pack ratings",
+      id: "module-pack-ratings", group: "Pack & BMS", title: "Module and pack limits",
       html: `
 <p>Current ratings follow the build: <strong>the cell sets the module, the module sets the pack, and the vehicle uses the pack</strong>.</p>
 ${eq("Module (from cells): I = I<sub>cell</sub> × P")}
@@ -209,7 +209,7 @@ ${eq("Rolling radius ≈ 0.98 × unloaded radius")}
     {
       id: "peak-ratings", group: "Vehicle", title: "Peak ratings and their durations",
       html: `
-<p>The pack (through its cells, module and pack ratings) and the motor may each have a peak rating that can only be held for a set time. Each has a “peak budget” in seconds:</p>
+<p>The pack (through its cells, module and pack limits) and the motor may each have a peak rating that can only be held for a set time. Each has a “peak budget” in seconds:</p>
 <ul>
   <li>the budget is used up while running <strong>above</strong> the continuous rating;</li>
   <li>it recovers at the same rate while at or below the continuous rating;</li>
@@ -222,7 +222,7 @@ ${eq("Rolling radius ≈ 0.98 × unloaded radius")}
       html: `
 <p>When the wheels need negative power (braking), part of it is returned to the pack:</p>
 ${eq("P<sub>regen</sub> = min(P<sub>braking</sub> × η<sub>regen</sub>, P<sub>motor regen</sub>, P<sub>charge,max</sub> + P<sub>aux</sub>)")}
-<p>The regen current limit is 80 % of the cell charge rating × P (or of the module datasheet charge rating); with a cell peak charge current entered, 80 % of the peak while its time lasts, then of the continuous rating. A module or pack charge rating can set it instead (see <em>Module and pack ratings</em>). It is also limited so the terminal voltage does not exceed the pack maximum voltage. Regen is off above the cell SOC you set (default 95 %), as on a full battery. Braking energy that cannot be recovered goes to the friction brakes.</p>`
+<p>The regen current limit is 80 % of the cell charge rating × P (or of the module datasheet charge rating); with a cell peak charge current entered, 80 % of the peak while its time lasts, then of the continuous rating. A module or pack charge rating can set it instead (see <em>Module and pack limits</em>). It is also limited so the terminal voltage does not exceed the pack maximum voltage. Regen is off above the cell SOC you set (default 95 %), as on a full battery. Braking energy that cannot be recovered goes to the friction brakes.</p>`
     },
     {
       id: "charging", group: "Vehicle", title: "Charging times",
@@ -310,8 +310,8 @@ ${eq("Margin = (available − required) ÷ required × 100 %")}
 <ul><li><strong>PASS</strong>: margin of 10 % or more.</li><li><strong>WARN</strong>: margin between 0 and 10 %.</li><li><strong>FAIL</strong>: available is less than required.</li></ul>
 <table class="data"><thead><tr><th>Level</th><th>Compared with</th></tr></thead><tbody>
 <tr><td>Cell (each)</td><td>Cell datasheet ratings (regen: 80 % of the charge rating); low-charge power and usable energy of one cell</td></tr>
-<tr><td>Module (each)</td><td>Module ratings from the chain (cells, module ratings or module datasheet); low-charge power and usable energy of one module</td></tr>
-<tr><td>Pack</td><td>Pack ratings from the chain; low-charge power of the pack on its own (the inverter limit is shown under Inverter &amp; motor); usable energy</td></tr>
+<tr><td>Module (each)</td><td>Module figures from the chain (cells, module limits or module datasheet); low-charge power and usable energy of one module</td></tr>
+<tr><td>Pack</td><td>Pack figures from the chain; low-charge power of the pack on its own (the inverter limit is shown under Inverter &amp; motor); usable energy</td></tr>
 <tr><td>Inverter &amp; motor</td><td>The weaker of the two is shown, with the other underneath. Inverter: its max DC (battery) current, pulse only. Motor: peak / continuous / regen power; with a motor efficiency entered, motor power ÷ efficiency (regen: × efficiency), i.e. battery-side power; otherwise the datasheet power directly.</td></tr>
 </tbody></table>
 <p><strong>Pulse power at the chosen charge</strong> (shown when internal resistance or an OCV table is entered) is checked at the “Check pulse at charge” level, as shown to the driver (default 15 %). Pack limits and performance at the limits keep showing the natural limits at 15 %. It uses each level's own current limit, open-circuit voltage at that charge and internal resistance: P = (OCV − I·R) × I, with I limited by the rating, the minimum voltage and the maximum power point. Pulse duration passes when the rated peak time at that level is at least the required time. Requirements never limit the simulation.</p>`
