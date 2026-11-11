@@ -2,7 +2,7 @@
   "type": "volt-battery-calculator-library",
   "version": 1,
   "company": true,
-  "updatedAt": "2026-11-11T09:08:23.359Z",
+  "updatedAt": "2026-11-11T09:11:00.117Z",
   "library": {
     "cells": [
       {
@@ -64,14 +64,14 @@
       },
       {
         "name": "Molicel INR-21700-P60C",
-        "savedAt": "2026-11-11T09:08:13.211Z",
+        "savedAt": "2026-11-11T09:10:50.073Z",
         "values": {
           "cellManufacturer": "Molicel",
           "cellModel": "INR-21700-P60C",
           "cellNominalV": 3.6,
           "cellMaxV": 4.2,
           "cellMinV": 2.5,
-          "cellCapacityAh": 6.5,
+          "cellCapacityAh": 6,
           "cellMaxDischargeA": 150,
           "cellContDischargeA": 100,
           "cellMaxChargeA": 30,
