@@ -321,8 +321,7 @@ const STEPS = [
           f("cd", "Drag coefficient (Cd)", { step: 0.01 }),
           f("frontalAreaM2", "Frontal area", { unit: "m²", step: 0.01 }),
           f("crr", "Rolling resistance (Crr)", { step: 0.001 }),
-          f("drivetrainEffPct", "Drivetrain efficiency", { unit: "% battery → wheel", step: 1 }),
-          f("auxBaseKW", "Base accessory load", { unit: "kW", step: 0.05, help: "Always-on load (controls, pumps, 12 V)." })
+          f("drivetrainEffPct", "Drivetrain efficiency", { unit: "% battery → wheel", step: 1 })
         ]
       },
       {
@@ -360,16 +359,27 @@ const STEPS = [
       },
       {
         more: true,
-        title: "Regen and auxiliary loads",
-        tag: "braking, HVAC",
+        title: "Regenerative braking",
+        tag: "braking energy back to the battery",
         fields: [
           f("regenEnabled", "Regenerative braking", { type: "switch", full: true }),
-          f("regenEffPct", "Regen efficiency", { unit: "%", step: 1, showIf: (s) => !!s.regenEnabled, help: "Share of braking energy at the wheels returned to the pack." }),
-          f("regenDisableAboveSoc", "Regen off above", { unit: "% cell SOC", step: 1, showIf: (s) => !!s.regenEnabled }),
-          f("acEnabled", "Air conditioning (+1.5 kW)", { type: "switch" }),
-          f("heatingEnabled", "Heating", { type: "switch" }),
-          f("heaterType", "Heater type", { type: "select", options: [["resistive", "Resistive (+2.5 kW)"], ["heatPump", "Heat pump (+0.75 kW)"]], showIf: (s) => !!s.heatingEnabled }),
-          f("accessoriesEnabled", "Lights / wipers / radio (+0.5 kW)", { type: "switch" })
+          f("regenEffPct", "Regen recovery", { unit: "%", step: 1, showIf: (s) => !!s.regenEnabled, help: "Share of braking energy at the wheels returned to the battery, after motor, inverter, gearbox and friction-brake losses. 65 % is a general starting value." }),
+          f("regenOffAboveDisplayPct", "Regen off above", { unit: "% displayed", step: 1, display: 1, showIf: (s) => !!s.regenEnabled, help: "Regen is switched off above this displayed charge, as on a nearly full battery." }),
+          f("regenLimitsInfo", "", { type: "regeninfo", full: true, showIf: (s) => !!s.regenEnabled })
+        ]
+      },
+      {
+        more: true,
+        title: "Auxiliary loads",
+        tag: "accessories, heating, A/C",
+        fields: [
+          f("auxBaseKW", "Base accessory load", { unit: "kW", step: 0.05, help: "Always on: controls, pumps, 12 V." }),
+          f("acEnabled", "Air conditioning", { type: "switch", beside: true }),
+          f("acKW", "Air conditioning power", { unit: "kW", step: 0.05, showIf: (s) => !!s.acEnabled, help: "Starting value 1.5 kW; replace with the vehicle's figure." }),
+          f("heatingEnabled", "Heating", { type: "switch", beside: true }),
+          f("heaterType", "Heater type", { type: "select", options: [["resistive", "Resistive"], ["heatPump", "Heat pump"]], showIf: (s) => !!s.heatingEnabled, help: "Fills in a starting value: resistive 2.5 kW, heat pump 0.75 kW." }),
+          f("heatingKW", "Heating power", { unit: "kW", step: 0.05, showIf: (s) => !!s.heatingEnabled, help: "Editable; replace with the vehicle's figure." }),
+          f("auxTotalInfo", "", { type: "auxtotal", full: true })
         ]
       }
     ]
@@ -490,7 +500,7 @@ const BLANK = {
   cellTaperEnabled: false, cellTaperStartPct: 80, cellTaperEndPct: 10,
   cellResIncreasePct: "", cellResIncreaseSource: "supplier", packExtraResMOhm: "",
   reqCoolingKW: "", reqAgeMode: "both", resultsAge: "bol",
-  regenEnabled: true, regenEffPct: 65, regenDisableAboveSoc: 95, acEnabled: false, heatingEnabled: false, heaterType: "resistive", accessoriesEnabled: false,
+  regenEnabled: true, regenEffPct: 65, regenDisableAboveSoc: 95, regenOffAboveDisplayPct: 95, acEnabled: false, acKW: 1.5, heatingEnabled: false, heaterType: "resistive", heatingKW: 2.5, accessoriesEnabled: false,
   driveCycle: "wltp3b", graphResolutionS: 10, constantSpeedMph: 70,
   customProfileText: "", customProfileUnit: "kmh", customProfileName: "", speedTable: "30, 50, 60, 70",
   reqEnabled: false, reqPulseValue: 0, reqPulseUnit: "kW", reqPulseS: 10, reqPulseSocPct: 15, reqContValue: 0, reqContUnit: "kW", reqChargeValue: 0, reqChargeUnit: "kW", reqRegenA: 0, reqUsableKWh: 0,
@@ -549,6 +559,22 @@ function cleanInputs(source) {
     else out.packVolumeMethod = "cad";
   }
   if (!["cad", "boxes"].includes(out.packVolumeMethod)) out.packVolumeMethod = "cad";
+  // Regen and auxiliary loads (v2.13). A project saved before v2.13 is converted so its results stay the same:
+  // "regen off above" moves from cell charge to the displayed charge through the usable window,
+  // the fixed load values become the kW figures, and lights / wipers / radio (removed) join the base load.
+  if (source && !Object.prototype.hasOwnProperty.call(source, "regenOffAboveDisplayPct")) {
+    const uf = Math.min(1, Math.max(0.01, Number(out.usableFactor) || 1));
+    const bottom = (1 - uf) * 50, top = 100 - bottom;
+    const cell = Number.isFinite(Number(source.regenDisableAboveSoc)) && source.regenDisableAboveSoc !== "" ? Number(source.regenDisableAboveSoc) : 95;
+    out.regenOffAboveDisplayPct = Math.min(100, Math.max(0, (cell - bottom) / (top - bottom) * 100)); // not rounded, so results stay identical
+  }
+  if (source && !Object.prototype.hasOwnProperty.call(source, "acKW")) {
+    out.acKW = 1.5;
+    out.heatingKW = out.heaterType === "heatPump" ? 0.75 : 2.5;
+    if (out.accessoriesEnabled) out.auxBaseKW = Math.round(((Number(out.auxBaseKW) || 0) + 0.5) * 1000) / 1000;
+  }
+  out.accessoriesEnabled = false;
+  out.regenOffAboveDisplayPct = Math.min(100, Math.max(0, Number(out.regenOffAboveDisplayPct)));
   if (!["bol", "eol"].includes(out.resultsAge)) out.resultsAge = "bol";
   if (!RES_SOURCES.some(([v]) => v === out.cellResIncreaseSource)) out.cellResIncreaseSource = "supplier";
   out.cellTaperStartPct = Math.min(99, Math.max(0, Number(out.cellTaperStartPct)));
@@ -640,6 +666,8 @@ function fieldHtml(field) {
         <input type="file" id="ocvFile" accept=".csv,.txt,text/csv,text/plain" hidden>
         <small id="ocvStatus"></small>
       </div>`;
+  } else if (field.type === "regeninfo" || field.type === "auxtotal") {
+    return `<div class="${cls}" data-field="${field.id}"><div class="info-box" id="${field.id}" aria-live="polite"></div></div>`;
   } else if (field.type === "ratings") {
     return `<div class="${cls}" data-field="${field.id}"><div class="ratings-preview" id="${field.id}" aria-live="polite"></div></div>`;
   } else if (field.type === "wltpinfo") {
@@ -724,13 +752,14 @@ function renderSteps() {
 function setControlValues() {
   for (const field of ALL_FIELDS) {
     const el = document.getElementById(field.id);
-    if (!el || field.type === "profile" || field.type === "wltpinfo" || field.type === "ratings") continue;
+    if (!el || ["profile", "wltpinfo", "ratings", "regeninfo", "auxtotal"].includes(field.type)) continue;
     const value = state[field.id];
     if (field.type === "segment") { $$("[data-seg-value]", el).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.segValue === value))); continue; }
     if (field.type === "boxes") { renderBoxEditor(el); continue; }
     if (field.type === "switch") el.checked = !!value;
     else if (field.type === "speedlist") el.value = speedListToDisplay(value);
     else if (field.kind && value !== "" && Number.isFinite(Number(value))) el.value = String(Number(toDisplay(field.kind, Number(value)).toFixed(4)) * 1);
+    else if (field.display !== undefined && value !== "" && Number.isFinite(Number(value))) el.value = String(Number(Number(value).toFixed(field.display)));
     else el.value = value ?? "";
   }
   $("#buildStart").value = state.buildStart;
@@ -742,6 +771,7 @@ function setControlValues() {
   updateWltpGuide();
   updatePresetNote();
   updateRatingsPreviews();
+  updateAuxInfo();
 }
 
 // Enclosure sections editor: rows of name, length, width, height (mm), kept in state as text lines.
@@ -959,6 +989,28 @@ function sourceText(src) {
 const ratingValue = (v, unit) => (Number.isFinite(v) ? `${fmt(v, 0)} ${unit}` : (unit === "s" ? "no limit" : "—"));
 
 // "What the module / pack will use" tables under the rating inputs.
+// Regen and auxiliary load boxes in the Vehicle step (v2.13).
+function updateAuxInfo() {
+  const tot = $("#auxTotalInfo");
+  if (tot) {
+    const L = Calc.auxLoads(state);
+    const parts = [`base ${fmt(L.base, 2)}`, L.ac ? `air conditioning ${fmt(L.ac, 2)}` : null, L.heat ? `heating ${fmt(L.heat, 2)}` : null].filter(Boolean);
+    tot.innerHTML = `<div class="info-total"><span>Total auxiliary load</span><strong>${fmt(L.total, 2)} kW</strong></div><small>${esc(parts.join(" + "))} kW. All loads run for the whole drive. The starting values are typical figures, not from this vehicle.</small>`;
+  }
+  const reg = $("#regenLimitsInfo");
+  if (reg) {
+    let packText = "—";
+    try {
+      const b = Calc.computeBuild(state);
+      if (b.pack) packText = b.pack.regenPeakA > b.pack.regenA + 1e-9 ? `${fmt(b.pack.regenPeakA, 0)} A peak, then ${fmt(b.pack.regenA, 0)} A` : `${fmt(b.pack.regenA, 0)} A`;
+    } catch { /* inputs incomplete */ }
+    const motor = state.motorEnabled && Number(state.motorRegenKW) > 0 ? `${fmt(state.motorRegenKW, 0)} kW` : "none entered";
+    reg.innerHTML = `<p class="info-title">Also limiting regen (set elsewhere)</p>
+      <p>Motor max regen power: <strong>${motor}</strong> <span>(Motor &amp; drivetrain limits)</span></p>
+      <p>Pack regen limit: <strong>${packText}</strong> <span>(from the pack charge limit; Pack limits)</span></p>`;
+  }
+}
+
 function updateRatingsPreviews() {
   const targets = [["modRatingsPreview", "module"], ["packRatingsPreview", "pack"]];
   const build = Calc.computeBuild(state);
@@ -1142,6 +1194,19 @@ function computeCore() {
       massKg: build.vehicleMassKg + Math.max(0, Number(state.payloadKg) || 0),
       speedTable: Sim.constantSpeedTable(ei, parseNumberList(state.speedTable))
     };
+    // What the auxiliary loads cost and regen gives (v2.13): the drive again without them.
+    if (sim.ok) {
+      const aux = Calc.auxLoads(state);
+      out.vehicle.aux = { ...aux, kWh: aux.total * sim.runtimeMinutes / 60, pct: sim.netEnergyKWh > 0 ? aux.total * sim.runtimeMinutes / 60 / sim.netEnergyKWh * 100 : null, rangeCostMiles: null };
+      if (aux.total > 0) {
+        const noAux = Sim.simulateDriveCycle({ ...ei, assumedLoadKW: 0 });
+        if (noAux.ok) { out.vehicle.aux.rangeCostMiles = noAux.distanceMiles - sim.distanceMiles; out.vehicle.aux.withoutMiles = noAux.distanceMiles; }
+      }
+      if (state.regenEnabled) {
+        const noRegen = Sim.simulateDriveCycle({ ...ei, regenEnabled: false });
+        if (noRegen.ok) out.vehicle.regen = { kWh: sim.regenRecoveredKWh, addedMiles: sim.distanceMiles - noRegen.distanceMiles, withoutMiles: noRegen.distanceMiles };
+      }
+    }
   }
 
   out.heat = heatData(build, out);
@@ -1871,7 +1936,8 @@ function resultSections(all) {
       state.motorEnabled && Number(state.motorPeakKW) > 0 ? ["Motor peak / continuous", `${fmt(state.motorPeakKW, 0)} kW${Number(state.motorPeakS) > 0 ? ` for ${fmt(state.motorPeakS, 0)} s` : ""} / ${Number(state.motorContKW) > 0 ? `${fmt(state.motorContKW, 0)} kW` : "—"}`] : null,
       state.motorEnabled && Number(state.motorTorqueNm) > 0 ? ["Motor peak torque", `${fmt(state.motorTorqueNm, 0)} Nm`] : null,
       state.motorEnabled && Number(state.gearRatio) > 0 ? ["Gear ratio / tyre radius", `${fmt(state.gearRatio, 2)}:1 / ${fmt(state.tyreRadiusMm, 0)} mm${state.tyreSize ? ` (${esc(state.tyreSize)})` : ""}`] : null,
-      ["Regenerative braking", state.regenEnabled ? `On, ${fmt(state.regenEffPct, 0)} % efficiency` : "Off"]
+      ["Regenerative braking", state.regenEnabled ? `On, ${fmt(state.regenEffPct, 0)} % recovery${sub(`Off above ${fmt(state.regenOffAboveDisplayPct, 0)} % displayed charge`)}` : "Off"],
+      (() => { const L = Calc.auxLoads(state); return ["Auxiliary loads", `${fmt(L.total, 2)} kW${sub([`base ${fmt(L.base, 2)}`, L.ac ? `air conditioning ${fmt(L.ac, 2)}` : null, L.heat ? `heating ${fmt(L.heat, 2)}` : null].filter(Boolean).join(" + ") + " kW")}`]; })()
     ]));
     if (sim) {
       const limited = Object.entries(sim.limitSeconds || {}).filter(([, s]) => s > 0);
@@ -1884,6 +1950,9 @@ function resultSections(all) {
         ["Average speed", speed(sim.averageSpeedMph, 1)],
         ["Energy from pack (net)", `${fmt(sim.netEnergyKWh, 2)} kWh`],
         ["Regen returned to pack", `${fmt(sim.regenRecoveredKWh, 2)} kWh`],
+        v.regen ? ["Range added by regen", `${dist(v.regen.addedMiles)}${sub(`${dist(sim.distanceMiles)}, ${dist(v.regen.withoutMiles)} without regen`)}`, "highlight"] : null,
+        v.aux ? ["Energy used by auxiliary loads", `${fmt(v.aux.kWh, 2)} kWh${v.aux.pct !== null ? sub(`${fmt(v.aux.pct, 0)} % of the energy taken from the pack · ${fmt(v.aux.total, 2)} kW`) : ""}`] : null,
+        v.aux && v.aux.rangeCostMiles !== null ? ["Range cost of auxiliary loads", `${dist(v.aux.rangeCostMiles)}${sub(`${dist(sim.distanceMiles)}, ${dist(v.aux.withoutMiles)} without them`)}`, "highlight"] : null,
         sim.packLossKWh > 0 ? ["Pack internal losses", `${fmt(sim.packLossKWh, 2)} kWh`] : null,
         ["Peak discharge / regen current", `${fmt(sim.peakDischargeCurrentA, 0)} A / ${fmt(sim.peakChargeCurrentA, 0)} A`],
         ["Power-limited time", limited.length ? limited.map(([k, s]) => `${limitName(k)} ${fmt(s, 0)} s`).join("; ") : "None"],
@@ -2044,6 +2113,12 @@ function onFieldChange(field) {
   afterInputChange(field);
 }
 function afterInputChange(field) {
+  if (field.id === "heaterType") {
+    state.heatingKW = state.heaterType === "heatPump" ? 0.75 : 2.5;
+    const hk = document.getElementById("heatingKW");
+    if (hk) hk.value = String(state.heatingKW);
+  }
+  updateAuxInfo();
   if (field.id === "cellOcvTable") updateOcvStatus();
   if (field.id === "tyreSize") updateTyreStatus(true);
   if (field.id === "vehPreset") applyPreset();

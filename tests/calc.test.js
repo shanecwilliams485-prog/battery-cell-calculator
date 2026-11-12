@@ -52,6 +52,17 @@ const bx = C.computeBuild({ ...base, packVolumeMethod: "boxes", packBoxes: "Main
 check("Enclosure made of boxes: volumes added, bad lines ignored", near(bx.pack.enclosureL, 196.2, 1e-9) && bx.pack.enclosureBoxes.length === 2 && bx.pack.enclosureBoxes[0].name === "Main tray");
 check("No CAD volume entered: no pack Wh/L", C.computeBuild({ ...base, packVolumeMethod: "cad", packLengthMm: 1500, packWidthMm: 1000, packHeightMm: 150 }).pack.whPerL === null);
 
+// Regen and auxiliary loads (v2.13)
+const L0 = C.auxLoads({ auxBaseKW: 0.5, acEnabled: true, heatingEnabled: true, heaterType: "heatPump" });
+check("Old inputs (no kW figures): fixed values used", near(L0.total, 0.5 + 1.5 + 0.75, 1e-12));
+const L1 = C.auxLoads({ auxBaseKW: 0.4, acEnabled: true, acKW: 2, heatingEnabled: true, heatingKW: 1.2 });
+check("Entered kW figures are used", near(L1.total, 3.6, 1e-12) && L1.ac === 2 && L1.heat === 1.2);
+check("Loads switched off add nothing", C.auxLoads({ auxBaseKW: 0.5, acEnabled: false, acKW: 3 }).total === 0.5);
+check("Regen off above: displayed 95 % in a 0.9 window = cell 90.5 %", near(C.regenOffCellSoc({ regenOffAboveDisplayPct: 95 }, 0.9), 90.5, 1e-9));
+check("Regen off above: old cell value used when no displayed value", C.regenOffCellSoc({ regenDisableAboveSoc: 95 }, 0.9) === 95);
+const eiAux = C.computeBuild({ ...base, auxBaseKW: 0.5, acEnabled: true, acKW: 2 }).engineInput;
+check("Engine gets one total auxiliary load", near(eiAux.assumedLoadKW, 2.5, 1e-12) && eiAux.airConditioningEnabled === false);
+
 // 4. BMS limits
 const bms = C.computeBuild({ ...base, bmsEnabled: true, bmsPeakA: 350, bmsPeakS: 10, bmsContA: 150, bmsChargeA: 60, bmsNote: "HV connector" });
 check("Pack ratings (as limits) cap pack limits", bms.pack.peakA === 350 && bms.pack.contA === 150 && bms.pack.chargeA === 60 && bms.pack.regenA === 60 && bms.pack.peakSource === "pack");

@@ -184,7 +184,7 @@ ${eq("I = (OCV − √(OCV² − 4·R·P)) ÷ (2·R)")}
 ${eq("F = m·a + m·g·C<sub>rr</sub> + ½·ρ·C<sub>d</sub>·A·v²")}
 <p>with ρ = 1.225 kg/m³ (sea level, 15 °C) and g = 9.81 m/s². Rolling resistance applies only while moving. Wheel power is F × v, using the average speed over the step.</p>
 ${eq("P<sub>battery</sub> = P<sub>wheel</sub> ÷ η<sub>drivetrain</sub> + P<sub>aux</sub>")}
-<p>η is one battery-to-wheel efficiency (inverter, motor and gearbox together). Accessory loads: the base load you enter, plus 1.5 kW for air conditioning, 2.5 kW resistive or 0.75 kW heat-pump heating, and 0.5 kW for lights/wipers/radio when switched on.</p>
+<p>η is one battery-to-wheel efficiency (inverter, motor and gearbox together). Auxiliary loads (base load, air conditioning and heating, each with its own kW) are added to the battery power; see <em>Auxiliary loads</em>.</p>
 <p><strong>Mass:</strong> test mass = vehicle mass + calculated pack mass + payload, unless you say the vehicle mass already includes the pack.</p>
 <p>Not modelled: gradients, wind, rotating inertia, temperature effects, efficiency that varies with speed or load.</p>`
     },
@@ -220,9 +220,19 @@ ${eq("Rolling radius ≈ 0.98 × unloaded radius")}
     {
       id: "regen", group: "Vehicle", title: "Regenerative braking",
       html: `
-<p>When the wheels need negative power (braking), part of it is returned to the pack:</p>
-${eq("P<sub>regen</sub> = min(P<sub>braking</sub> × η<sub>regen</sub>, P<sub>motor regen</sub>, P<sub>charge,max</sub> + P<sub>aux</sub>)")}
-<p>The regen current limit is 80 % of the cell charge rating × P (or of the module datasheet charge rating); with a cell peak charge current entered, 80 % of the peak while its time lasts, then of the continuous rating. A module or pack charge rating can set it instead (see <em>Module and pack limits</em>). It is also limited so the terminal voltage does not exceed the pack maximum voltage. Regen is off above the cell SOC you set (default 95 %), as on a full battery. Braking energy that cannot be recovered goes to the friction brakes.</p>`
+<p>When the wheels need negative power (braking), part of it is returned to the battery:</p>
+${eq("P<sub>regen</sub> = min(P<sub>braking</sub> × regen recovery, P<sub>motor regen</sub>, P<sub>charge,max</sub> + P<sub>aux</sub>)")}
+<p><strong>Regen recovery</strong> is the share of braking energy at the wheels that ends up back in the battery, after motor and inverter losses (working as a generator), gearbox losses and the part done by the friction brakes. It is used instead of the drivetrain efficiency when braking. 65 % is a general starting value; a better figure comes from the motor/inverter supplier's generator efficiency (less gearbox and friction-brake losses) or vehicle test data. Try higher and lower values to see how much it matters.</p>
+<p>Regen is also capped by the motor's max regen power (Motor &amp; drivetrain limits) and the pack regen limit: 80 % of the cell charge rating × P (or of the module datasheet charge rating); with a cell peak charge current entered, 80 % of the peak while its time lasts, then of the continuous rating. A module or pack charge limit can set it instead (see <em>Module and pack limits</em>). It is also limited so the terminal voltage does not exceed the pack maximum voltage.</p>
+<p><strong>Regen off above</strong> switches regen off above a displayed charge (as shown to the driver), as on a nearly full battery. Projects saved before v2.13 used a % of cell charge; they are converted to the same point on the displayed scale, so their results do not change.</p>
+<p>The results show the regen energy returned and the <strong>range added by regen</strong>, found by running the drive again with regen off.</p>`
+    },
+    {
+      id: "aux-loads", group: "Vehicle", title: "Auxiliary loads",
+      html: `
+${eq("P<sub>aux</sub> = base load + air conditioning + heating")}
+<p>Each load is a constant power drawn from the battery for the whole drive, on top of the power to drive the wheels. The base load is always on (controls, pumps, 12 V). Air conditioning and heating can each be switched on with their own power; the heater type fills in a starting value (resistive 2.5 kW, heat pump 0.75 kW) that can be changed. The starting values (base 0.5 kW, air conditioning 1.5 kW) are typical figures, not from a particular vehicle: replace them with the vehicle's own figures when you have them.</p>
+<p>The results show the energy used by the auxiliary loads (total kW × driving time) and their <strong>range cost</strong>, found by running the drive again with no auxiliary load. Projects saved before v2.13 keep their results: the old fixed values become the kW figures, and the removed lights / wipers / radio load (0.5 kW) is added to the base load where it was on.</p>`
     },
     {
       id: "charging", group: "Vehicle", title: "Charging times",
@@ -397,7 +407,7 @@ ${eq("Margin = (cooling capacity − heat) ÷ heat")}
     "cell-0": "cell-inputs", "cell-1": "cell-format", "cell-2": "cell-performance",
     "module-0": "module-build", "module-1": "module-datasheet", "module-2": "module-pack-ratings", "module-3": "mass-overhead", "module-4": "density", "module-5": "module-datasheet",
     "pack-0": "pack-build", "pack-1": "module-pack-ratings", "pack-2": "mass-overhead", "pack-3": "density", "pack-4": "heat",
-    "vehicle-0": "road-load", "vehicle-1": "motor-limits", "vehicle-2": "charging", "vehicle-3": "regen",
+    "vehicle-0": "road-load", "vehicle-1": "motor-limits", "vehicle-2": "charging", "vehicle-3": "regen", "vehicle-4": "aux-loads",
     "simulation-0": "drive-cycles", "simulation-1": "range-sim",
     "requirements-0": "requirements", "lifetime-0": "lifetime"
   };

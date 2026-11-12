@@ -50,6 +50,28 @@
   }
 
   // Volume of a box from three mm dimensions, in litres (null if incomplete).
+  // A value that has been entered (0 counts), as opposed to blank.
+  const given = (value) => value !== "" && value !== null && value !== undefined && Number.isFinite(Number(value));
+
+  // Auxiliary loads (v2.13): each load has its own kW. Inputs saved before v2.13 have no kW
+  // figures, so the old fixed values are used for them.
+  function auxLoads(input) {
+    const base = Math.max(0, num(input.auxBaseKW, 1.0));
+    const ac = input.acEnabled ? Math.max(0, given(input.acKW) ? num(input.acKW) : 1.5) : 0;
+    const heat = input.heatingEnabled ? Math.max(0, given(input.heatingKW) ? num(input.heatingKW) : (input.heaterType === "heatPump" ? 0.75 : 2.5)) : 0;
+    const legacyAccessories = input.accessoriesEnabled ? 0.5 : 0;
+    return { base, ac, heat, legacyAccessories, total: base + ac + heat + legacyAccessories };
+  }
+
+  // Regen off above a displayed charge (v2.13) → the engine's cell SOC, through the usable window.
+  function regenOffCellSoc(input, usableFactor) {
+    if (!given(input.regenOffAboveDisplayPct)) return input.regenDisableAboveSoc;
+    const uf = Math.min(1, Math.max(0.01, num(usableFactor, 1)));
+    const bottom = (1 - uf) * 50, top = 100 - bottom;
+    const d = Math.min(100, Math.max(0, num(input.regenOffAboveDisplayPct)));
+    return bottom + (top - bottom) * d / 100;
+  }
+
   function boxLitres(l, w, h) {
     return has(l) && has(w) && has(h) ? (num(l) * num(w) * num(h)) / 1e6 : null;
   }
@@ -547,14 +569,15 @@
       frontalAreaM2: input.frontalAreaM2,
       rollingResistanceCoefficient: input.crr,
       drivetrainEfficiencyPercent: input.drivetrainEffPct,
-      assumedLoadKW: input.auxBaseKW,
-      airConditioningEnabled: !!input.acEnabled,
-      heatingEnabled: !!input.heatingEnabled,
+      // All auxiliary loads go to the engine as one total (v2.13).
+      assumedLoadKW: auxLoads(input).total,
+      airConditioningEnabled: false,
+      heatingEnabled: false,
       heaterType: input.heaterType,
-      electricalAccessoriesEnabled: !!input.accessoriesEnabled,
+      electricalAccessoriesEnabled: false,
       regenEnabled: !!input.regenEnabled,
       regenEfficiencyPercent: input.regenEffPct,
-      regenDisableAboveSocPercent: input.regenDisableAboveSoc,
+      regenDisableAboveSocPercent: regenOffCellSoc(input, pack.usableFactor),
       motorLimitsEnabled: !!input.motorEnabled,
       motorPeakPowerKW: input.motorPeakKW,
       motorPeakDurationSeconds: input.motorPeakS,
@@ -611,7 +634,7 @@
     return out;
   }
 
-  const api = { CELL_FORMATS, BUILD_STEPS, RATING_KEYS, applyRatings, parseBoxes, enclosureVolume, buildRange, computeCell, moduleFromCells, moduleFromDatasheet, computePack, computeCharging, validate, sanityWarnings, toEngineInput, computeBuild };
+  const api = { CELL_FORMATS, BUILD_STEPS, RATING_KEYS, applyRatings, parseBoxes, enclosureVolume, auxLoads, regenOffCellSoc, buildRange, computeCell, moduleFromCells, moduleFromDatasheet, computePack, computeCharging, validate, sanityWarnings, toEngineInput, computeBuild };
   root.VoltCalc = api;
   if (typeof module !== "undefined") module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

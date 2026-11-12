@@ -53,6 +53,8 @@ To remove a company item, delete it from the file's JSON (or rebuild the file fr
 Inputs, libraries and snapshots are kept in the browser's local storage on each computer. They are not shared between computers or users; use project files and library export/import to move them.
 
 ## Version
+v2.13 — regenerative braking and auxiliary loads as separate sections: editable kW for each load with a total, lights/wipers/radio removed, regen recovery wording, regen off above the displayed charge, and the range cost of the loads and range added by regen in the results.
+
 v2.12.5 — switch labels sit next to their switches; "ratings" renamed "limits" for modules and packs; clearer vehicle mass wording.
 
 v2.12.4 — enclosure volume from CAD or made of several boxes (overall size removed); library list drawn by the page (readable on Windows).
