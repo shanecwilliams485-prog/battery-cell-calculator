@@ -8,7 +8,7 @@
 
 const Sim = window.BatterySimulation;
 const Calc = window.VoltCalc;
-const REQUIRED_ENGINE_VERSION = 17;
+const REQUIRED_ENGINE_VERSION = 18;
 const STORAGE_KEY = "voltBatteryCalculator.v2";
 const PROJECT_FILE_TYPE = "volt-battery-calculator-project";
 const LOW_CHARGE = 15; // % (as shown to driver) used for "low charge" figures
@@ -260,12 +260,14 @@ const STEPS = [
         title: "Pack limits",
         tag: "BMS, fuse, contactors",
         fields: [
-          f("bmsEnabled", "The pack has its own current limits", { type: "switch", full: true, help: "Off: the pack is rated from the module (module rating × parallel strings). Turn on for the BMS settings, the weakest part in the current path (fuse, contactors, busbars, HV connector) or a validated pack design." }),
+          f("bmsEnabled", "The pack has its own limits", { type: "switch", full: true, help: "Off: the pack is rated from the module (module rating × parallel strings) and its voltage from the cells. Turn on for the BMS settings, the weakest part in the current path (fuse, contactors, busbars, HV connector) or a validated pack design." }),
           f("bmsMode", "How should these be used?", { type: "select", full: true, options: RATING_MODES.pack, showIf: (s) => !!s.bmsEnabled }),
           f("bmsPeakA", "Peak discharge", { unit: "A", step: 1, showIf: (s) => !!s.bmsEnabled, help: "Leave 0 to keep the module-based figure." }),
           f("bmsPeakS", "Peak duration", { unit: "s", step: 1, showIf: (s) => !!s.bmsEnabled }),
           f("bmsContA", "Continuous discharge", { unit: "A", step: 1, showIf: (s) => !!s.bmsEnabled }),
           f("bmsChargeA", "Max charge / regen", { unit: "A", step: 1, showIf: (s) => !!s.bmsEnabled }),
+          f("bmsMinV", "BMS minimum pack voltage", { unit: "V", step: 1, optional: true, showIf: (s) => !!s.bmsEnabled, help: "Where the BMS stops discharge. Leave 0 to use the cells' minimum × cells in series. Always applied as a limit (the narrower window is used)." }),
+          f("bmsMaxV", "BMS maximum pack voltage", { unit: "V", step: 1, optional: true, showIf: (s) => !!s.bmsEnabled, help: "Where the BMS stops charge and regen. Leave 0 to use the cells' maximum × cells in series." }),
           f("bmsNote", "Source / set by", { type: "text", full: true, optional: true, showIf: (s) => !!s.bmsEnabled, help: "e.g. Main contactor 180 A continuous; 400 A fuse" }),
           f("packRatingsPreview", "", { type: "ratings", level: "pack", full: true, showIf: (s) => !!s.bmsEnabled })
         ]
@@ -426,18 +428,60 @@ const STEPS = [
         title: "Targets",
         fields: [
           f("reqEnabled", "Check design requirements", { type: "switch", full: true }),
-          f("reqPulseValue", "Pulse discharge", { step: 1, showIf: (s) => !!s.reqEnabled }),
-          f("reqPulseUnit", "Unit", { type: "select", options: AMP_KW, showIf: (s) => !!s.reqEnabled }),
-          f("reqPulseS", "Pulse duration", { unit: "s", step: 1, showIf: (s) => !!s.reqEnabled }),
-          f("reqPulseSocPct", "Check pulse at charge", { unit: "% (as shown to driver)", step: 1, showIf: (s) => !!s.reqEnabled, help: "The pulse power target is checked at this charge level, with voltage sag. Pack limits and performance at the limits stay at 15 %." }),
-          f("reqContValue", "Continuous discharge", { step: 1, showIf: (s) => !!s.reqEnabled }),
-          f("reqContUnit", "Unit", { type: "select", options: AMP_KW, showIf: (s) => !!s.reqEnabled }),
-          f("reqChargeValue", "Max charge", { step: 1, showIf: (s) => !!s.reqEnabled }),
-          f("reqChargeUnit", "Unit", { type: "select", options: AMP_KW, showIf: (s) => !!s.reqEnabled }),
-          f("reqRegenA", "Regen current", { unit: "A", step: 1, showIf: (s) => !!s.reqEnabled }),
-          f("reqUsableKWh", "Usable energy", { unit: "kWh", step: 0.1, showIf: (s) => !!s.reqEnabled }),
-          f("reqCoolingKW", "Cooling capacity", { unit: "kW", step: 0.1, optional: true, showIf: (s) => !!s.reqEnabled, help: "Heat the cooling system can remove continuously (thermal design or cooling supplier). Checked against the heat at the continuous discharge and max charge targets." }),
-          f("reqAgeMode", "Requirements must be met at", { type: "select", options: [["both", "Beginning and end of life"], ["bol", "Beginning of life"], ["eol", "End of life"]], showIf: (s) => !!s.reqEnabled, help: "Used when an end-of-life resistance increase is entered under Lifetime & duty cycle. Failures at the other age are still shown." })
+          f("reqReference", "Requirement reference", { type: "text", optional: true, showIf: (s) => !!s.reqEnabled, help: "Customer spec document and revision, e.g. SPEC-0123 Rev B. Printed with the requirement check." }),
+          f("reqAgeMode", "Requirements must be met at", { type: "segment", options: [["bol", "Beginning of life"], ["eol", "End of life"], ["both", "Both"]], showIf: (s) => !!s.reqEnabled, help: "Used when an end-of-life resistance increase is entered under Lifetime & duty cycle. Failures at the other age are still shown." })
+        ]
+      },
+      {
+        title: "Power",
+        tag: "cell to inverter & motor",
+        showIf: (s) => !!s.reqEnabled,
+        fields: [
+          f("reqPulseValue", "Pulse discharge", { step: 1 }),
+          f("reqPulseUnit", "Unit", { type: "segment", options: AMP_KW }),
+          f("reqPulseS", "Pulse duration", { unit: "s", step: 1 }),
+          f("reqPulseSocPct", "Check pulse at charge", { unit: "% displayed", step: 1, help: "The pulse power target is checked at this charge level, with voltage sag. Pack limits and performance at the limits stay at 15 %." }),
+          f("reqContValue", "Continuous discharge", { step: 1 }),
+          f("reqContUnit", "Unit", { type: "segment", options: AMP_KW }),
+          f("reqRegenA", "Regen", { step: 1 }),
+          f("reqRegenUnit", "Unit", { type: "segment", options: AMP_KW })
+        ]
+      },
+      {
+        title: "Energy and charging",
+        showIf: (s) => !!s.reqEnabled,
+        fields: [
+          f("reqUsableKWh", "Usable energy", { unit: "kWh", step: 0.1 }),
+          f("reqChargeValue", "Max charge", { step: 1 }),
+          f("reqChargeUnit", "Unit", { type: "segment", options: AMP_KW }),
+          f("reqDcMinutes", "DC charge time 10–80 %", { unit: "min max", step: 1, optional: true, showIf: (s) => Calc.buildRange(s).includes("vehicle"), help: "Checked against the DC 10–80 % time in the results (needs a DC charger)." })
+        ]
+      },
+      {
+        title: "Vehicle performance",
+        tag: "on the chosen drive cycle",
+        showIf: (s) => !!s.reqEnabled && Calc.buildRange(s).includes("vehicle"),
+        fields: [
+          f("reqRangeMiles", "Range", { kind: "distance", step: 1, optional: true, help: "Minimum, on the drive cycle chosen under Simulation." }),
+          f("reqZeroSixtyS", "0–60 mph", { unit: "s max", step: 0.1, optional: true, help: "Full charge." }),
+          f("reqTopSpeedMph", "Top speed", { kind: "speed", step: 1, optional: true, help: "Minimum, full charge." })
+        ]
+      },
+      {
+        title: "Pack size and voltage",
+        showIf: (s) => !!s.reqEnabled,
+        fields: [
+          f("reqMaxMassKg", "Max pack mass", { unit: "kg", step: 1, optional: true }),
+          f("reqMaxVolumeL", "Max pack volume", { unit: "L", step: 1, optional: true, help: "Checked against the enclosure volume (Pack & BMS › Enclosure size)." }),
+          f("reqInvMinV", "Inverter minimum voltage", { unit: "V", step: 1, optional: true, help: "The pack's minimum voltage (BMS window if entered, else the cells) must not be below this." }),
+          f("reqInvMaxV", "Inverter maximum voltage", { unit: "V", step: 1, optional: true, help: "The pack's maximum voltage must not be above this." })
+        ]
+      },
+      {
+        title: "Thermal",
+        showIf: (s) => !!s.reqEnabled,
+        fields: [
+          f("reqCoolingKW", "Cooling capacity", { unit: "kW", step: 0.1, optional: true, help: "Heat the cooling system can remove continuously (thermal design or cooling supplier). Checked against the heat at the continuous discharge and max charge targets." })
         ]
       }
     ]
@@ -491,7 +535,7 @@ const BLANK = {
   mdName: "", mdNominalV: "", mdMaxV: "", mdMinV: "", mdCapacityAh: "", mdMaxDischargeA: "", mdContDischargeA: "", mdMaxChargeA: "", mdMassKg: "",
   mdConfig: "", mdCellType: "", mdLengthMm: "", mdWidthMm: "", mdHeightMm: "", mdDcirMOhm: 0, mdPulseDurationS: 0,
   packModules: "", packStrings: 1, usableFactor: 0.9,
-  bmsEnabled: false, bmsMode: "limit", bmsPeakA: 0, bmsPeakS: 0, bmsContA: 0, bmsChargeA: 0, bmsNote: "",
+  bmsEnabled: false, bmsMode: "limit", bmsPeakA: 0, bmsPeakS: 0, bmsContA: 0, bmsChargeA: 0, bmsMinV: 0, bmsMaxV: 0, bmsNote: "",
   packOverheadMode: "percent", packMassOverheadPct: 0, packItemEnclosureKg: 0, packItemBusbarsKg: 0, packItemBmsKg: 0, packItemCoolingKg: 0, packItemOtherKg: 0,
   packLengthMm: "", packWidthMm: "", packHeightMm: "", packVolumeMethod: "cad", packVolumeL: "", packBoxes: "",
   vehPreset: "", vehName: "", vehMassKg: "", vehMassIncludesPack: false, payloadKg: 75, cd: "", frontalAreaM2: "", crr: "", drivetrainEffPct: 90, auxBaseKW: 0.5,
@@ -503,7 +547,8 @@ const BLANK = {
   regenEnabled: true, regenEffPct: 65, regenDisableAboveSoc: 95, regenOffAboveDisplayPct: 95, acEnabled: false, acKW: 1.5, heatingEnabled: false, heaterType: "resistive", heatingKW: 2.5, accessoriesEnabled: false,
   driveCycle: "wltp3b", graphResolutionS: 10, constantSpeedMph: 70,
   customProfileText: "", customProfileUnit: "kmh", customProfileName: "", speedTable: "30, 50, 60, 70",
-  reqEnabled: false, reqPulseValue: 0, reqPulseUnit: "kW", reqPulseS: 10, reqPulseSocPct: 15, reqContValue: 0, reqContUnit: "kW", reqChargeValue: 0, reqChargeUnit: "kW", reqRegenA: 0, reqUsableKWh: 0,
+  reqEnabled: false, reqPulseValue: 0, reqPulseUnit: "kW", reqPulseS: 10, reqPulseSocPct: 15, reqContValue: 0, reqContUnit: "kW", reqChargeValue: 0, reqChargeUnit: "kW", reqRegenA: 0, reqRegenUnit: "A", reqUsableKWh: 0,
+  reqReference: "", reqDcMinutes: "", reqRangeMiles: "", reqZeroSixtyS: "", reqTopSpeedMph: "", reqMaxMassKg: "", reqMaxVolumeL: "", reqInvMinV: "", reqInvMaxV: "",
   reportTemplate: "customer", reportTheme: "light", reportSections: "", reportConfidential: true, reportPreparedBy: "",
   lifeEnabled: false, lifeYears: 10, lifeDistanceMiles: 100000, lifeEolPct: 70, lifeConsumptionSource: "auto", lifeConsumptionKWhPerMile: 0.3, lifeCharging: "acDcRapid"
 };
@@ -551,6 +596,7 @@ function cleanInputs(source) {
   if (!["limit", "replace"].includes(out.bmsMode)) out.bmsMode = "limit";
   out.reqPulseSocPct = Math.min(100, Math.max(0, Number(out.reqPulseSocPct)));
   if (!["both", "bol", "eol"].includes(out.reqAgeMode)) out.reqAgeMode = "both";
+  for (const k of ["reqPulseUnit", "reqContUnit", "reqChargeUnit", "reqRegenUnit"]) if (!["A", "kW"].includes(out[k])) out[k] = k === "reqRegenUnit" ? "A" : "kW";
   // Enclosure (v2.12.3): a project saved before the volume choice used one length × width × height box.
   // It opens as "made of several boxes" with that box, so its Wh/L is unchanged.
   if (source && !Object.prototype.hasOwnProperty.call(source, "packVolumeMethod")) {
@@ -1139,6 +1185,10 @@ function mergeRequirements(b, e, view) {
     }
     return { ...row, cells };
   });
+  const targets = (main.targets || []).map((t) => {
+    const o = (other.targets || []).find((x) => x.label === t.label);
+    return o && t.cell.cls !== "na" && o.cell.cls !== "na" && o.cell.chip !== t.cell.chip ? { ...t, cell: { ...t.cell, other: { cls: o.cell.cls, chip: o.cell.chip, age: otherAge } } } : t;
+  });
   const mode = ["bol", "eol", "both"].includes(state.reqAgeMode) ? state.reqAgeMode : "both";
   const tag = (list, age) => list.map((t) => ({ t, age }));
   const join = (bl, el) => {
@@ -1156,7 +1206,7 @@ function mergeRequirements(b, e, view) {
   const ignoredAge = mode === "bol" ? "eol" : mode === "eol" ? "bol" : null;
   // Failures only at the age that is not counted (the same failure at both ages is already counted).
   const notCounted = ignoredAge ? (ignoredAge === "eol" ? e.fails.filter((t) => !b.fails.includes(t)) : b.fails.filter((t) => !e.fails.includes(t))) : [];
-  return { ...main, rows, fails, warns, notCounted, ages: { view, mode, ignoredAge } };
+  return { ...main, rows, targets, fails, warns, notCounted, ages: { view, mode, ignoredAge } };
 }
 
 function computeCore() {
@@ -1181,6 +1231,12 @@ function computeCore() {
   };
 
   out.charging = chargingData(build, packOnly);
+  // BMS voltage window against the usable charge window (v2.14).
+  if (build.pack && (build.pack.minVSource === "pack" || build.pack.maxVSource === "pack")) {
+    const ocvTop = packOnly.ocv(packOnly.socTop), ocvBottom = packOnly.ocv(packOnly.socBottom);
+    if (build.pack.maxVSource === "pack" && ocvTop > build.pack.maxV + 1e-9) build.warnings.push({ step: "pack", text: `The BMS maximum pack voltage (${fmt(build.pack.maxV, 0)} V) is below the open-circuit voltage at full charge (${fmt(ocvTop, 0)} V), so regen and charging stop before full. Consider a lower usable factor.` });
+    if (build.pack.minVSource === "pack" && ocvBottom < build.pack.minV - 1e-9) build.warnings.push({ step: "pack", text: `The BMS minimum pack voltage (${fmt(build.pack.minV, 0)} V) is above the open-circuit voltage at empty (${fmt(ocvBottom, 0)} V), so the pack cuts out before 0 % under load. Consider a lower usable factor.` });
+  }
 
   if (build.engineInput) {
     const sim = Sim.simulateDriveCycle(ei);
@@ -1481,12 +1537,13 @@ function requirementMatrix(build, all) {
       }
     });
   }
-  const regen = Number(state.reqRegenA) || 0;
+  const regenIn = Number(state.reqRegenA) || 0;
+  const regen = regenIn > 0 ? toA(regenIn, state.reqRegenUnit === "kW" ? "kW" : "A") : 0;
   if (regen > 0) {
     const kW = regen * p.nominalV / 1000;
     const mr = motorOn && Number(state.motorRegenKW) > 0 ? Number(state.motorRegenKW) * (eff || 1) : null;
     rows.push({
-      label: "Regen current", sub: `${fmt(regen, 0)} A = ${fmt(kW, 1)} kW`,
+      label: "Regen", sub: state.reqRegenUnit === "kW" ? `${fmt(regenIn, 0)} kW = ${fmt(regen, 1)} A` : `${fmt(regen, 0)} A = ${fmt(kW, 1)} kW`,
       cells: {
         cell: c ? margin(regen / cellsParallel, (c.peakChargeA || c.maxChargeA) * 0.8, "A", 2, c.peakChargeA ? ` (80 % of peak${c.peakChargeS ? `, ${fmt(c.peakChargeS, 0)} s` : ""})` : " (80 %)") : null,
         module: margin(regen / strings, m.ratings.regenPeakA, "A", 1, m.ratings.regenPeakA > m.ratings.regenA + 1e-9 ? ` (peak; ${fmt(m.ratings.regenA, 0)} A continuous)` : ""),
@@ -1536,7 +1593,38 @@ function requirementMatrix(build, all) {
     if (failAt.length) fails.push(`${row.label} fails at the ${failAt.join(" and ")}`);
     else if (warnAt.length) warns.push(`${row.label} has under 10 % margin at the ${warnAt.join(" and ")}`);
   }
-  return { levels, rows, fails, warns, eff, motorOn, pulsePct };
+  // Vehicle and pack targets (v2.14): one result each, with a margin that is positive when it is met.
+  const targets = [];
+  const target = (label, sub, reqText, resText, required, result, kind, d = 1, naNote = "") => {
+    if (!(required > 0)) return;
+    if (result === null || result === undefined || !Number.isFinite(result)) {
+      targets.push({ label, sub, reqText, resText: "—", cell: { cls: "na", chip: "—", detail: naNote, lines: [] } });
+      return;
+    }
+    const m = kind === "min" ? (result - required) / required * 100 : (required - result) / required * 100;
+    const cls = m < 0 ? "fail" : m < 10 ? "warn" : "pass";
+    const sign = m >= 0 ? "+" : "−";
+    targets.push({ label, sub, reqText, resText, cell: { cls, chip: `${cls === "fail" ? "FAIL" : cls === "warn" ? "WARN" : "PASS"} ${sign}${fmt(Math.abs(m), 1)} %`, detail: "", margin: m, lines: [] } });
+  };
+  const num0 = (k) => (hasValue(state[k]) ? Number(state[k]) : 0);
+  const vsim = all.vehicle?.sim;
+  const top = all.vehicle?.fullTop;
+  target("Range", vsim ? esc(vsim.driveCycleLabel) : "", `≥ ${dist(num0("reqRangeMiles"))}`, vsim ? dist(vsim.distanceMiles) : "", num0("reqRangeMiles"), vsim ? vsim.distanceMiles : null, "min", 1, "no drive simulation");
+  target("0–60 mph", "Full charge", `≤ ${fmt(num0("reqZeroSixtyS"), 1)} s`, top?.ok && top.zeroToSixtySeconds !== null ? `${fmt(top.zeroToSixtySeconds, 1)} s` : "", num0("reqZeroSixtyS"), top?.ok ? top.zeroToSixtySeconds : null, "max", 1, "the vehicle does not reach 60 mph");
+  target("Top speed", "Full charge", `≥ ${speed(num0("reqTopSpeedMph"))}`, top?.ok ? speed(top.topSpeedMph) : "", num0("reqTopSpeedMph"), top?.ok ? top.topSpeedMph : null, "min", 1, "no full-power test");
+  const dc = all.charging?.dc;
+  target("DC charge 10–80 %", dc ? `${fmt(dc.kW, 0)} kW charger` : "", `≤ ${fmt(num0("reqDcMinutes"), 0)} min`, dc && dc.min1080 !== null ? `${fmt(dc.min1080, 0)} min` : "", num0("reqDcMinutes"), dc ? dc.min1080 : null, "max", 0, "no DC charger entered (Vehicle › Charging)");
+  target("Pack mass", "", `≤ ${fmt(num0("reqMaxMassKg"), 0)} kg`, `${fmt(p.massKg, 1)} kg`, num0("reqMaxMassKg"), p.massKg, "max");
+  target("Pack volume", p.enclosureL ? "Enclosure volume" : "", `≤ ${fmt(num0("reqMaxVolumeL"), 0)} L`, p.enclosureL ? `${fmt(p.enclosureL, 1)} L` : "", num0("reqMaxVolumeL"), p.enclosureL || null, "max", 1, "no enclosure volume entered (Pack & BMS › Enclosure size)");
+  const vsrc = (src) => (src === "pack" ? "BMS window" : "cells × series");
+  target("Pack minimum voltage", `vs inverter minimum · ${vsrc(p.minVSource)}`, `≥ ${fmt(num0("reqInvMinV"), 0)} V`, `${fmt(p.minV, 1)} V`, num0("reqInvMinV"), p.minV, "min");
+  target("Pack maximum voltage", `vs inverter maximum · ${vsrc(p.maxVSource)}`, `≤ ${fmt(num0("reqInvMaxV"), 0)} V`, `${fmt(p.maxV, 1)} V`, num0("reqInvMaxV"), p.maxV, "max");
+  for (const t of targets) {
+    if (t.cell.cls === "fail") fails.push(`${t.label} fails`);
+    else if (t.cell.cls === "warn") warns.push(`${t.label} has under 10 % margin`);
+  }
+
+  return { levels, rows, targets, fails, warns, eff, motorOn, pulsePct, reference: String(state.reqReference || "").trim() };
 }
 
 // ---------------------------------------------------------------------------
@@ -1609,8 +1697,13 @@ function requirementHtml(R) {
     ? `<p class="help req-ages">Chips show <strong>${ageLabel(R.ages.view)}</strong>; where ${ageLabel(R.ages.view === "eol" ? "bol" : "eol")} differs it is shown underneath. Requirements must be met at ${R.ages.mode === "both" ? "<strong>both ages</strong>" : `<strong>${ageLabel(R.ages.mode)}</strong>`}.${R.notCounted && R.notCounted.length ? ` Not counted in the verdict (${esc(ageLabel(R.ages.ignoredAge))}): ${esc(R.notCounted.join("; "))}.` : ""}</p>`
     : "";
   const motorNote = R.motorOn ? (R.eff ? ` The motor uses power ÷ motor efficiency (${fmt(R.eff * 100, 0)} %), i.e. power drawn from the battery.` : " The motor uses its datasheet power (no motor efficiency entered).") : "";
-  return `${summary}${ages}<div class="table-wrap"><table class="data req-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`
-    + helpP(`PASS = 10 % margin or more · WARN = 0–10 % · FAIL = short of the target. Each target is shared out: currents per module = pack ÷ parallel strings, per cell = pack ÷ cells in parallel; power and energy per module = pack ÷ number of modules, per cell = pack ÷ number of cells. Pulse power at ${fmt(R.pulsePct, 0)} % charge uses each level's own current limit, open-circuit voltage and internal resistance; pack limits and performance keep showing the natural limits at ${LOW_CHARGE} %. Inverter & motor shows the weaker of the two, with the other underneath.${motorNote} Cooling rows compare heat (current² × pack resistance, including any extra pack resistance) at the continuous discharge and max charge targets with the cooling capacity; short pulses are absorbed by the pack's mass and are not checked. “—” = not applicable, or no rating entered.`);
+  const ref = R.reference ? `<p class="help req-ref">Requirement reference: <strong>${esc(R.reference)}</strong></p>` : "";
+  const tgt = R.targets && R.targets.length
+    ? `<h3 class="req-subhead">Vehicle and pack targets</h3><div class="table-wrap"><table class="data req-targets"><thead><tr><th>Target</th><th>Required</th><th>Result</th><th>Margin</th></tr></thead><tbody>${R.targets.map((t) => `<tr><th scope="row"><strong>${esc(t.label)}</strong>${t.sub ? `<small>${t.sub}</small>` : ""}</th><td>${t.reqText}</td><td>${t.resText}</td><td>${t.cell.cls === "na" ? `—<small>${esc(t.cell.detail)}</small>` : `<span class="chip ${t.cell.cls}">${esc(t.cell.chip)}</span>${other(t.cell)}`}</td></tr>`).join("")}</tbody></table></div>`
+    : "";
+  if (!R.rows.length) return `${summary}${ref}${ages}${tgt}`;
+  return `${summary}${ref}${ages}<div class="table-wrap"><table class="data req-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>${tgt}`
+    + helpP(`PASS = 10 % margin or more · WARN = 0–10 % · FAIL = short of the target. Each target is shared out: currents per module = pack ÷ parallel strings, per cell = pack ÷ cells in parallel; power and energy per module = pack ÷ number of modules, per cell = pack ÷ number of cells. Pulse power at ${fmt(R.pulsePct, 0)} % charge uses each level's own current limit, open-circuit voltage and internal resistance; pack limits and performance keep showing the natural limits at ${LOW_CHARGE} %. Inverter & motor shows the weaker of the two, with the other underneath.${motorNote} Cooling rows compare heat (current² × pack resistance, including any extra pack resistance) at the continuous discharge and max charge targets with the cooling capacity; short pulses are absorbed by the pack's mass and are not checked. Vehicle and pack targets: minimum targets (range, top speed, pack minimum voltage) margin = (result − target) ÷ target; maximum targets (0–60, DC charge time, mass, volume, pack maximum voltage) margin = (target − result) ÷ target, so a positive margin always means the target is met. “—” = not applicable, or no rating entered.`);
 }
 
 function chainHtml(all) {
@@ -1892,7 +1985,7 @@ function resultSections(all) {
       ["Configuration", `${esc(p.config)}${b.range.start === "cell" ? ` · ${fmt(p.moduleCount, 0)} modules` : ""}`],
       p.cells ? ["Cells", fmt(p.cells, 0)] : null,
       ["Nominal voltage", `${fmt(p.nominalV, 1)} V`],
-      ["Voltage range", `${fmt(p.minV, 1)}–${fmt(p.maxV, 1)} V`],
+      ["Voltage range", `${fmt(p.minV, 1)}–${fmt(p.maxV, 1)} V${p.minVSource === "pack" || p.maxVSource === "pack" ? sub(`BMS window; the cells allow ${fmt(p.cellMinV, 1)}–${fmt(p.cellMaxV, 1)} V`) : ""}`],
       ["Capacity", `${fmt(p.capacityAh, 1)} Ah`],
       ["Energy / usable", `${fmt(p.energyKWh, 2)} / ${fmt(p.usableKWh, 2)} kWh`],
       ["Mass", `${fmt(p.massKg, 1)} kg${p.overheadKg > 0 ? ` (modules ${fmt(p.modulesMassKg, 1)} kg)` : ""}`],
@@ -1983,7 +2076,7 @@ function resultSections(all) {
   if (all.heat && p) add("heat", "Heat from the cells", heatHtml(all), true);
   if (all.eolAvailable && all.bol && all.eol) add("ages", "Beginning vs end of life", ageCompareHtml(all), true);
 
-  if (all.requirements && all.requirements.rows && all.requirements.rows.length) {
+  if (all.requirements && ((all.requirements.rows && all.requirements.rows.length) || (all.requirements.targets && all.requirements.targets.length))) {
     add("requirements", "Requirement check", requirementHtml(all.requirements), true);
   }
 

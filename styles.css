@@ -858,3 +858,13 @@ details.more summary .info-dot { margin-left: 10px; }
 .info-total { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .info-total span { color: var(--text-2); font-size: 14px; }
 .info-total strong { font-size: 22px; font-weight: 600; color: var(--bronze-light) !important; }
+
+/* v2.14: requirement targets */
+.req-subhead { margin: 18px 0 8px; font-family: var(--font-head); font-weight: 500; font-size: 17px; }
+.req-ref { margin: 0 0 8px !important; }
+.req-ref strong { color: var(--text); font-weight: 600; }
+.req-targets td, .req-targets th:not(:first-child) { text-align: right; }
+.req-targets td small, .req-targets th small { display: block; color: var(--muted); font-size: 12px; letter-spacing: 0; text-transform: none; font-weight: 400; margin-top: 2px; }
+.req-targets tbody th { text-align: left; text-transform: none; letter-spacing: 0; font-size: 14px; }
+.report .req-subhead { font-size: 11pt; margin: 4mm 0 2mm; }
+.report .req-ref strong { color: var(--r-text); }

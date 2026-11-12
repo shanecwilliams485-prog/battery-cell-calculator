@@ -131,6 +131,7 @@ ${eq("Pack (from modules): I = I<sub>module</sub> × parallel strings")}
   <li><strong>As the module / pack rating</strong>: the entry is used instead, higher or lower. Use this for a validated design rating (for example a module with cooling that is rated above the cell datasheet). A warning shows wherever an entry is above the level below, so check the design is validated for it.</li>
 </ul>
 <p>A value left at 0 keeps the figure from the level below. Continuous current is never allowed above peak. The <em>What the module/pack will use</em> table under the inputs, and the <em>Current limit chain</em> in the results, show where each figure comes from.</p>
+<p><strong>Pack voltage window</strong> (pack limits): the BMS minimum and maximum pack voltage, where it stops discharge and charge. Always applied as a limit: the narrower of the BMS window and the cells' limits × cells in series is used, for voltage sag, regen, charging and the requirement check. A warning shows if the BMS window cuts into the usable charge window.</p>
 <p><strong>Peak duration</strong>: as limits, the shortest duration in the chain applies; as a rating, the entered duration replaces it. <strong>Regen</strong> is 80 % of the cell (or module datasheet) charge rating unless a module or pack charge rating sets it.</p>
 <p>A pack built from one module design: the option to mix two module types has been removed. Projects saved with two types open using the first type only, with a message.</p>`
     },
@@ -324,7 +325,14 @@ ${eq("Margin = (available − required) ÷ required × 100 %")}
 <tr><td>Pack</td><td>Pack figures from the chain; low-charge power of the pack on its own (the inverter limit is shown under Inverter &amp; motor); usable energy</td></tr>
 <tr><td>Inverter &amp; motor</td><td>The weaker of the two is shown, with the other underneath. Inverter: its max DC (battery) current, pulse only. Motor: peak / continuous / regen power; with a motor efficiency entered, motor power ÷ efficiency (regen: × efficiency), i.e. battery-side power; otherwise the datasheet power directly.</td></tr>
 </tbody></table>
-<p><strong>Pulse power at the chosen charge</strong> (shown when internal resistance or an OCV table is entered) is checked at the “Check pulse at charge” level, as shown to the driver (default 15 %). Pack limits and performance at the limits keep showing the natural limits at 15 %. It uses each level's own current limit, open-circuit voltage at that charge and internal resistance: P = (OCV − I·R) × I, with I limited by the rating, the minimum voltage and the maximum power point. Pulse duration passes when the rated peak time at that level is at least the required time. Requirements never limit the simulation.</p>`
+<p><strong>Pulse power at the chosen charge</strong> (shown when internal resistance or an OCV table is entered) is checked at the “Check pulse at charge” level, as shown to the driver (default 15 %). Pack limits and performance at the limits keep showing the natural limits at 15 %. It uses each level's own current limit, open-circuit voltage at that charge and internal resistance: P = (OCV − I·R) × I, with I limited by the rating, the minimum voltage and the maximum power point. Pulse duration passes when the rated peak time at that level is at least the required time. Requirements never limit the simulation.</p>
+<p>The targets are grouped into <strong>Power</strong> (pulse, continuous and regen, each in A or kW), <strong>Energy and charging</strong>, <strong>Vehicle performance</strong>, <strong>Pack size and voltage</strong> and <strong>Thermal</strong>. Every target is optional.</p>
+<h4>Vehicle and pack targets</h4>
+<p>Range (on the chosen drive cycle), 0–60 mph, top speed, DC charge time 10–80 %, pack mass, pack volume (the enclosure volume) and the inverter's minimum and maximum voltage each have one result, shown in their own table:</p>
+${eq("Minimum targets: margin = (result − target) ÷ target")}
+${eq("Maximum targets: margin = (target − result) ÷ target")}
+<p>So a positive margin always means the target is met, with the same PASS / WARN / FAIL as above. The pack's minimum and maximum voltage are the BMS window when entered (Pack &amp; BMS › Pack limits), otherwise the cell limits × cells in series. With the end-of-life check on, these targets follow the end-of-life switch too.</p>
+<p><strong>Requirement reference</strong>: the customer's spec document and revision, printed with the requirement check. <strong>Requirement sets</strong>: save a customer's targets and reference to the library (or the company library) and load them into another design.</p>`
     },
     {
       id: "lifetime", group: "Optional sections", title: "Lifetime & duty cycle",
@@ -409,7 +417,7 @@ ${eq("Margin = (cooling capacity − heat) ÷ heat")}
     "pack-0": "pack-build", "pack-1": "module-pack-ratings", "pack-2": "mass-overhead", "pack-3": "density", "pack-4": "heat",
     "vehicle-0": "road-load", "vehicle-1": "motor-limits", "vehicle-2": "charging", "vehicle-3": "regen", "vehicle-4": "aux-loads",
     "simulation-0": "drive-cycles", "simulation-1": "range-sim",
-    "requirements-0": "requirements", "lifetime-0": "lifetime"
+    "requirements-0": "requirements", "requirements-1": "requirements", "requirements-2": "requirements", "requirements-3": "requirements", "requirements-4": "requirements", "requirements-5": "heat", "lifetime-0": "lifetime"
   };
   const fieldTopics = {
     usableFactor: "pack-build", vehPreset: "vehicle-presets", crr: "vehicle-presets", cd: "vehicle-presets",

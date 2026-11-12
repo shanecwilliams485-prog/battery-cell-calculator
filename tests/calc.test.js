@@ -52,6 +52,13 @@ const bx = C.computeBuild({ ...base, packVolumeMethod: "boxes", packBoxes: "Main
 check("Enclosure made of boxes: volumes added, bad lines ignored", near(bx.pack.enclosureL, 196.2, 1e-9) && bx.pack.enclosureBoxes.length === 2 && bx.pack.enclosureBoxes[0].name === "Main tray");
 check("No CAD volume entered: no pack Wh/L", C.computeBuild({ ...base, packVolumeMethod: "cad", packLengthMm: 1500, packWidthMm: 1000, packHeightMm: 150 }).pack.whPerL === null);
 
+// Pack voltage window from the BMS (v2.14)
+const vw = C.computeBuild({ ...base, bmsEnabled: true, bmsMinV: 300, bmsMaxV: 390 });
+check("BMS voltage window narrows the pack voltage", vw.pack.minV === 300 && near(vw.pack.maxV, 390, 1e-9) && vw.pack.minVSource === "pack" && (!vw.engineInput || vw.engineInput.packMinVoltageV === 300));
+const vw2 = C.computeBuild({ ...base, bmsEnabled: true, bmsMinV: 100, bmsMaxV: 1000 });
+check("A BMS window wider than the cells changes nothing", near(vw2.pack.minV, vw2.pack.cellMinV, 1e-9) && near(vw2.pack.maxV, vw2.pack.cellMaxV, 1e-9) && vw2.pack.maxVSource === "cells");
+check("BMS min above max is an error", C.computeBuild({ ...base, bmsEnabled: true, bmsMinV: 400, bmsMaxV: 300 }).errors.some((e) => /BMS minimum/.test(e.text)));
+
 // Regen and auxiliary loads (v2.13)
 const L0 = C.auxLoads({ auxBaseKW: 0.5, acEnabled: true, heatingEnabled: true, heaterType: "heatPump" });
 check("Old inputs (no kW figures): fixed values used", near(L0.total, 0.5 + 1.5 + 0.75, 1e-12));

@@ -359,8 +359,13 @@
     const element = fromCells ? cell : mod1;
 
     const nominalV = element.nominalV * elementsInSeries;
-    const maxV = element.maxV * elementsInSeries;
-    const minV = element.minV * elementsInSeries;
+    // Pack voltage window (v2.14): the cells' limits × cells in series, narrowed by the BMS if entered.
+    const cellMaxV = element.maxV * elementsInSeries;
+    const cellMinV = element.minV * elementsInSeries;
+    const bmsMinV = input.bmsEnabled && has(input.bmsMinV) ? num(input.bmsMinV) : null;
+    const bmsMaxV = input.bmsEnabled && has(input.bmsMaxV) ? num(input.bmsMaxV) : null;
+    const minV = bmsMinV !== null ? Math.max(cellMinV, bmsMinV) : cellMinV;
+    const maxV = bmsMaxV !== null ? Math.min(cellMaxV, bmsMaxV) : cellMaxV;
     const capacityAh = element.capacityAh * elementParallel;
     const energyKWh = nominalV * capacityAh / 1000;
     const usableFactor = Math.min(1, Math.max(0, num(input.usableFactor, 1)));
@@ -395,6 +400,10 @@
       nominalV,
       maxV,
       minV,
+      cellMaxV,
+      cellMinV,
+      minVSource: bmsMinV !== null && bmsMinV > cellMinV ? "pack" : "cells",
+      maxVSource: bmsMaxV !== null && bmsMaxV < cellMaxV ? "pack" : "cells",
       capacityAh,
       energyKWh,
       usableFactor,
@@ -488,6 +497,7 @@
       if (!(num(input.packModules) >= 1)) errors.push({ step: "pack", text: "Pack needs at least one module in series." });
       if (!(num(input.usableFactor) > 0 && num(input.usableFactor) <= 1)) errors.push({ step: "pack", text: "Usable factor must be between 0 and 1 (e.g. 0.88)." });
       if (input.bmsEnabled && has(input.bmsContA) && has(input.bmsPeakA) && num(input.bmsContA) > num(input.bmsPeakA)) errors.push({ step: "pack", text: "Pack continuous rating should not exceed the pack peak rating." });
+      if (input.bmsEnabled && has(input.bmsMinV) && has(input.bmsMaxV) && num(input.bmsMinV) >= num(input.bmsMaxV)) errors.push({ step: "pack", text: "BMS minimum pack voltage must be below the BMS maximum pack voltage." });
     }
     if (range.includes("vehicle")) {
       if (!(num(input.vehMassKg) > 0)) errors.push({ step: "vehicle", text: "Vehicle mass must be above zero." });
@@ -544,6 +554,8 @@
       nominalVoltage: el.nominalV,
       maxVoltage: el.maxV,
       minVoltage: el.minV,
+      packMaxVoltageV: pack.maxV,
+      packMinVoltageV: pack.minV,
       capacityAh: el.capacityAh,
       maxDischargeCurrentA: el.maxDischargeA,
       continuousDischargeCurrentA: el.contDischargeA,

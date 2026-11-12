@@ -15,7 +15,8 @@ const CELL_EXTRA_FIELDS = ["cellTaperEnabled", "cellTaperStartPct", "cellTaperEn
 const LIBRARY_TYPES = {
   cells: { label: "cell", block: "cell-0", fields: () => [...stepFieldIds("cell"), ...CELL_EXTRA_FIELDS], name: (s) => [s.cellManufacturer, s.cellModel].filter(Boolean).join(" ") },
   modules: { label: "module", block: "module-1", fields: () => [...blockFieldIds("module", 1), ...blockFieldIds("module", 5)], name: (s) => s.mdName },
-  vehicles: { label: "vehicle", block: "vehicle-0", fields: () => stepFieldIds("vehicle").filter((id) => !CELL_EXTRA_FIELDS.includes(id)), name: (s) => s.vehName }
+  vehicles: { label: "vehicle", block: "vehicle-0", fields: () => stepFieldIds("vehicle").filter((id) => !CELL_EXTRA_FIELDS.includes(id)), name: (s) => s.vehName },
+  requirements: { label: "requirement set", block: "requirements-0", fields: () => stepFieldIds("requirements").filter((id) => id !== "reqEnabled"), name: (s) => s.reqReference }
 };
 
 function stepFieldIds(stepId) {

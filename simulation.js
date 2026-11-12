@@ -531,8 +531,9 @@
       ocvPoints: ocvParse.points,
       ocvErrors: ocvParse.errors,
       advancedCell,
-      vMax: num(input.maxVoltage) * series,
-      vMin: num(input.minVoltage) * series,
+      // Pack voltage window: the BMS window when given (v18), else the cell limits × series.
+      vMax: num(input.packMaxVoltageV) > 0 ? num(input.packMaxVoltageV) : num(input.maxVoltage) * series,
+      vMin: num(input.packMinVoltageV) > 0 ? num(input.packMinVoltageV) : num(input.minVoltage) * series,
       ocv: (soc) => series * cellOcv(soc),
       socTop,
       socBottom,
@@ -1267,7 +1268,7 @@
 
   // Bump whenever app.js depends on new engine output. app.js checks this so a
   // stale simulation.js on the server is reported instead of giving wrong results.
-  const ENGINE_VERSION = 17;
+  const ENGINE_VERSION = 18;
 
   // ---------------------------------------------------------------------------
   // Charging, step by step across the displayed charge (v17)

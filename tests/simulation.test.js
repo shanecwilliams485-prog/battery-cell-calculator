@@ -191,7 +191,7 @@ const noProfile = Sim.simulateDriveCycle({ ...base, driveCycle: "custom", custom
 check("Missing profile gives a clear message", !noProfile.ok && /speed profile/i.test(noProfile.reason));
 
 // 20. Charging step model (v17)
-check("Engine version 17", Sim.ENGINE_VERSION === 17);
+check("Engine version 18", Sim.ENGINE_VERSION === 18);
 const cp0 = Sim.buildPackModel({ ...base, advancedCellEnabled: false });            // nominal voltage, no resistance
 const usableAh = cp0.capacityAh * (cp0.socTop - cp0.socBottom) / 100;
 const usableKWh = usableAh * cp0.ocv(50) / 1000;
@@ -225,6 +225,11 @@ const extra = Sim.chargeSession(cpR, { chargerKW: 50, currentLimitA: 1000, fromP
 check("Extra pack resistance adds heat", extra.heatKWh > withR.heatKWh);
 const curve = Sim.chargeCurve(cp0, { chargerKW: 50, currentLimitA: lowLimit, taper: tap }, 101);
 check("Charge curve: 101 points, flat then falling", curve.length === 101 && near(curve[50].kW, 50, 0.01) && curve[100].kW < 6);
+
+// 21. Pack voltage window (v18)
+const pw = Sim.buildPackModel({ ...base, packMaxVoltageV: 390, packMinVoltageV: 300 });
+check("Pack voltage window overrides cells × series", pw.vMax === 390 && pw.vMin === 300);
+check("Without it, cells × series", Sim.buildPackModel(base).vMax === base.maxVoltage * base.seriesCount);
 
 console.log(failures ? `\n${failures} check(s) FAILED` : "\nAll checks passed");
 process.exit(failures ? 1 : 0);
