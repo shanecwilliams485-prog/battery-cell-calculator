@@ -185,7 +185,7 @@ ${eq("I = (OCV − √(OCV² − 4·R·P)) ÷ (2·R)")}
 ${eq("F = m·a + m·g·C<sub>rr</sub> + ½·ρ·C<sub>d</sub>·A·v²")}
 <p>with ρ = 1.225 kg/m³ (sea level, 15 °C) and g = 9.81 m/s². Rolling resistance applies only while moving. Wheel power is F × v, using the average speed over the step.</p>
 ${eq("P<sub>battery</sub> = P<sub>wheel</sub> ÷ η<sub>drivetrain</sub> + P<sub>aux</sub>")}
-<p>η is one battery-to-wheel efficiency (inverter, motor and gearbox together). Auxiliary loads (base load, air conditioning and heating, each with its own kW) are added to the battery power; see <em>Auxiliary loads</em>.</p>
+<p>η is one battery-to-wheel efficiency (inverter, motor and gearbox together). Auxiliary loads (base load, plus air conditioning and heating at their rated power × climate control average use) are added to the battery power; see <em>Auxiliary loads</em>.</p>
 <p><strong>Mass:</strong> test mass = vehicle mass + calculated pack mass + payload, unless you say the vehicle mass already includes the pack.</p>
 <p>Not modelled: gradients, wind, rotating inertia, temperature effects, efficiency that varies with speed or load.</p>`
     },
@@ -231,9 +231,11 @@ ${eq("P<sub>regen</sub> = min(P<sub>braking</sub> × regen recovery, P<sub>motor
     {
       id: "aux-loads", group: "Vehicle", title: "Auxiliary loads",
       html: `
-${eq("P<sub>aux</sub> = base load + air conditioning + heating")}
-<p>Each load is a constant power drawn from the battery for the whole drive, on top of the power to drive the wheels. The base load is always on (controls, pumps, 12 V). Air conditioning and heating can each be switched on with their own power; the heater type fills in a starting value (resistive 2.5 kW, heat pump 0.75 kW) that can be changed. The starting values (base 0.5 kW, air conditioning 1.5 kW) are typical figures, not from a particular vehicle: replace them with the vehicle's own figures when you have them.</p>
-<p>The results show the energy used by the auxiliary loads (total kW × driving time) and their <strong>range cost</strong>, found by running the drive again with no auxiliary load. Projects saved before v2.13 keep their results: the old fixed values become the kW figures, and the removed lights / wipers / radio load (0.5 kW) is added to the base load where it was on.</p>`
+${eq("P<sub>aux</sub> = base load + (air conditioning + heating rated power) × climate control average use")}
+<p>Each load is a constant average power drawn from the battery for the whole drive, on top of the power to drive the wheels. The base load is always on (controls, pumps, 12 V) and is entered as an average, so it is not scaled.</p>
+<p>Air conditioning and heating are entered as <strong>rated power</strong> (from the compressor or heater datasheet). They only draw that while the cabin is heating up or cooling down; after that they cycle. <strong>Climate control average use</strong> is the average share of the rated power drawn over the drive, taken from vehicle testing or the HVAC supplier. The calculator does not suggest a value. Until it is entered, air conditioning and heating are not counted, and the Vehicle step and the results say so. The heater type fills in a starting rated power (resistive 2.5 kW, heat pump 0.75 kW); the starting values (base 0.5 kW, air conditioning 1.5 kW) are typical figures, not from a particular vehicle.</p>
+<p>The results show the average draw with its working, the energy used (average kW × driving time) and the <strong>range cost</strong>, found by running the drive again with no auxiliary load. Auxiliary loads cost energy per hour, not per mile, so a slow drive cycle (WLTP averages under 30 mph) shows a much bigger range cost than motorway driving.</p>
+<p>Projects saved before v2.15 open with climate control average use at 100 %, which is what they used before, so their results do not change. Projects saved before v2.13 also keep their results: the old fixed values become the kW figures, and the removed lights / wipers / radio load (0.5 kW) is added to the base load where it was on.</p>`
     },
     {
       id: "charging", group: "Vehicle", title: "Charging times",
@@ -423,7 +425,7 @@ ${eq("Margin = (cooling capacity − heat) ÷ heat")}
     usableFactor: "pack-build", vehPreset: "vehicle-presets", crr: "vehicle-presets", cd: "vehicle-presets",
     cellPulseDurationS: "peak-ratings", bmsPeakS: "peak-ratings", motorPeakS: "peak-ratings",
     tyreSize: "motor-limits", cellDcirMOhm: "pack-electrical", mdDcirMOhm: "pack-electrical",
-    cellTaperEnabled: "charging", acChargerEffPct: "charging", cellResIncreasePct: "end-of-life", reqAgeMode: "end-of-life", reqCoolingKW: "heat"
+    cellTaperEnabled: "charging", acChargerEffPct: "charging", cellResIncreasePct: "end-of-life", reqAgeMode: "end-of-life", reqCoolingKW: "heat", climateUsePct: "aux-loads"
   };
 
   const api = { topics, blockTopics, fieldTopics, byId: Object.fromEntries(topics.map((t) => [t.id, t])) };

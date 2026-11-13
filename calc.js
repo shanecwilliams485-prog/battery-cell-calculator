@@ -60,7 +60,13 @@
     const ac = input.acEnabled ? Math.max(0, given(input.acKW) ? num(input.acKW) : 1.5) : 0;
     const heat = input.heatingEnabled ? Math.max(0, given(input.heatingKW) ? num(input.heatingKW) : (input.heaterType === "heatPump" ? 0.75 : 2.5)) : 0;
     const legacyAccessories = input.accessoriesEnabled ? 0.5 : 0;
-    return { base, ac, heat, legacyAccessories, total: base + ac + heat + legacyAccessories };
+    // Climate control average use (v2.15): air conditioning and heating draw rated kW × this %.
+    // Blank means not entered yet, so they are not counted (climateMissing tells the page to say so).
+    const climateOn = !!(input.acEnabled || input.heatingEnabled);
+    const useGiven = given(input.climateUsePct);
+    const usePct = useGiven ? Math.min(100, Math.max(0, num(input.climateUsePct))) : null;
+    const f = usePct === null ? 0 : usePct / 100;
+    return { base, acRated: ac, heatRated: heat, usePct, climateMissing: climateOn && !useGiven, ac: ac * f, heat: heat * f, legacyAccessories, total: base + (ac + heat) * f + legacyAccessories };
   }
 
   // Regen off above a displayed charge (v2.13) → the engine's cell SOC, through the usable window.

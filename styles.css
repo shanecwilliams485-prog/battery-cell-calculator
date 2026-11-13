@@ -858,6 +858,10 @@ details.more summary .info-dot { margin-left: 10px; }
 .info-total { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .info-total span { color: var(--text-2); font-size: 14px; }
 .info-total strong { font-size: 22px; font-weight: 600; color: var(--bronze-light) !important; }
+#auxTotalInfo .aux-missing, .aux-missing { margin: 8px 0 0; color: var(--warn) !important; font-size: 13px; }
+#auxTotalInfo .aux-missing strong { color: var(--warn) !important; }
+.row.warn > span, .row.warn > strong { color: var(--warn); }
+.report .row.warn > span, .report .row.warn > strong { color: var(--r-warn); }
 
 /* v2.14: requirement targets */
 .req-subhead { margin: 18px 0 8px; font-family: var(--font-head); font-weight: 500; font-size: 17px; }

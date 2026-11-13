@@ -377,10 +377,11 @@ const STEPS = [
         fields: [
           f("auxBaseKW", "Base accessory load", { unit: "kW", step: 0.05, help: "Always on: controls, pumps, 12 V." }),
           f("acEnabled", "Air conditioning", { type: "switch", beside: true }),
-          f("acKW", "Air conditioning power", { unit: "kW", step: 0.05, showIf: (s) => !!s.acEnabled, help: "Starting value 1.5 kW; replace with the vehicle's figure." }),
+          f("acKW", "Air conditioning rated power", { unit: "kW", step: 0.05, showIf: (s) => !!s.acEnabled, help: "From the compressor datasheet. Starting value 1.5 kW; replace with the vehicle's figure." }),
           f("heatingEnabled", "Heating", { type: "switch", beside: true }),
           f("heaterType", "Heater type", { type: "select", options: [["resistive", "Resistive"], ["heatPump", "Heat pump"]], showIf: (s) => !!s.heatingEnabled, help: "Fills in a starting value: resistive 2.5 kW, heat pump 0.75 kW." }),
-          f("heatingKW", "Heating power", { unit: "kW", step: 0.05, showIf: (s) => !!s.heatingEnabled, help: "Editable; replace with the vehicle's figure." }),
+          f("heatingKW", "Heating rated power", { unit: "kW", step: 0.05, showIf: (s) => !!s.heatingEnabled, help: "From the heater datasheet. Editable; replace with the vehicle's figure." }),
+          f("climateUsePct", "Climate control average use", { unit: "%", step: 1, min: 0, max: 100, placeholder: "Enter %", showIf: (s) => !!(s.acEnabled || s.heatingEnabled), help: "Average share of the rated power drawn while driving, once the cabin is at temperature. From vehicle testing or the HVAC supplier." }),
           f("auxTotalInfo", "", { type: "auxtotal", full: true })
         ]
       }
@@ -544,7 +545,7 @@ const BLANK = {
   cellTaperEnabled: false, cellTaperStartPct: 80, cellTaperEndPct: 10,
   cellResIncreasePct: "", cellResIncreaseSource: "supplier", packExtraResMOhm: "",
   reqCoolingKW: "", reqAgeMode: "both", resultsAge: "bol",
-  regenEnabled: true, regenEffPct: 65, regenDisableAboveSoc: 95, regenOffAboveDisplayPct: 95, acEnabled: false, acKW: 1.5, heatingEnabled: false, heaterType: "resistive", heatingKW: 2.5, accessoriesEnabled: false,
+  regenEnabled: true, regenEffPct: 65, regenDisableAboveSoc: 95, regenOffAboveDisplayPct: 95, acEnabled: false, acKW: 1.5, heatingEnabled: false, heaterType: "resistive", heatingKW: 2.5, climateUsePct: "", accessoriesEnabled: false,
   driveCycle: "wltp3b", graphResolutionS: 10, constantSpeedMph: 70,
   customProfileText: "", customProfileUnit: "kmh", customProfileName: "", speedTable: "30, 50, 60, 70",
   reqEnabled: false, reqPulseValue: 0, reqPulseUnit: "kW", reqPulseS: 10, reqPulseSocPct: 15, reqContValue: 0, reqContUnit: "kW", reqChargeValue: 0, reqChargeUnit: "kW", reqRegenA: 0, reqRegenUnit: "A", reqUsableKWh: 0,
@@ -619,6 +620,10 @@ function cleanInputs(source) {
     out.heatingKW = out.heaterType === "heatPump" ? 0.75 : 2.5;
     if (out.accessoriesEnabled) out.auxBaseKW = Math.round(((Number(out.auxBaseKW) || 0) + 0.5) * 1000) / 1000;
   }
+  // Climate control average use (v2.15): projects saved before it drew the full rated power, so they open at 100 %.
+  if (source && !Object.prototype.hasOwnProperty.call(source, "climateUsePct")) out.climateUsePct = 100;
+  if (out.climateUsePct !== "" && !(Number.isFinite(Number(out.climateUsePct)))) out.climateUsePct = "";
+  if (out.climateUsePct !== "") out.climateUsePct = Math.min(100, Math.max(0, Number(out.climateUsePct)));
   out.accessoriesEnabled = false;
   out.regenOffAboveDisplayPct = Math.min(100, Math.max(0, Number(out.regenOffAboveDisplayPct)));
   if (!["bol", "eol"].includes(out.resultsAge)) out.resultsAge = "bol";
@@ -735,7 +740,7 @@ function fieldHtml(field) {
   } else if (field.type === "text" || field.type === "date") {
     control = `<input type="${field.type}" id="${field.id}" autocomplete="off">`;
   } else {
-    control = `<input type="number" id="${field.id}" inputmode="decimal"${field.step ? ` step="${field.step}"` : ""}${field.min !== undefined ? ` min="${field.min}"` : ' min="0"'}>`;
+    control = `<input type="number" id="${field.id}" inputmode="decimal"${field.step ? ` step="${field.step}"` : ""}${field.min !== undefined ? ` min="${field.min}"` : ' min="0"'}${field.max !== undefined ? ` max="${field.max}"` : ""}${field.placeholder ? ` placeholder="${esc(field.placeholder)}"` : ""}>`;
   }
   const labelFor = field.type === "profile" ? "" : ` for="${field.id}"`;
   const unitHtml = field.type === "speedlist" ? `<span class="unit" data-unit-kind="speed"></span>` : unit;
@@ -1035,13 +1040,23 @@ function sourceText(src) {
 const ratingValue = (v, unit) => (Number.isFinite(v) ? `${fmt(v, 0)} ${unit}` : (unit === "s" ? "no limit" : "—"));
 
 // "What the module / pack will use" tables under the rating inputs.
+// "Base 0.5 kW + (air conditioning 1.5 kW + heating 0.75 kW) × 30 % = …" (v2.15).
+const kw2 = (x) => fmt(Math.round(x * 100 + 1e-6) / 100, 2); // 1.175 → 1.18, matching the parts shown
+function auxWorking(L) {
+  const rated = [L.acRated ? `air conditioning ${kw2(L.acRated)} kW` : null, L.heatRated ? `heating ${kw2(L.heatRated)} kW` : null].filter(Boolean);
+  const base = L.base + L.legacyAccessories;
+  if (!rated.length) return `Base load ${kw2(base)} kW, for the whole drive.`;
+  if (L.usePct === null) return `Base load ${kw2(base)} kW only; ${rated.join(" and ")} rated, not counted yet.`;
+  const climate = L.acRated + L.heatRated;
+  return `Base ${kw2(base)} kW + (${rated.join(" + ")}) × ${fmt(L.usePct, 0)} % = ${kw2(base)} + ${kw2(climate * L.usePct / 100)} kW. Rated total ${kw2(base + climate)} kW.`;
+}
+
 // Regen and auxiliary load boxes in the Vehicle step (v2.13).
 function updateAuxInfo() {
   const tot = $("#auxTotalInfo");
   if (tot) {
     const L = Calc.auxLoads(state);
-    const parts = [`base ${fmt(L.base, 2)}`, L.ac ? `air conditioning ${fmt(L.ac, 2)}` : null, L.heat ? `heating ${fmt(L.heat, 2)}` : null].filter(Boolean);
-    tot.innerHTML = `<div class="info-total"><span>Total auxiliary load</span><strong>${fmt(L.total, 2)} kW</strong></div><small>${esc(parts.join(" + "))} kW. All loads run for the whole drive. The starting values are typical figures, not from this vehicle.</small>`;
+    tot.innerHTML = `<div class="info-total"><span>Average auxiliary draw</span><strong>${kw2(L.total)} kW</strong></div><small>${esc(auxWorking(L))}</small>${L.climateMissing ? `<p class="aux-missing">Air conditioning and heating are not counted until <strong>Climate control average use</strong> is entered.</p>` : ""}`;
   }
   const reg = $("#regenLimitsInfo");
   if (reg) {
@@ -1238,6 +1253,7 @@ function computeCore() {
     if (build.pack.minVSource === "pack" && ocvBottom < build.pack.minV - 1e-9) build.warnings.push({ step: "pack", text: `The BMS minimum pack voltage (${fmt(build.pack.minV, 0)} V) is above the open-circuit voltage at empty (${fmt(ocvBottom, 0)} V), so the pack cuts out before 0 % under load. Consider a lower usable factor.` });
   }
 
+  if (build.engineInput && Calc.auxLoads(state).climateMissing && !build.warnings.some((w) => w.id === "climate")) build.warnings.push({ id: "climate", step: "vehicle", text: "Climate control not counted: enter its average use % under Vehicle › Auxiliary loads. Until then air conditioning and heating add nothing to the auxiliary load." });
   if (build.engineInput) {
     const sim = Sim.simulateDriveCycle(ei);
     out.vehicle = {
@@ -2030,7 +2046,7 @@ function resultSections(all) {
       state.motorEnabled && Number(state.motorTorqueNm) > 0 ? ["Motor peak torque", `${fmt(state.motorTorqueNm, 0)} Nm`] : null,
       state.motorEnabled && Number(state.gearRatio) > 0 ? ["Gear ratio / tyre radius", `${fmt(state.gearRatio, 2)}:1 / ${fmt(state.tyreRadiusMm, 0)} mm${state.tyreSize ? ` (${esc(state.tyreSize)})` : ""}`] : null,
       ["Regenerative braking", state.regenEnabled ? `On, ${fmt(state.regenEffPct, 0)} % recovery${sub(`Off above ${fmt(state.regenOffAboveDisplayPct, 0)} % displayed charge`)}` : "Off"],
-      (() => { const L = Calc.auxLoads(state); return ["Auxiliary loads", `${fmt(L.total, 2)} kW${sub([`base ${fmt(L.base, 2)}`, L.ac ? `air conditioning ${fmt(L.ac, 2)}` : null, L.heat ? `heating ${fmt(L.heat, 2)}` : null].filter(Boolean).join(" + ") + " kW")}`]; })()
+      (() => { const L = Calc.auxLoads(state); return ["Average auxiliary draw", `${kw2(L.total)} kW${sub(auxWorking(L))}`]; })()
     ]));
     if (sim) {
       const limited = Object.entries(sim.limitSeconds || {}).filter(([, s]) => s > 0);
@@ -2045,7 +2061,8 @@ function resultSections(all) {
         ["Regen returned to pack", `${fmt(sim.regenRecoveredKWh, 2)} kWh`],
         v.regen ? ["Range added by regen", `${dist(v.regen.addedMiles)}${sub(`${dist(sim.distanceMiles)}, ${dist(v.regen.withoutMiles)} without regen`)}`, "highlight"] : null,
         v.aux ? ["Energy used by auxiliary loads", `${fmt(v.aux.kWh, 2)} kWh${v.aux.pct !== null ? sub(`${fmt(v.aux.pct, 0)} % of the energy taken from the pack · ${fmt(v.aux.total, 2)} kW`) : ""}`] : null,
-        v.aux && v.aux.rangeCostMiles !== null ? ["Range cost of auxiliary loads", `${dist(v.aux.rangeCostMiles)}${sub(`${dist(sim.distanceMiles)}, ${dist(v.aux.withoutMiles)} without them`)}`, "highlight"] : null,
+        v.aux && v.aux.rangeCostMiles !== null ? ["Range cost of auxiliary loads", `${dist(v.aux.rangeCostMiles)}${sub(`${dist(sim.distanceMiles)}, ${dist(v.aux.withoutMiles)} without them. On the drive cycle chosen under Simulation (average ${speed(sim.averageSpeedMph)}): auxiliary loads cost energy per hour, so slow cycles show a bigger cost than motorway driving.`)}`, "highlight"] : null,
+        v.aux && v.aux.climateMissing ? ["Climate control not counted", `${sub("Enter its average use % under Vehicle › Auxiliary loads.")}`, "warn"] : null,
         sim.packLossKWh > 0 ? ["Pack internal losses", `${fmt(sim.packLossKWh, 2)} kWh`] : null,
         ["Peak discharge / regen current", `${fmt(sim.peakDischargeCurrentA, 0)} A / ${fmt(sim.peakChargeCurrentA, 0)} A`],
         ["Power-limited time", limited.length ? limited.map(([k, s]) => `${limitName(k)} ${fmt(s, 0)} s`).join("; ") : "None"],

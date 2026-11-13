@@ -60,14 +60,21 @@ check("A BMS window wider than the cells changes nothing", near(vw2.pack.minV, v
 check("BMS min above max is an error", C.computeBuild({ ...base, bmsEnabled: true, bmsMinV: 400, bmsMaxV: 300 }).errors.some((e) => /BMS minimum/.test(e.text)));
 
 // Regen and auxiliary loads (v2.13)
-const L0 = C.auxLoads({ auxBaseKW: 0.5, acEnabled: true, heatingEnabled: true, heaterType: "heatPump" });
+const L0 = C.auxLoads({ auxBaseKW: 0.5, acEnabled: true, heatingEnabled: true, heaterType: "heatPump", climateUsePct: 100 });
 check("Old inputs (no kW figures): fixed values used", near(L0.total, 0.5 + 1.5 + 0.75, 1e-12));
-const L1 = C.auxLoads({ auxBaseKW: 0.4, acEnabled: true, acKW: 2, heatingEnabled: true, heatingKW: 1.2 });
+const L1 = C.auxLoads({ auxBaseKW: 0.4, acEnabled: true, acKW: 2, heatingEnabled: true, heatingKW: 1.2, climateUsePct: 100 });
 check("Entered kW figures are used", near(L1.total, 3.6, 1e-12) && L1.ac === 2 && L1.heat === 1.2);
+// Climate control average use (v2.15)
+const L2 = C.auxLoads({ auxBaseKW: 0.5, acEnabled: true, acKW: 1.5, heatingEnabled: true, heatingKW: 0.75, climateUsePct: 30 });
+check("Climate at 30 %: 0.5 + 2.25 × 0.3 = 1.175 kW", near(L2.total, 1.175, 1e-12) && near(L2.ac, 0.45, 1e-12) && L2.acRated === 1.5 && L2.climateMissing === false);
+const L3 = C.auxLoads({ auxBaseKW: 0.5, acEnabled: true, acKW: 1.5, climateUsePct: "" });
+check("Climate use blank: AC not counted, flagged", L3.total === 0.5 && L3.climateMissing === true && L3.acRated === 1.5);
+check("Climate use blank with AC and heating off: not flagged", C.auxLoads({ auxBaseKW: 0.5, climateUsePct: "" }).climateMissing === false);
+check("Climate use 0 %: counted as zero, not flagged", C.auxLoads({ auxBaseKW: 0.5, heatingEnabled: true, heatingKW: 2.5, climateUsePct: 0 }).total === 0.5);
 check("Loads switched off add nothing", C.auxLoads({ auxBaseKW: 0.5, acEnabled: false, acKW: 3 }).total === 0.5);
 check("Regen off above: displayed 95 % in a 0.9 window = cell 90.5 %", near(C.regenOffCellSoc({ regenOffAboveDisplayPct: 95 }, 0.9), 90.5, 1e-9));
 check("Regen off above: old cell value used when no displayed value", C.regenOffCellSoc({ regenDisableAboveSoc: 95 }, 0.9) === 95);
-const eiAux = C.computeBuild({ ...base, auxBaseKW: 0.5, acEnabled: true, acKW: 2 }).engineInput;
+const eiAux = C.computeBuild({ ...base, auxBaseKW: 0.5, acEnabled: true, acKW: 2, climateUsePct: 100 }).engineInput;
 check("Engine gets one total auxiliary load", near(eiAux.assumedLoadKW, 2.5, 1e-12) && eiAux.airConditioningEnabled === false);
 
 // 4. BMS limits
