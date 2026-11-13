@@ -15,7 +15,9 @@ const base = {
   buildStart: "cell", buildEnd: "vehicle",
   cellNominalV: 3.6, cellMaxV: 4.2, cellMinV: 3.0, cellCapacityAh: 5, cellMaxDischargeA: 18, cellContDischargeA: 8, cellMaxChargeA: 5, cellMassG: 70,
   modSeries: 12, modParallel: 24, modOverheadMode: "percent", modMassOverheadPct: 0,
-  packModules: 8, packStrings: 1, usableFactor: 0.88, packOverheadMode: "percent", packMassOverheadPct: 0,
+  packModules: 8, packStrings: 1, packOverheadMode: "percent", packMassOverheadPct: 0,
+  // v2.17: a straight-line OCV table (3.0–4.2 V) and BMS voltages at 6 % and 94 % give the old 0.88 window.
+  cellOcvTable: "0, 3.0\n100, 4.2", bmsMinV: 294.912, bmsMaxV: 396.288,
   vehMassKg: 1300, vehMassIncludesPack: true, payloadKg: 0, cd: 0.34, frontalAreaM2: 2.1, crr: 0.013, drivetrainEffPct: 90, auxBaseKW: 1,
   regenEnabled: true, regenEffPct: 65, regenDisableAboveSoc: 95, driveCycle: "wltp3b", graphResolutionS: 10
 };
@@ -55,8 +57,19 @@ check("No CAD volume entered: no pack Wh/L", C.computeBuild({ ...base, packVolum
 // Pack voltage window from the BMS (v2.14)
 const vw = C.computeBuild({ ...base, bmsEnabled: true, bmsMinV: 300, bmsMaxV: 390 });
 check("BMS voltage window narrows the pack voltage", vw.pack.minV === 300 && near(vw.pack.maxV, 390, 1e-9) && vw.pack.minVSource === "pack" && (!vw.engineInput || vw.engineInput.packMinVoltageV === 300));
-const vw2 = C.computeBuild({ ...base, bmsEnabled: true, bmsMinV: 100, bmsMaxV: 1000 });
-check("A BMS window wider than the cells changes nothing", near(vw2.pack.minV, vw2.pack.cellMinV, 1e-9) && near(vw2.pack.maxV, vw2.pack.cellMaxV, 1e-9) && vw2.pack.maxVSource === "cells");
+// v2.17: the BMS voltages are required and set the charge window on the OCV table
+check("BMS window outside the cells' limits is an error", C.computeBuild({ ...base, bmsMinV: 100, bmsMaxV: 1000 }).errors.filter((e) => /below the cells'|above the cells'/.test(e.text)).length === 2);
+check("Missing BMS voltages are errors", C.computeBuild({ ...base, bmsMinV: "", bmsMaxV: 0 }).errors.filter((e) => /Enter the BMS/.test(e.text)).length === 2);
+check("Missing OCV table is an error", C.computeBuild({ ...base, cellOcvTable: "" }).errors.some((e) => /OCV table is required/.test(e.text)));
+check("Window 6–94 % from the voltages (usable 0.88)", near(b.pack.socBottom, 6, 1e-3) && near(b.pack.socTop, 94, 1e-3) && near(b.pack.usableFactor, 0.88, 1e-5), `${b.pack.socBottom}–${b.pack.socTop}`);
+check("Window reaches the engine", near(Sim.buildPackModel(b.engineInput).socBottom, 6, 1e-3) && near(Sim.buildPackModel(b.engineInput).socTop, 94, 1e-3));
+const tbl = "7, 2.956\n9, 3.0\n50, 3.6\n99, 4.131\n100, 4.166";
+const wI = Sim.ocvWindow(Sim.parseOcvTable(tbl).points, 3.0, 4.148);
+check("Integra-style table: 3.0 V → 9 %, 4.148 V → 99.5 %", near(wI.bottom, 9, 0.011) && near(wI.top, 99.486, 0.02), `${wI.bottom.toFixed(3)}–${wI.top.toFixed(3)}`);
+const wC = Sim.ocvWindow(Sim.parseOcvTable(tbl).points, 2.5, 4.2);
+check("Voltages beyond the table: 0–100 %, flagged", wC.bottom === 0 && wC.top === 100 && wC.bottomClamped && wC.topClamped);
+const mw = C.computeBuild({ ...base, buildStart: "module", mdNominalV: 43.2, mdMaxV: 50.4, mdMinV: 36, mdCapacityAh: 120, mdMaxDischargeA: 432, mdContDischargeA: 192, mdMaxChargeA: 120, mdMassKg: 20.16, mdOcvTable: "" });
+check("Module build without a module OCV table is an error", mw.errors.some((e) => /module OCV table/.test(e.text)));
 check("BMS min above max is an error", C.computeBuild({ ...base, bmsEnabled: true, bmsMinV: 400, bmsMaxV: 300 }).errors.some((e) => /BMS minimum/.test(e.text)));
 
 // Regen and auxiliary loads (v2.13)
@@ -95,7 +108,7 @@ check("Module rating (replace): continuous 220 A used above cells", modReplace.p
 check("Replace above cell figure gives a warning on the field", modReplace.warnings.some((w) => w.id === "modContA"));
 const shortPeak = C.computeBuild({ ...base, cellPulseDurationS: 10, modRatingsEnabled: true, modPeakS: 5 });
 check("Shorter module peak duration applies", shortPeak.pack.peakDurationS === 5 && shortPeak.pack.peakDurationSource === "module");
-const twoStrings = C.computeBuild({ ...base, packModules: 4, packStrings: 2, modRatingsEnabled: true, modPeakA: 350 });
+const twoStrings = C.computeBuild({ ...base, packModules: 4, packStrings: 2, bmsMinV: 147.456, bmsMaxV: 198.144, modRatingsEnabled: true, modPeakA: 350 });
 check("Module ratings × strings at the pack", twoStrings.pack.peakA === 700);
 const packLimit = C.computeBuild({ ...base, modRatingsEnabled: true, modPeakA: 350, modContA: 220, modChargeA: 100, bmsEnabled: true, bmsPeakA: 400, bmsContA: 180, bmsChargeA: 150 });
 check("Pack rating (limit) 180 A continuous from pack", packLimit.pack.contA === 180 && packLimit.pack.contSource === "pack" && packLimit.pack.peakA === 350 && packLimit.pack.peakSource === "module");
@@ -105,13 +118,13 @@ const packReplace = C.computeBuild({ ...base, bmsEnabled: true, bmsMode: "replac
 check("Pack rating (replace) above modules warns", packReplace.pack.contA === 250 && packReplace.warnings.some((w) => w.id === "bmsContA"));
 
 // 6. Parallel strings
-const strings = C.computeBuild({ ...base, packModules: 4, packStrings: 2 });
+const strings = C.computeBuild({ ...base, packModules: 4, packStrings: 2, bmsMinV: 147.456, bmsMaxV: 198.144 });
 check("2 strings of 4 × 12S24P = 48S48P", strings.pack.config === "48S48P" && near(strings.pack.energyKWh, 41.472, 1e-9) && strings.pack.moduleCount === 8);
 
 // 7. Module-datasheet path matches the cell path
 const moduleStart = C.computeBuild({
   ...base, buildStart: "module",
-  mdNominalV: 43.2, mdMaxV: 50.4, mdMinV: 36, mdCapacityAh: 120, mdMaxDischargeA: 432, mdContDischargeA: 192, mdMaxChargeA: 120, mdMassKg: 20.16
+  mdNominalV: 43.2, mdMaxV: 50.4, mdMinV: 36, mdCapacityAh: 120, mdMaxDischargeA: 432, mdContDischargeA: 192, mdMaxChargeA: 120, mdMassKg: 20.16, mdOcvTable: "0, 36\n100, 50.4"
 });
 check("Module-start pack energy equals cell-start", near(moduleStart.pack.energyKWh, b.pack.energyKWh, 1e-9));
 const simCell = Sim.simulateDriveCycle(b.engineInput);

@@ -32,7 +32,6 @@
 <tr><td>Cell capacity</td><td>0.5–400 Ah</td></tr>
 <tr><td>Cell mass</td><td>10 g – 6 kg</td></tr>
 <tr><td>Cell max discharge</td><td>up to 30 C</td></tr>
-<tr><td>Usable factor</td><td>0.6–1.0</td></tr>
 <tr><td>Drag coefficient</td><td>0.20–0.70</td></tr>
 <tr><td>Frontal area</td><td>1.2–6 m²</td></tr>
 <tr><td>Rolling resistance</td><td>0.005–0.020</td></tr>
@@ -68,7 +67,7 @@ ${eq("Energy density [Wh/L] = E ÷ V")}
 <ul>
   <li><strong>DC internal resistance (DCIR)</strong> adds voltage sag under load and I²R losses. Use the datasheet DCIR at the temperature you want to represent (resistance rises in the cold and with age; neither is modelled).</li>
   <li><strong>Max discharge duration</strong> is how long the peak current may be held. After that the continuous rating applies until the cell has spent the same time back at or below its continuous current (see <em>Peak ratings</em>).</li>
-  <li><strong>OCV vs SOC table</strong> gives the open-circuit voltage at each state of charge, so power and voltage fall as the pack empties. Without it the nominal voltage is used at every charge level.</li>
+  <li><strong>OCV vs SOC table</strong> gives the open-circuit voltage at each state of charge, so power and voltage fall as the pack empties. It is required: with the BMS voltages it sets the charge window (0–100 % shown).</li>
 </ul>
 ${eq("Pack resistance R<sub>pack</sub> = R<sub>cell</sub> × S ÷ P")}
 ${eq("Terminal voltage V = OCV(SOC) − I × R<sub>pack</sub>")}
@@ -108,15 +107,18 @@ ${eq("m<sub>pack</sub> = Σ m<sub>module</sub> × (1 + overhead %) &nbsp; or &nb
 
     // ------------------------------------------------------------------ Pack
     {
-      id: "pack-build", group: "Pack & BMS", title: "Pack arrangement and usable energy",
+      id: "pack-build", group: "Pack & BMS", title: "Pack arrangement and voltage window",
       html: `
 <p>Modules are connected in series to make a string; strings can be connected in parallel.</p>
 ${eq("E<sub>pack</sub> = V<sub>pack</sub> × C<sub>pack</sub>")}
-${eq("E<sub>usable</sub> = E<sub>pack</sub> × usable factor")}
-<p>The <strong>usable factor</strong> is the share of nominal energy the BMS lets the driver use. It is applied as a window centred on the middle of the cell's charge range:</p>
-${eq("SOC<sub>bottom</sub> = (1 − usable factor) × 50 % &nbsp;&nbsp; SOC<sub>top</sub> = 100 % − SOC<sub>bottom</sub>")}
-<p>For example 0.88 gives a cell window of 6–94 %. Everything shown to the user uses the <strong>driver's charge</strong>, 100 % at the top of the window and 0 % at the bottom:</p>
+<p>The <strong>BMS minimum and maximum pack voltage</strong> are required. They are the core limit: they set what the driver sees as 0 % and 100 %. Each is divided by the elements in series (cells, or modules for a module build) and read <strong>at rest</strong> on the OCV table, which gives the charge window:</p>
+${eq("SOC<sub>bottom</sub> = SOC where OCV = V<sub>BMS min</sub> ÷ N<sub>series</sub> &nbsp;&nbsp; SOC<sub>top</sub> = SOC where OCV = V<sub>BMS max</sub> ÷ N<sub>series</sub>")}
+${eq("E<sub>usable</sub> = E<sub>pack</sub> × (SOC<sub>top</sub> − SOC<sub>bottom</sub>)")}
+<p>For example 324 V and 448 V on 108 cells in series are 3.000 V and 4.148 V per cell; on a table where 3.000 V is at 9 % and 4.148 V at 99.5 %, the window is 9–99.5 % (90.5 % usable). An OCV table is therefore required (Cell step, or the module datasheet for a module build). If a voltage is beyond the table, that end of the window is the end of the table, with a warning. The minimum must be at or above the cells' minimum × cells in series, and the maximum at or below their maximum × cells in series.</p>
+<p>Everything shown to the user uses the <strong>driver's charge</strong>, 100 % at the BMS maximum and 0 % at the BMS minimum:</p>
 ${eq("Charge shown = (SOC − SOC<sub>bottom</sub>) ÷ (SOC<sub>top</sub> − SOC<sub>bottom</sub>) × 100 %")}
+<p>Under load the terminal voltage drops below the resting voltage. The BMS limits the current so it never goes below the minimum, so power fades over the last few percent; the drive ends at 0 %, or earlier if the car can no longer move.</p>
+<p>Projects saved before v2.17 used a usable factor (a window centred on the middle of the charge range). When opened, the BMS voltages are filled in from that window's resting voltages. Results move slightly: the last few percent are now power-limited, and where the OCV table does not reach the old window end, the window starts at the table's first point.</p>
 <p>“Low charge” figures are taken at 15 % displayed charge.</p>`
     },
     {
@@ -131,7 +133,7 @@ ${eq("Pack (from modules): I = I<sub>module</sub> × parallel strings")}
   <li><strong>As the module / pack rating</strong>: the entry is used instead, higher or lower. Use this for a validated design rating (for example a module with cooling that is rated above the cell datasheet). A warning shows wherever an entry is above the level below, so check the design is validated for it.</li>
 </ul>
 <p>A value left at 0 keeps the figure from the level below. Continuous current is never allowed above peak. The <em>What the module/pack will use</em> table under the inputs, and the <em>Current limit chain</em> in the results, show where each figure comes from.</p>
-<p><strong>Pack voltage window</strong> (pack limits): the BMS minimum and maximum pack voltage, where it stops discharge and charge. Always applied as a limit: the narrower of the BMS window and the cells' limits × cells in series is used, for voltage sag, regen, charging and the requirement check. A warning shows if the BMS window cuts into the usable charge window.</p>
+<p><strong>Pack voltage window</strong>: the BMS minimum and maximum pack voltage are entered with the pack arrangement (see <em>Pack arrangement and voltage window</em>). They set 0–100 % shown and are the limits for voltage sag, regen, charging and the requirement check.</p>
 <p><strong>Peak duration</strong>: as limits, the shortest duration in the chain applies; as a rating, the entered duration replaces it. <strong>Regen</strong> is 80 % of the cell (or module datasheet) charge rating unless a module or pack charge rating sets it.</p>
 <p>A pack built from one module design: the option to mix two module types has been removed. Projects saved with two types open using the first type only, with a message.</p>`
     },
@@ -422,7 +424,7 @@ ${eq("Margin = (cooling capacity − heat) ÷ heat")}
     "requirements-0": "requirements", "requirements-1": "requirements", "requirements-2": "requirements", "requirements-3": "requirements", "requirements-4": "requirements", "requirements-5": "heat", "lifetime-0": "lifetime"
   };
   const fieldTopics = {
-    usableFactor: "pack-build", vehPreset: "vehicle-presets", crr: "vehicle-presets", cd: "vehicle-presets",
+    bmsMinV: "pack-build", bmsMaxV: "pack-build", mdOcvTable: "cell-performance", vehPreset: "vehicle-presets", crr: "vehicle-presets", cd: "vehicle-presets",
     cellPulseDurationS: "peak-ratings", bmsPeakS: "peak-ratings", motorPeakS: "peak-ratings",
     tyreSize: "motor-limits", cellDcirMOhm: "pack-electrical", mdDcirMOhm: "pack-electrical",
     cellTaperEnabled: "charging", acChargerEffPct: "charging", cellResIncreasePct: "end-of-life", reqAgeMode: "end-of-life", reqCoolingKW: "heat", climateUsePct: "aux-loads"

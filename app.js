@@ -8,7 +8,7 @@
 
 const Sim = window.BatterySimulation;
 const Calc = window.VoltCalc;
-const REQUIRED_ENGINE_VERSION = 19;
+const REQUIRED_ENGINE_VERSION = 20;
 const STORAGE_KEY = "voltBatteryCalculator.v2";
 const PROJECT_FILE_TYPE = "volt-battery-calculator-project";
 const LOW_CHARGE = 15; // % (as shown to driver) used for "low charge" figures
@@ -146,11 +146,11 @@ const STEPS = [
       {
         more: true,
         title: "Performance detail",
-        tag: "voltage sag, pulse time",
+        tag: "OCV table (required), voltage sag, pulse time",
         fields: [
           f("cellPulseDurationS", "Max discharge duration", { unit: "s", step: 1, optional: true, help: "How long the max discharge current can be held. Leave 0 for no limit." }),
           f("cellDcirMOhm", "DC internal resistance", { unit: "mΩ", step: 0.01, optional: true, help: "Datasheet DCIR (e.g. 10 s pulse at 50 % SOC) at the temperature you want to simulate." }),
-          f("cellOcvTable", "OCV vs SOC table", { type: "ocv", optional: true, full: true, help: "One “SOC %, voltage” pair per line, from the datasheet OCV or low-rate discharge curve. Paste or load a CSV. Leave empty to use the nominal voltage." })
+          f("cellOcvTable", "OCV vs SOC table", { type: "ocv", full: true, help: "One “SOC %, voltage” pair per line, from the datasheet OCV or low-rate discharge curve. Paste or load a CSV. Required: with the BMS voltages on the Pack step it sets the charge window." })
         ]
       }
     ]
@@ -180,7 +180,8 @@ const STEPS = [
           f("mdMaxDischargeA", "Max discharge current", { unit: "A", step: 1 }),
           f("mdContDischargeA", "Continuous discharge current", { unit: "A", step: 1 }),
           f("mdMaxChargeA", "Max charge current", { unit: "A", step: 1 }),
-          f("mdMassKg", "Mass", { unit: "kg", step: 0.01 })
+          f("mdMassKg", "Mass", { unit: "kg", step: 0.01 }),
+          f("mdOcvTable", "OCV vs SOC table (module voltage)", { type: "ocv", full: true, placeholder: "0, 36.0&#10;10, 41.4&#10;…&#10;100, 50.4", help: "One “SOC %, module voltage” pair per line, from the module datasheet or a low-rate discharge." })
         ]
       },
       {
@@ -248,11 +249,13 @@ const STEPS = [
     intro: "Arrange modules into the pack. Pack limits, mass overhead and enclosure size are optional.",
     blocks: [
       {
-        title: "Pack arrangement",
+        title: "Pack arrangement and voltage window",
         fields: [
           f("packModules", "Modules in series", { step: 1, min: 1, help: "Per string." }),
           f("packStrings", "Parallel strings", { step: 1, min: 1, help: "Usually 1." }),
-          f("usableFactor", "Usable factor", { step: 0.01, help: "Share of nominal energy the BMS lets the driver use (e.g. 0.88)." })
+          f("bmsMinV", "BMS minimum pack voltage", { unit: "V", step: 0.1, help: "The safe operating limit. 0 % charge (as shown to the driver) is this voltage at rest. At or above the minimum × elements in series." }),
+          f("bmsMaxV", "BMS maximum pack voltage", { unit: "V", step: 0.1, help: "100 % charge (as shown to the driver) is this voltage at rest. At or below the maximum × elements in series." }),
+          f("windowInfo", "", { type: "windowinfo", full: true })
         ]
       },
       {
@@ -266,8 +269,6 @@ const STEPS = [
           f("bmsPeakS", "Peak duration", { unit: "s", step: 1, showIf: (s) => !!s.bmsEnabled }),
           f("bmsContA", "Continuous discharge", { unit: "A", step: 1, showIf: (s) => !!s.bmsEnabled }),
           f("bmsChargeA", "Max charge / regen", { unit: "A", step: 1, showIf: (s) => !!s.bmsEnabled }),
-          f("bmsMinV", "BMS minimum pack voltage", { unit: "V", step: 1, optional: true, showIf: (s) => !!s.bmsEnabled, help: "Where the BMS stops discharge. Leave 0 to use the cells' minimum × cells in series. Always applied as a limit (the narrower window is used)." }),
-          f("bmsMaxV", "BMS maximum pack voltage", { unit: "V", step: 1, optional: true, showIf: (s) => !!s.bmsEnabled, help: "Where the BMS stops charge and regen. Leave 0 to use the cells' maximum × cells in series." }),
           f("bmsNote", "Source / set by", { type: "text", full: true, optional: true, showIf: (s) => !!s.bmsEnabled, help: "e.g. Main contactor 180 A continuous; 400 A fuse" }),
           f("packRatingsPreview", "", { type: "ratings", level: "pack", full: true, showIf: (s) => !!s.bmsEnabled })
         ]
@@ -534,9 +535,9 @@ const BLANK = {
   modOverheadMode: "percent", modMassOverheadPct: 0, modItemHousingKg: 0, modItemInterconnectKg: 0, modItemElectronicsKg: 0, modItemOtherKg: 0,
   modLengthMm: "", modWidthMm: "", modHeightMm: "",
   mdName: "", mdNominalV: "", mdMaxV: "", mdMinV: "", mdCapacityAh: "", mdMaxDischargeA: "", mdContDischargeA: "", mdMaxChargeA: "", mdMassKg: "",
-  mdConfig: "", mdCellType: "", mdLengthMm: "", mdWidthMm: "", mdHeightMm: "", mdDcirMOhm: 0, mdPulseDurationS: 0,
+  mdConfig: "", mdCellType: "", mdLengthMm: "", mdWidthMm: "", mdHeightMm: "", mdDcirMOhm: 0, mdPulseDurationS: 0, mdOcvTable: "",
   packModules: "", packStrings: 1, usableFactor: 0.9,
-  bmsEnabled: false, bmsMode: "limit", bmsPeakA: 0, bmsPeakS: 0, bmsContA: 0, bmsChargeA: 0, bmsMinV: 0, bmsMaxV: 0, bmsNote: "",
+  bmsEnabled: false, bmsMode: "limit", bmsPeakA: 0, bmsPeakS: 0, bmsContA: 0, bmsChargeA: 0, bmsMinV: "", bmsMaxV: "", voltWindow: 1, bmsNote: "",
   packOverheadMode: "percent", packMassOverheadPct: 0, packItemEnclosureKg: 0, packItemBusbarsKg: 0, packItemBmsKg: 0, packItemCoolingKg: 0, packItemOtherKg: 0,
   packLengthMm: "", packWidthMm: "", packHeightMm: "", packVolumeMethod: "cad", packVolumeL: "", packBoxes: "",
   vehPreset: "", vehName: "", vehMassKg: "", vehMassIncludesPack: false, payloadKg: 75, cd: "", frontalAreaM2: "", crr: "", drivetrainEffPct: 90, auxBaseKW: 0.5,
@@ -562,7 +563,7 @@ const EXAMPLE = {
   cellPulseDurationS: 10, cellDcirMOhm: 20,
   cellOcvTable: "0, 3.00\n5, 3.30\n10, 3.43\n20, 3.53\n30, 3.59\n40, 3.64\n50, 3.69\n60, 3.76\n70, 3.85\n80, 3.94\n90, 4.05\n100, 4.20",
   modSeries: 12, modParallel: 24, modOverheadMode: "percent", modMassOverheadPct: 15,
-  packModules: 8, packStrings: 1, usableFactor: 0.88, packOverheadMode: "percent", packMassOverheadPct: 30,
+  packModules: 8, packStrings: 1, usableFactor: 0.88, bmsMinV: 319.3, bmsMaxV: 394.56, packOverheadMode: "percent", packMassOverheadPct: 30,
   vehPreset: "sports", vehName: "Example small sports car", vehMassKg: 1050, vehMassIncludesPack: false, payloadKg: 150, cd: 0.36, frontalAreaM2: 1.67, crr: 0.0084, drivetrainEffPct: 88, auxBaseKW: 0.5,
   motorEnabled: true, motorPeakKW: 150, motorPeakS: 30, motorContKW: 70, motorTorqueNm: 310, motorMaxRpm: 14000, gearRatio: 9, tyreSize: "205/55 R16", tyreRadiusMm: 310,
   acChargerKW: 11, dcChargerKW: 50
@@ -620,6 +621,29 @@ function cleanInputs(source) {
     out.heatingKW = out.heaterType === "heatPump" ? 0.75 : 2.5;
     if (out.accessoriesEnabled) out.auxBaseKW = Math.round(((Number(out.auxBaseKW) || 0) + 0.5) * 1000) / 1000;
   }
+  // Voltage window (v2.17): the BMS voltages are required and set 0–100 % shown; the usable factor is gone.
+  // A project saved before gets them from its old usable-factor window (the resting voltages at its ends),
+  // so its results stay the same. Voltages entered with "The pack has its own limits" on are kept.
+  if (source && !Object.prototype.hasOwnProperty.call(source, "voltWindow")) {
+    if (!source.bmsEnabled) { out.bmsMinV = ""; out.bmsMaxV = ""; }
+    const fromCells = out.buildStart !== "module";
+    const es = fromCells ? Number(out.packModules) * Number(out.modSeries) : Number(out.packModules);
+    const text = String((fromCells ? out.cellOcvTable : out.mdOcvTable) || "");
+    const pts = text.trim() ? Sim.parseOcvTable(text, { maxV: fromCells ? 6 : 1500 }).points : [];
+    const elMin = Number(fromCells ? out.cellMinV : out.mdMinV) * es, elMax = Number(fromCells ? out.cellMaxV : out.mdMaxV) * es;
+    if (es > 0) {
+      if (Number(out.bmsMinV) > 0 && elMin > 0 && Number(out.bmsMinV) < elMin) out.bmsMinV = elMin;
+      if (Number(out.bmsMaxV) > 0 && elMax > 0 && Number(out.bmsMaxV) > elMax) out.bmsMaxV = elMax;
+    }
+    if (es > 0 && pts.length >= 2) {
+      const uf = Math.min(1, Math.max(0.01, Number(out.usableFactor) || 0.9));
+      const bottom = (1 - uf) * 50;
+      const r2 = (v) => Math.round(v * 100) / 100;
+      if (!(Number(out.bmsMinV) > 0)) out.bmsMinV = r2(Sim.interpolateOcv(pts, bottom) * es);
+      if (!(Number(out.bmsMaxV) > 0)) out.bmsMaxV = r2(Sim.interpolateOcv(pts, 100 - bottom) * es);
+    }
+  }
+  out.voltWindow = 1;
   // Climate control average use (v2.15): projects saved before it drew the full rated power, so they open at 100 %.
   if (source && !Object.prototype.hasOwnProperty.call(source, "climateUsePct")) out.climateUsePct = 100;
   if (out.climateUsePct !== "" && !(Number.isFinite(Number(out.climateUsePct)))) out.climateUsePct = "";
@@ -711,13 +735,15 @@ function fieldHtml(field) {
   } else if (field.type === "textarea") {
     control = `<textarea id="${field.id}" class="plain" rows="3"></textarea>`;
   } else if (field.type === "ocv") {
-    control = `<textarea id="${field.id}" rows="7" spellcheck="false" placeholder="0, 3.00&#10;10, 3.45&#10;…&#10;100, 4.20"></textarea>
+    const fileId = field.id === "cellOcvTable" ? "ocvFile" : `${field.id}File`;
+    const statusId = field.id === "cellOcvTable" ? "ocvStatus" : `${field.id}Status`;
+    control = `<textarea id="${field.id}" rows="7" spellcheck="false" placeholder="${field.placeholder || "0, 3.00&#10;10, 3.45&#10;…&#10;100, 4.20"}"></textarea>
       <div class="ocv-actions">
-        <label class="text-button" for="ocvFile">Load CSV file</label>
-        <input type="file" id="ocvFile" accept=".csv,.txt,text/csv,text/plain" hidden>
-        <small id="ocvStatus"></small>
+        <label class="text-button" for="${fileId}">Load CSV file</label>
+        <input type="file" id="${fileId}" data-ocv-file="${field.id}" accept=".csv,.txt,text/csv,text/plain" hidden>
+        <small id="${statusId}"></small>
       </div>`;
-  } else if (field.type === "regeninfo" || field.type === "auxtotal") {
+  } else if (field.type === "regeninfo" || field.type === "auxtotal" || field.type === "windowinfo") {
     return `<div class="${cls}" data-field="${field.id}"><div class="info-box" id="${field.id}" aria-live="polite"></div></div>`;
   } else if (field.type === "ratings") {
     return `<div class="${cls}" data-field="${field.id}"><div class="ratings-preview" id="${field.id}" aria-live="polite"></div></div>`;
@@ -803,7 +829,7 @@ function renderSteps() {
 function setControlValues() {
   for (const field of ALL_FIELDS) {
     const el = document.getElementById(field.id);
-    if (!el || ["profile", "wltpinfo", "ratings", "regeninfo", "auxtotal"].includes(field.type)) continue;
+    if (!el || ["profile", "wltpinfo", "ratings", "regeninfo", "auxtotal", "windowinfo"].includes(field.type)) continue;
     const value = state[field.id];
     if (field.type === "segment") { $$("[data-seg-value]", el).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.segValue === value))); continue; }
     if (field.type === "boxes") { renderBoxEditor(el); continue; }
@@ -823,6 +849,9 @@ function setControlValues() {
   updatePresetNote();
   updateRatingsPreviews();
   updateAuxInfo();
+  updateWindowInfo();
+  // The OCV table is required (v2.17): open its section when it is empty.
+  if (!String(state.cellOcvTable || "").trim()) { const d = document.getElementById("cellOcvTable")?.closest("details"); if (d) d.open = true; }
 }
 
 // Enclosure sections editor: rows of name, length, width, height (mm), kept in state as text lines.
@@ -1052,6 +1081,30 @@ function auxWorking(L) {
 }
 
 // Regen and auxiliary load boxes in the Vehicle step (v2.13).
+// Charge window box in the Pack step (v2.17).
+function updateWindowInfo() {
+  const el = $("#windowInfo");
+  if (!el) return;
+  const w = Calc.chargeWindow(state);
+  const elName = w.fromCells ? "cell" : "module";
+  const where = w.fromCells ? "Cell step › Performance detail" : "Module step › Module datasheet";
+  if (!w.ok) {
+    const need = [!(Number(state.bmsMinV) > 0) || !(Number(state.bmsMaxV) > 0) ? "both BMS voltages" : null, !w.hasTable ? `an OCV table (${where})` : null].filter(Boolean);
+    el.innerHTML = `<p class="info-title">Charge window the driver sees</p><p>${need.length ? `Enter ${need.join(" and ")} to see the window.` : "The minimum must be below the maximum."}</p>`;
+    return;
+  }
+  let kWh = "";
+  try { const b = Calc.computeBuild(state); if (b.pack) kWh = ` · <strong>${fmt(b.pack.usableKWh, 1)} kWh</strong>`; } catch { /* inputs incomplete */ }
+  const notes = [
+    w.bottomClamped ? `The minimum is below the lowest voltage in the OCV table (${fmt(w.tableMinV, 3)} V per ${elName}), so 0 % is taken as the bottom of the table.` : null,
+    w.topClamped ? `The maximum is above the highest voltage in the OCV table (${fmt(w.tableMaxV, 3)} V per ${elName}), so 100 % is taken as the top of the table.` : null
+  ].filter(Boolean);
+  el.innerHTML = `<p class="info-title">Charge window the driver sees</p>
+    <p><strong>0 % shown</strong> = ${fmt(Number(state.bmsMinV), 1)} V = ${fmt(w.minEl, 3)} V per ${elName} at rest = <strong>${fmt(w.bottom, 1)} %</strong> ${elName} charge</p>
+    <p><strong>100 % shown</strong> = ${fmt(Number(state.bmsMaxV), 1)} V = ${fmt(w.maxEl, 3)} V per ${elName} at rest = <strong>${fmt(w.top, 1)} %</strong> ${elName} charge</p>
+    <p>Usable <strong>${fmt(w.top - w.bottom, 1)} %</strong> of capacity${kWh}</p>${notes.map((n) => `<p class="aux-missing">${esc(n)}</p>`).join("")}`;
+}
+
 function updateAuxInfo() {
   const tot = $("#auxTotalInfo");
   if (tot) {
@@ -1100,12 +1153,16 @@ function updateRatingsPreviews() {
 
 // OCV table and tyre helpers
 function updateOcvStatus() {
-  const status = $("#ocvStatus");
+  updateOcvStatusFor("cellOcvTable", "ocvStatus", 6);
+  updateOcvStatusFor("mdOcvTable", "mdOcvTableStatus", 1500);
+}
+function updateOcvStatusFor(id, statusId, maxV) {
+  const status = document.getElementById(statusId);
   if (!status) return;
-  const text = state.cellOcvTable || "";
+  const text = state[id] || "";
   status.className = "";
-  if (!text.trim()) { status.textContent = "No table: the nominal voltage is used as a constant OCV."; return; }
-  const parsed = Sim.parseOcvTable(text);
+  if (!text.trim()) { status.className = "status-warn"; status.textContent = "Required: with the BMS voltages it sets the charge window (0–100 % shown)."; return; }
+  const parsed = Sim.parseOcvTable(text, { maxV });
   if (!parsed.points.length) { status.className = "status-warn"; status.textContent = parsed.errors.join(" ") || "Table could not be read."; return; }
   const a = parsed.points[0];
   const b = parsed.points[parsed.points.length - 1];
@@ -1246,12 +1303,10 @@ function computeCore() {
   };
 
   out.charging = chargingData(build, packOnly);
-  // BMS voltage window against the usable charge window (v2.14).
-  if (build.pack && (build.pack.minVSource === "pack" || build.pack.maxVSource === "pack")) {
-    const ocvTop = packOnly.ocv(packOnly.socTop), ocvBottom = packOnly.ocv(packOnly.socBottom);
-    if (build.pack.maxVSource === "pack" && ocvTop > build.pack.maxV + 1e-9) build.warnings.push({ step: "pack", text: `The BMS maximum pack voltage (${fmt(build.pack.maxV, 0)} V) is below the open-circuit voltage at full charge (${fmt(ocvTop, 0)} V), so regen and charging stop before full. Consider a lower usable factor.` });
-    if (build.pack.minVSource === "pack" && ocvBottom < build.pack.minV - 1e-9) build.warnings.push({ step: "pack", text: `The BMS minimum pack voltage (${fmt(build.pack.minV, 0)} V) is above the open-circuit voltage at empty (${fmt(ocvBottom, 0)} V), so the pack cuts out before 0 % under load. Consider a lower usable factor.` });
-  }
+  // Charge window ends beyond the OCV table (v2.17).
+  const win = build.pack && build.pack.window;
+  if (win && win.bottomClamped && !build.warnings.some((w) => w.id === "winBottom")) build.warnings.push({ id: "winBottom", step: "pack", text: "The BMS minimum pack voltage is below the lowest voltage in the OCV table, so 0 % is taken as the bottom of the table. Extend the table to cover it." });
+  if (win && win.topClamped && !build.warnings.some((w) => w.id === "winTop")) build.warnings.push({ id: "winTop", step: "pack", text: "The BMS maximum pack voltage is above the highest voltage in the OCV table, so 100 % is taken as the top of the table. Extend the table to cover it." });
 
   if (build.engineInput && Calc.auxLoads(state).climateMissing && !build.warnings.some((w) => w.id === "climate")) build.warnings.push({ id: "climate", step: "vehicle", text: "Climate control not counted: enter its average use % under Vehicle › Auxiliary loads. Until then air conditioning and heating add nothing to the auxiliary load." });
   if (build.engineInput) {
@@ -1802,7 +1857,7 @@ function assumptionsList(all) {
       : "Pack values are built up from the module datasheet: voltage × modules in series, capacity and current × parallel strings."
   ];
   if (b.pack) {
-    items.push(`Usable energy = nominal energy × usable factor (${fmt(b.pack.usableFactor, 2)}), as a symmetric window (${fmt(all.packModel.socBottom, 0)}–${fmt(all.packModel.socTop, 0)} % cell SOC). Charge levels are shown as the driver sees them: 100 % full, 0 % empty.`);
+    items.push(`Charge window from the BMS voltages (${fmt(b.pack.minV, 1)}–${fmt(b.pack.maxV, 1)} V) read at rest on the OCV table: ${fmt(all.packModel.socBottom, 1)}–${fmt(all.packModel.socTop, 1)} % ${b.range.start === "cell" ? "cell" : "module"} charge. Usable energy = nominal energy × that window (${fmt(b.pack.usableFactor * 100, 1)} %). Charge levels are shown as the driver sees them: 100 % at the BMS maximum, 0 % at the BMS minimum. Near empty, the current is limited so the voltage under load never goes below the minimum.`);
     items.push("Current ratings follow the chain cell → module → pack: each level starts from the one below (× cells in parallel, × parallel strings) and optional module or pack limits either cap it (the lower figure is used) or replace it (a validated design rating).");
     items.push("Regen current is 80 % of the cell (or module datasheet) charge rating, unless a module or pack charge rating sets it.");
     items.push(all.atLimits.hasSag
@@ -2001,7 +2056,7 @@ function resultSections(all) {
       ["Configuration", `${esc(p.config)}${b.range.start === "cell" ? ` · ${fmt(p.moduleCount, 0)} modules` : ""}`],
       p.cells ? ["Cells", fmt(p.cells, 0)] : null,
       ["Nominal voltage", `${fmt(p.nominalV, 1)} V`],
-      ["Voltage range", `${fmt(p.minV, 1)}–${fmt(p.maxV, 1)} V${p.minVSource === "pack" || p.maxVSource === "pack" ? sub(`BMS window; the cells allow ${fmt(p.cellMinV, 1)}–${fmt(p.cellMaxV, 1)} V`) : ""}`],
+      ["Voltage range", `${fmt(p.minV, 1)}–${fmt(p.maxV, 1)} V${sub(`BMS window = 0–100 % shown${p.window ? ` (${fmt(p.socBottom, 1)}–${fmt(p.socTop, 1)} % ${b.range.start === "cell" ? "cell" : "module"} charge)` : ""}; the ${b.range.start === "cell" ? "cells" : "modules"} allow ${fmt(p.cellMinV, 1)}–${fmt(p.cellMaxV, 1)} V`)}`],
       ["Capacity", `${fmt(p.capacityAh, 1)} Ah`],
       ["Energy / usable", `${fmt(p.energyKWh, 2)} / ${fmt(p.usableKWh, 2)} kWh`],
       ["Mass", `${fmt(p.massKg, 1)} kg${p.overheadKg > 0 ? ` (modules ${fmt(p.modulesMassKg, 1)} kg)` : ""}`],
@@ -2056,7 +2111,8 @@ function resultSections(all) {
         ["Consumption (battery terminals)", whPerDist(sim.consumptionKWhPerMile)],
         ["Efficiency", efficiency(sim.consumptionKWhPerMile)],
         ["Driving time", `${fmt(sim.runtimeMinutes, 0)} min`],
-        sim.endReason === "minVoltage" ? ["Drive ended at", `${fmt(Math.max(0, (sim.endSoc - all.packModel.socBottom) / (all.packModel.socTop - all.packModel.socBottom) * 100), 0)} % charge (as shown to driver)${sub(`The pack reached its minimum voltage (${fmt(all.packModel.vMin, 0)} V${p.minVSource === "pack" ? ", BMS" : ""}) under load before the bottom of the usable window, so the car could no longer drive. Lowering the usable factor or the BMS minimum voltage uses the rest.`)}`, "warn"] : null,
+        (() => { const endPct = sim.endReason === "minVoltage" ? Math.max(0, (sim.endSoc - all.packModel.socBottom) / (all.packModel.socTop - all.packModel.socBottom) * 100) : 0;
+          return endPct >= 1 ? ["Drive ended at", `${fmt(endPct, 0)} % charge (as shown to driver)${sub(`The pack's voltage under load reached the BMS minimum (${fmt(all.packModel.vMin, 0)} V) and the car could no longer drive: the power available near empty was too low for the drive cycle.`)}`, "warn"] : null; })(),
         ["Average speed", speed(sim.averageSpeedMph, 1)],
         ["Energy from pack (net)", `${fmt(sim.netEnergyKWh, 2)} kWh`],
         ["Regen returned to pack", `${fmt(sim.regenRecoveredKWh, 2)} kWh`],
@@ -2230,7 +2286,8 @@ function afterInputChange(field) {
     if (hk) hk.value = String(state.heatingKW);
   }
   updateAuxInfo();
-  if (field.id === "cellOcvTable") updateOcvStatus();
+  updateWindowInfo();
+  if (field.id === "cellOcvTable" || field.id === "mdOcvTable") updateOcvStatus();
   if (field.id === "tyreSize") updateTyreStatus(true);
   if (field.id === "vehPreset") applyPreset();
   if (field.id === "customProfileUnit") updateProfileStatus();
@@ -2338,18 +2395,19 @@ function bindEvents() {
     showToast("New project started");
   });
 
-  $("#ocvFile")?.addEventListener("change", (e) => {
+  $$("[data-ocv-file]").forEach((input) => input.addEventListener("change", (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const id = e.target.dataset.ocvFile;
     const reader = new FileReader();
     reader.onload = () => {
-      const el = document.getElementById("cellOcvTable");
+      const el = document.getElementById(id);
       el.value = String(reader.result || "");
-      onFieldChange(FIELD_BY_ID.cellOcvTable);
+      onFieldChange(FIELD_BY_ID[id]);
     };
     reader.readAsText(file);
     e.target.value = "";
-  });
+  }));
 
   $("#profileFile")?.addEventListener("change", (e) => {
     const file = e.target.files?.[0];

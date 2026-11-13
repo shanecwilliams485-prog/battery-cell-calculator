@@ -25,6 +25,18 @@
   };
   const pos = (value) => Math.max(0, num(value));
   const has = (value) => num(value) > 0;
+  // The simulation engine (for the OCV table helpers). In the browser it is loaded first.
+  const Sim = root.BatterySimulation || (typeof require === "function" ? require("./simulation.js") : null);
+
+  // OCV table for the series element: per cell (cell build) or per module (module build), v2.17.
+  function elementOcvText(input, fromCells) {
+    return String((fromCells ? input.cellOcvTable : input.mdOcvTable) || "");
+  }
+  function elementOcvPoints(input, fromCells) {
+    const text = elementOcvText(input, fromCells);
+    if (!text.trim() || !Sim) return [];
+    return Sim.parseOcvTable(text, { maxV: fromCells ? 6 : 1500 }).points;
+  }
 
   // Standard cylindrical formats: the name gives diameter and length in mm.
   const CELL_FORMATS = {
@@ -69,11 +81,24 @@
     return { base, acRated: ac, heatRated: heat, usePct, climateMissing: climateOn && !useGiven, ac: ac * f, heat: heat * f, legacyAccessories, total: base + (ac + heat) * f + legacyAccessories };
   }
 
-  // Regen off above a displayed charge (v2.13) → the engine's cell SOC, through the usable window.
-  function regenOffCellSoc(input, usableFactor) {
+  // The charge window from the BMS voltages on the OCV table, for the Pack step box (v2.17).
+  function chargeWindow(input) {
+    const fromCells = buildRange(input).start === "cell";
+    const es = fromCells ? num(input.packModules) * num(input.modSeries) : num(input.packModules);
+    const points = elementOcvPoints(input, fromCells);
+    const out = { fromCells, es, hasTable: points.length >= 2, ok: false };
+    if (!(es > 0) || !out.hasTable || !has(input.bmsMinV) || !has(input.bmsMaxV) || num(input.bmsMinV) >= num(input.bmsMaxV) || !Sim) return out;
+    const minEl = num(input.bmsMinV) / es, maxEl = num(input.bmsMaxV) / es;
+    return { ...out, ok: true, minEl, maxEl, ...Sim.ocvWindow(points, minEl, maxEl) };
+  }
+
+  // Regen off above a displayed charge (v2.13) → the engine's cell SOC, through the charge window.
+  // The window is the pack's { socBottom, socTop } (v2.17), or a usable factor for a symmetric window.
+  function regenOffCellSoc(input, win) {
     if (!given(input.regenOffAboveDisplayPct)) return input.regenDisableAboveSoc;
-    const uf = Math.min(1, Math.max(0.01, num(usableFactor, 1)));
-    const bottom = (1 - uf) * 50, top = 100 - bottom;
+    let bottom, top;
+    if (win && typeof win === "object") { bottom = win.socBottom; top = win.socTop; }
+    else { const uf = Math.min(1, Math.max(0.01, num(win, 1))); bottom = (1 - uf) * 50; top = 100 - bottom; }
     const d = Math.min(100, Math.max(0, num(input.regenOffAboveDisplayPct)));
     return bottom + (top - bottom) * d / 100;
   }
@@ -368,13 +393,21 @@
     // Pack voltage window (v2.14): the cells' limits × cells in series, narrowed by the BMS if entered.
     const cellMaxV = element.maxV * elementsInSeries;
     const cellMinV = element.minV * elementsInSeries;
-    const bmsMinV = input.bmsEnabled && has(input.bmsMinV) ? num(input.bmsMinV) : null;
-    const bmsMaxV = input.bmsEnabled && has(input.bmsMaxV) ? num(input.bmsMaxV) : null;
-    const minV = bmsMinV !== null ? Math.max(cellMinV, bmsMinV) : cellMinV;
-    const maxV = bmsMaxV !== null ? Math.min(cellMaxV, bmsMaxV) : cellMaxV;
+    // Pack voltage window (v2.17): the BMS minimum and maximum, required. They set 0 % and 100 % shown,
+    // read at rest on the OCV table. The usable factor is no longer an input; it follows from the window.
+    const bmsMinV = has(input.bmsMinV) ? num(input.bmsMinV) : null;
+    const bmsMaxV = has(input.bmsMaxV) ? num(input.bmsMaxV) : null;
+    const minV = bmsMinV !== null ? bmsMinV : cellMinV;
+    const maxV = bmsMaxV !== null ? bmsMaxV : cellMaxV;
     const capacityAh = element.capacityAh * elementParallel;
     const energyKWh = nominalV * capacityAh / 1000;
-    const usableFactor = Math.min(1, Math.max(0, num(input.usableFactor, 1)));
+    const points = elementOcvPoints(input, fromCells);
+    const win = points.length >= 2 && bmsMinV !== null && bmsMaxV !== null && bmsMinV < bmsMaxV && elementsInSeries > 0 && Sim
+      ? Sim.ocvWindow(points, bmsMinV / elementsInSeries, bmsMaxV / elementsInSeries) : null;
+    // Only reached without a window when validation already failed; the old factor keeps previews working.
+    const usableFactor = win ? Math.max(0, (win.top - win.bottom) / 100) : Math.min(1, Math.max(0, num(input.usableFactor, 0.9)));
+    const socBottom = win ? win.bottom : (1 - usableFactor) * 50;
+    const socTop = win ? win.top : 100 - socBottom;
 
     // Ratings: module × parallel strings, then the optional pack ratings.
     const base = scaleRatings(mod1.ratings, strings);
@@ -414,6 +447,9 @@
       energyKWh,
       usableFactor,
       usableKWh: energyKWh * usableFactor,
+      socBottom,
+      socTop,
+      window: win,
       moduleRatings: base,
       ratings: r,
       ratingRows: applied.rows,
@@ -501,9 +537,24 @@
     }
     if (range.includes("pack")) {
       if (!(num(input.packModules) >= 1)) errors.push({ step: "pack", text: "Pack needs at least one module in series." });
-      if (!(num(input.usableFactor) > 0 && num(input.usableFactor) <= 1)) errors.push({ step: "pack", text: "Usable factor must be between 0 and 1 (e.g. 0.88)." });
       if (input.bmsEnabled && has(input.bmsContA) && has(input.bmsPeakA) && num(input.bmsContA) > num(input.bmsPeakA)) errors.push({ step: "pack", text: "Pack continuous rating should not exceed the pack peak rating." });
-      if (input.bmsEnabled && has(input.bmsMinV) && has(input.bmsMaxV) && num(input.bmsMinV) >= num(input.bmsMaxV)) errors.push({ step: "pack", text: "BMS minimum pack voltage must be below the BMS maximum pack voltage." });
+      // Voltage window (v2.17): both BMS voltages and an OCV table are required.
+      const fromCells = range.start === "cell";
+      const es = fromCells ? num(input.packModules) * num(input.modSeries) : num(input.packModules);
+      const elMin = fromCells ? num(input.cellMinV) : num(input.mdMinV);
+      const elMax = fromCells ? num(input.cellMaxV) : num(input.mdMaxV);
+      const r1 = (v) => Math.round(v * 10) / 10;
+      if (!has(input.bmsMinV)) errors.push({ step: "pack", text: "Enter the BMS minimum pack voltage: it sets 0 % charge." });
+      if (!has(input.bmsMaxV)) errors.push({ step: "pack", text: "Enter the BMS maximum pack voltage: it sets 100 % charge." });
+      if (has(input.bmsMinV) && has(input.bmsMaxV) && num(input.bmsMinV) >= num(input.bmsMaxV)) errors.push({ step: "pack", text: "BMS minimum pack voltage must be below the BMS maximum pack voltage." });
+      if (es > 0 && elMin > 0 && has(input.bmsMinV) && num(input.bmsMinV) < elMin * es - 1e-6) errors.push({ step: "pack", text: `BMS minimum pack voltage is below the ${fromCells ? "cells'" : "modules'"} minimum × ${es} in series (${r1(elMin * es)} V).` });
+      if (es > 0 && elMax > 0 && has(input.bmsMaxV) && num(input.bmsMaxV) > elMax * es + 1e-6) errors.push({ step: "pack", text: `BMS maximum pack voltage is above the ${fromCells ? "cells'" : "modules'"} maximum × ${es} in series (${r1(elMax * es)} V).` });
+      const pts = elementOcvPoints(input, fromCells);
+      if (pts.length < 2) errors.push({ step: fromCells ? "cell" : "module", text: fromCells ? "An OCV table is required: it turns the BMS voltages into the charge window." : "A module OCV table is required: it turns the BMS voltages into the charge window." });
+      else if (es > 0 && has(input.bmsMinV) && has(input.bmsMaxV) && num(input.bmsMinV) < num(input.bmsMaxV) && Sim) {
+        const w = Sim.ocvWindow(pts, num(input.bmsMinV) / es, num(input.bmsMaxV) / es);
+        if (!(w.top - w.bottom > 0.5)) errors.push({ step: "pack", text: "The BMS voltages leave no charge window on the OCV table." });
+      }
     }
     if (range.includes("vehicle")) {
       if (!(num(input.vehMassKg) > 0)) errors.push({ step: "vehicle", text: "Vehicle mass must be above zero." });
@@ -521,7 +572,6 @@
     { id: "cellNominalV", lo: 1.2, hi: 4.4, text: "Cell nominal voltage is outside the usual 1.2–4.4 V range." },
     { id: "cellCapacityAh", lo: 0.5, hi: 400, text: "Cell capacity looks unusual (0.5–400 Ah is typical)." },
     { id: "cellMassG", lo: 10, hi: 6000, text: "Cell mass looks unusual (10 g – 6 kg is typical)." },
-    { id: "usableFactor", lo: 0.6, hi: 1, text: "Usable factor below 0.6 is unusual." },
     { id: "cd", lo: 0.2, hi: 0.7, text: "Drag coefficient outside 0.20–0.70 is unusual for a road vehicle." },
     { id: "frontalAreaM2", lo: 1.2, hi: 6, text: "Frontal area outside 1.2–6 m² is unusual." },
     { id: "crr", lo: 0.005, hi: 0.02, text: "Rolling resistance outside 0.005–0.020 is unusual for road tyres." },
@@ -533,7 +583,6 @@
     const warnings = [];
     const active = (id) => {
       if (id.startsWith("cell")) return range.start === "cell";
-      if (id === "usableFactor") return range.includes("pack");
       return range.includes("vehicle");
     };
     for (const rule of SANITY) {
@@ -554,7 +603,7 @@
     const el = pack.element;
     const fromCells = range.start === "cell";
     const hasDcir = el.dcirMOhm > 0;
-    const hasOcv = fromCells && String(input.cellOcvTable || "").trim().length > 0;
+    const hasOcv = elementOcvText(input, fromCells).trim().length > 0;
     const vehicleMass = pos(input.vehMassKg) + (input.vehMassIncludesPack ? 0 : pack.massKg);
     return {
       nominalVoltage: el.nominalV,
@@ -569,10 +618,13 @@
       cellPulseDurationSeconds: el.pulseDurationS,
       advancedCellEnabled: hasDcir || hasOcv,
       cellDcirMilliOhm: el.dcirMOhm,
-      cellOcvTable: hasOcv ? input.cellOcvTable : "",
+      cellOcvTable: hasOcv ? elementOcvText(input, fromCells) : "",
+      ocvTableMaxV: fromCells ? 6 : 1500,
       seriesCount: pack.elementsInSeries,
       parallelCount: pack.elementParallel,
       usableEnergyFactor: pack.usableFactor,
+      packSocBottomPct: pack.window ? pack.socBottom : "",
+      packSocTopPct: pack.window ? pack.socTop : "",
       // Final pack ratings from the cell → module → pack chain.
       packRatingsEnabled: true,
       packPeakCurrentA: pack.peakA,
@@ -595,7 +647,7 @@
       electricalAccessoriesEnabled: false,
       regenEnabled: !!input.regenEnabled,
       regenEfficiencyPercent: input.regenEffPct,
-      regenDisableAboveSocPercent: regenOffCellSoc(input, pack.usableFactor),
+      regenDisableAboveSocPercent: regenOffCellSoc(input, { socBottom: pack.socBottom, socTop: pack.socTop }),
       motorLimitsEnabled: !!input.motorEnabled,
       motorPeakPowerKW: input.motorPeakKW,
       motorPeakDurationSeconds: input.motorPeakS,
@@ -652,7 +704,7 @@
     return out;
   }
 
-  const api = { CELL_FORMATS, BUILD_STEPS, RATING_KEYS, applyRatings, parseBoxes, enclosureVolume, auxLoads, regenOffCellSoc, buildRange, computeCell, moduleFromCells, moduleFromDatasheet, computePack, computeCharging, validate, sanityWarnings, toEngineInput, computeBuild };
+  const api = { CELL_FORMATS, BUILD_STEPS, RATING_KEYS, applyRatings, parseBoxes, enclosureVolume, auxLoads, regenOffCellSoc, chargeWindow, buildRange, computeCell, moduleFromCells, moduleFromDatasheet, computePack, computeCharging, validate, sanityWarnings, toEngineInput, computeBuild };
   root.VoltCalc = api;
   if (typeof module !== "undefined") module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

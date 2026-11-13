@@ -191,7 +191,7 @@ const noProfile = Sim.simulateDriveCycle({ ...base, driveCycle: "custom", custom
 check("Missing profile gives a clear message", !noProfile.ok && /speed profile/i.test(noProfile.reason));
 
 // 20. Charging step model (v17)
-check("Engine version 19", Sim.ENGINE_VERSION === 19);
+check("Engine version 20", Sim.ENGINE_VERSION === 20);
 const cp0 = Sim.buildPackModel({ ...base, advancedCellEnabled: false });            // nominal voltage, no resistance
 const usableAh = cp0.capacityAh * (cp0.socTop - cp0.socBottom) / 100;
 const usableKWh = usableAh * cp0.ocv(50) / 1000;

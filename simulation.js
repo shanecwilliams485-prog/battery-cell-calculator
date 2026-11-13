@@ -365,7 +365,9 @@
   // Accepts pasted text or CSV: one "SOC, voltage" pair per line. SOC may be a
   // percentage (0-100) or a fraction (0-1). Header / non-numeric lines are
   // skipped. Separators: comma, semicolon, tab or spaces.
-  function parseOcvTable(text) {
+  // opts.maxV: highest plausible voltage (6 V for a cell; higher for a module table, v2.17).
+  function parseOcvTable(text, opts = {}) {
+    const vLimit = Number(opts.maxV) > 0 ? Number(opts.maxV) : 6;
     const result = { points: [], errors: [] };
     if (!text || !String(text).trim()) return result;
 
@@ -393,7 +395,7 @@
 
     // Column order: SOC first, voltage second. If the first column looks like
     // voltage (all values 1-6 V) and the second like SOC, swap them.
-    const firstLooksLikeVoltage = raw.every(([a]) => a > 1 && a < 6);
+    const firstLooksLikeVoltage = vLimit <= 6 && raw.every(([a]) => a > 1 && a < 6);
     const secondLooksLikeSoc = raw.some(([, b]) => b > 6);
     let pairs = firstLooksLikeVoltage && secondLooksLikeSoc ? raw.map(([a, b]) => [b, a]) : raw;
 
@@ -408,8 +410,8 @@
         result.errors.push(`SOC ${soc} is outside 0-100 % and was ignored.`);
         continue;
       }
-      if (v <= 0 || v > 6) {
-        result.errors.push(`Voltage ${v} V is not a plausible cell voltage and was ignored.`);
+      if (v <= 0 || v > vLimit) {
+        result.errors.push(`Voltage ${v} V is not a plausible ${vLimit <= 6 ? "cell" : "module"} voltage and was ignored.`);
         continue;
       }
       if (points.length && Math.abs(points[points.length - 1].soc - soc) < 1e-9) continue;
@@ -429,6 +431,29 @@
 
     result.points = points.length >= 2 ? points : [];
     return result;
+  }
+
+  // Cell SOC window between two element voltages read at rest on an OCV table (v2.17).
+  // Bottom: the highest SOC whose OCV is still at or below vBottom (0 when the table never gets that low).
+  // Top: the lowest SOC whose OCV reaches vTop (100 when the table never gets that high).
+  function ocvWindow(points, vBottom, vTop) {
+    const f = (s) => interpolateOcv(points, s);
+    const N = 10000;
+    const at = (i) => f(i * 100 / N);
+    let i = 0;
+    while (i < N && at(i + 1) <= vBottom + 1e-9) i++;
+    let bottom = i * 100 / N;
+    if (i < N && at(i) < vBottom && at(i + 1) > vBottom) bottom += (vBottom - at(i)) / (at(i + 1) - at(i)) * 100 / N;
+    let j = N;
+    while (j > 0 && at(j - 1) >= vTop - 1e-9) j--;
+    let top = j * 100 / N;
+    if (j > 0 && at(j) > vTop && at(j - 1) < vTop) top -= (at(j) - vTop) / (at(j) - at(j - 1)) * 100 / N;
+    return {
+      bottom, top,
+      bottomClamped: f(0) > vBottom + 1e-9,      // the BMS minimum is below the table's lowest voltage
+      topClamped: f(100) < vTop - 1e-9,          // the BMS maximum is above the table's highest voltage
+      tableMinV: f(0), tableMaxV: f(100)
+    };
   }
 
   function interpolateOcv(points, socPercent) {
@@ -456,7 +481,7 @@
     const capacityAh = Math.max(0, num(input.capacityAh)) * parallel;
 
     const advancedCell = !!input.advancedCellEnabled;
-    const ocvParse = advancedCell ? parseOcvTable(input.cellOcvTable) : { points: [], errors: [] };
+    const ocvParse = advancedCell ? parseOcvTable(input.cellOcvTable, { maxV: input.ocvTableMaxV }) : { points: [], errors: [] };
     const hasOcvTable = ocvParse.points.length >= 2;
 
     const cellResistanceOhm = advancedCell ? Math.max(0, num(input.cellDcirMilliOhm)) / 1000 : 0;
@@ -477,8 +502,15 @@
     };
 
     const usableFactor = Math.min(1, Math.max(0.01, num(input.usableEnergyFactor, 1)));
-    const socBottom = (1 - usableFactor) * 50;
-    const socTop = 100 - socBottom;
+    let socBottom = (1 - usableFactor) * 50;
+    let socTop = 100 - socBottom;
+    // Charge window from the pack voltage window (engine 20): calc.js works out the cell SOC
+    // at the BMS minimum and maximum voltages (at rest) and passes them here.
+    const given = (x) => x !== "" && x !== null && x !== undefined && Number.isFinite(Number(x));
+    if (given(input.packSocBottomPct) && given(input.packSocTopPct) && Number(input.packSocTopPct) > Number(input.packSocBottomPct)) {
+      socBottom = Math.min(100, Math.max(0, Number(input.packSocBottomPct)));
+      socTop = Math.min(100, Math.max(0, Number(input.packSocTopPct)));
+    }
 
     const motorEnabled = !!input.motorLimitsEnabled;
     const controllerLimitA = motorEnabled ? positiveOrInfinity(input.controllerMaxCurrentA) : Infinity;
@@ -1291,7 +1323,7 @@
 
   // Bump whenever app.js depends on new engine output. app.js checks this so a
   // stale simulation.js on the server is reported instead of giving wrong results.
-  const ENGINE_VERSION = 19;
+  const ENGINE_VERSION = 20;
 
   // ---------------------------------------------------------------------------
   // Charging, step by step across the displayed charge (v17)
@@ -1403,6 +1435,7 @@
     normaliseDriveCycle,
     parseOcvTable,
     interpolateOcv,
+    ocvWindow,
     buildPackModel,
     buildVehicleModel,
     currentForPower,
