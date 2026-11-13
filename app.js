@@ -8,7 +8,7 @@
 
 const Sim = window.BatterySimulation;
 const Calc = window.VoltCalc;
-const REQUIRED_ENGINE_VERSION = 18;
+const REQUIRED_ENGINE_VERSION = 19;
 const STORAGE_KEY = "voltBatteryCalculator.v2";
 const PROJECT_FILE_TYPE = "volt-battery-calculator-project";
 const LOW_CHARGE = 15; // % (as shown to driver) used for "low charge" figures
@@ -2055,7 +2055,8 @@ function resultSections(all) {
         ["Range", dist(sim.distanceMiles), "highlight"],
         ["Consumption (battery terminals)", whPerDist(sim.consumptionKWhPerMile)],
         ["Efficiency", efficiency(sim.consumptionKWhPerMile)],
-        ["Driving time to empty", `${fmt(sim.runtimeMinutes, 0)} min`],
+        ["Driving time", `${fmt(sim.runtimeMinutes, 0)} min`],
+        sim.endReason === "minVoltage" ? ["Drive ended at", `${fmt(Math.max(0, (sim.endSoc - all.packModel.socBottom) / (all.packModel.socTop - all.packModel.socBottom) * 100), 0)} % charge (as shown to driver)${sub(`The pack reached its minimum voltage (${fmt(all.packModel.vMin, 0)} V${p.minVSource === "pack" ? ", BMS" : ""}) under load before the bottom of the usable window, so the car could no longer drive. Lowering the usable factor or the BMS minimum voltage uses the rest.`)}`, "warn"] : null,
         ["Average speed", speed(sim.averageSpeedMph, 1)],
         ["Energy from pack (net)", `${fmt(sim.netEnergyKWh, 2)} kWh`],
         ["Regen returned to pack", `${fmt(sim.regenRecoveredKWh, 2)} kWh`],

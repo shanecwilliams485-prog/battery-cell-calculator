@@ -586,6 +586,8 @@
     if (R > 0) {
       candidates.push({ limit: "voltage", amps: Math.max(0, (ocv - pack.vMin) / R) });
       candidates.push({ limit: "maxPower", amps: ocv / (2 * R) }); // peak of the P-I curve
+    } else if (ocv <= pack.vMin) {
+      candidates.push({ limit: "voltage", amps: 0 });
     }
     let best = candidates[0];
     for (const c of candidates) if (c.amps < best.amps) best = c;
@@ -791,6 +793,10 @@
   // Drive cycle simulation (run until the usable SOC window is exhausted)
   // ---------------------------------------------------------------------------
 
+  // The car counts as stalled below this speed; the drive ends after this many seconds stalled at the voltage limit.
+  const STALL_SPEED_MPS = 0.5;
+  const STALL_LIMIT_S = 10;
+
   function simulateDriveCycle(input, options = {}) {
     const pack = buildPackModel(input);
     const vehicle = buildVehicleModel(input);
@@ -851,6 +857,10 @@
     };
     let cycleIndex = 0;
     let finished = false;
+    // Why the drive ended (engine 19): "empty" (bottom of the usable window) or "minVoltage"
+    // (the pack sits at its minimum voltage and can no longer move the car; a BMS would cut out here).
+    let endReason = null;
+    let stallSeconds = 0;
     let firstCycleEnergyJ = 0;
     let firstCycleDistanceM = 0;
 
@@ -987,6 +997,17 @@
 
         if (soc <= pack.socBottom) {
           finished = true;
+          endReason = "empty";
+          break;
+        }
+        // Minimum voltage reached: the car is asked to move but the voltage limit leaves no power to do so.
+        // Without this, the auxiliary load would drain the pack below its minimum voltage with the car stopped.
+        const stalled = activeLimit === "voltage" && v1 < STALL_SPEED_MPS && cycle.speeds[i + 1] > 1;
+        stallSeconds = stalled ? stallSeconds + dt : 0;
+        const auxOnlyV = pack.ocv(soc) - Math.max(0, vehicle.auxiliaryLoadW) / Math.max(1, pack.ocv(soc)) * pack.resistanceOhm;
+        if (stallSeconds >= STALL_LIMIT_S || auxOnlyV <= pack.vMin) {
+          finished = true;
+          endReason = "minVoltage";
           break;
         }
       }
@@ -1035,6 +1056,8 @@
     return {
       ok: true,
       reachedEmpty: finished,
+      endReason: finished ? endReason : "timeCap",
+      endSoc: soc,
       driveCycle,
       driveCycleLabel: driveCycle === "constant" ? `Constant ${Math.round(cycle.constantMph)} mph` : DRIVE_CYCLES[driveCycle].label,
       isStandardTrace,
@@ -1268,7 +1291,7 @@
 
   // Bump whenever app.js depends on new engine output. app.js checks this so a
   // stale simulation.js on the server is reported instead of giving wrong results.
-  const ENGINE_VERSION = 18;
+  const ENGINE_VERSION = 19;
 
   // ---------------------------------------------------------------------------
   // Charging, step by step across the displayed charge (v17)
